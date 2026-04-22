@@ -1,0 +1,33 @@
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Logs
+*.log
+logs/
+
+# Frontend
+src/web/node_modules/
+src/web/dist/
+src/web/.env.local
+src/web/.env.*.local
+
+# Backend
+src/server/build/
+src/server/out/
+*.class
+
+# Java
+.gradle/
+target/
+
+# Runtime files
+*.pid
+*.seed
+*.out
+
+# Uploads
+storage/
+uploads/
