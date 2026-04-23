@@ -62,6 +62,23 @@ Windows 下也可以直接运行：
 .\scripts\start-dev.ps1
 ```
 
+如果要启动 Java 后端，请先准备好本地 Gradle，再执行：
+
+```powershell
+.\scripts\start-java-backend.ps1
+```
+
+当前脚本会优先使用：
+
+```text
+D:\ProgrammingLanguage\Java\Jdk-21
+```
+
+两套联调模式不要同时占用 `8080`：
+
+- 如果你启动了 `npm run dev:mock`，就不要再启动 Java 后端
+- 如果你启动了 `npm run dev:server`，前端会直接代理到 Spring Boot
+
 ## 建议开发顺序
 
 1. 先完成数据库设计和接口清单

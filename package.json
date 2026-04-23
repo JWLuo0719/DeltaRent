@@ -5,6 +5,7 @@
   "scripts": {
     "dev:mock": "node scripts/mock-server.mjs",
     "dev:web": "npm --prefix src/web run dev",
-    "build:web": "npm --prefix src/web run build"
+    "build:web": "npm --prefix src/web run build",
+    "dev:server": "powershell -ExecutionPolicy Bypass -File ./scripts/start-java-backend.ps1"
   }
 }

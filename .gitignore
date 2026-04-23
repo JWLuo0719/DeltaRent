@@ -28,6 +28,9 @@ target/
 *.seed
 *.out
 
+# Local toolchains
+.tools/
+
 # Uploads
 storage/
 uploads/

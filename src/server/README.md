@@ -2,8 +2,8 @@
 
 当前后端采用：
 
-- Spring Boot 2.7
-- Java 8
+- Spring Boot 3
+- Java 21
 - MySQL 8
 - Redis
 - Spring Security
@@ -20,6 +20,23 @@
   - `GET /api/rentals`
   - `GET /api/dashboard/overview`
   - `POST /api/orders`
+
+## 本地运行要求
+
+- JDK 21
+- Gradle 8+
+
+当前仓库约定优先使用以下 JDK：
+
+```text
+D:\ProgrammingLanguage\Java\Jdk-21
+```
+
+当前 `start-java-backend.ps1` 会以 `local` profile 启动：
+
+- 先绕过 MySQL / Redis 自动配置
+- 便于在原型阶段直接启动接口联调
+- 后续接入数据库后，可切回默认 profile 或新增 `dev` profile
 
 ## 后续建议优先级
 
