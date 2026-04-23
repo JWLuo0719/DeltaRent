@@ -35,6 +35,9 @@ CREATE TABLE IF NOT EXISTS `rental_product` (
   `category` VARCHAR(50) DEFAULT NULL,
   `tag_text` VARCHAR(255) DEFAULT NULL,
   `hour_price` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `coin_amount_text` VARCHAR(100) DEFAULT NULL,
+  `equipment_level_text` VARCHAR(100) DEFAULT NULL,
+  `warehouse_value_text` VARCHAR(100) DEFAULT NULL,
   `status` VARCHAR(30) NOT NULL DEFAULT 'AVAILABLE',
   `description` TEXT,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -42,31 +45,22 @@ CREATE TABLE IF NOT EXISTS `rental_product` (
   PRIMARY KEY (`id`)
 );
 
-CREATE TABLE IF NOT EXISTS `recycle_order` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `user_id` BIGINT NOT NULL,
-  `server_name` VARCHAR(50) NOT NULL,
-  `coin_amount` BIGINT NOT NULL,
-  `contact_info` VARCHAR(100) NOT NULL,
-  `screenshot_url` VARCHAR(255) DEFAULT NULL,
-  `quoted_price` DECIMAL(10,2) DEFAULT NULL,
-  `status` VARCHAR(30) NOT NULL DEFAULT 'PENDING_REVIEW',
-  `remark` VARCHAR(255) DEFAULT NULL,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
-);
-
 CREATE TABLE IF NOT EXISTS `rental_order` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `order_no` VARCHAR(40) NOT NULL,
   `user_id` BIGINT NOT NULL,
   `product_id` BIGINT NOT NULL,
   `rent_hours` INT NOT NULL,
   `order_amount` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+  `contact_info` VARCHAR(100) DEFAULT NULL,
+  `delivery_note` VARCHAR(255) DEFAULT NULL,
   `status` VARCHAR(30) NOT NULL DEFAULT 'WAITING_CONFIRM',
+  `start_time` DATETIME DEFAULT NULL,
+  `end_time` DATETIME DEFAULT NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_rental_order_order_no` (`order_no`)
 );
 
 CREATE TABLE IF NOT EXISTS `notice` (

@@ -2,21 +2,13 @@
   <div class="page-shell stack">
     <section class="hero-card">
       <h1 class="page-title">后台运营看板</h1>
-      <p class="page-subtitle">作为一期后台入口，后续从这里继续扩展审核、商品、订单、公告和权限模块。</p>
+      <p class="page-subtitle">当前已接入后台概览接口，用于联调统计卡片、菜单结构和最近订单列表。</p>
     </section>
 
     <section class="grid-3">
-      <article class="metric">
-        <h3>待审核回收单</h3>
-        <strong>14</strong>
-      </article>
-      <article class="metric">
-        <h3>进行中租赁单</h3>
-        <strong>23</strong>
-      </article>
-      <article class="metric">
-        <h3>今日新增用户</h3>
-        <strong>9</strong>
+      <article v-for="item in overview.metrics" :key="item.label" class="metric">
+        <h3>{{ item.label }}</h3>
+        <strong>{{ item.value }}</strong>
       </article>
     </section>
 
@@ -24,20 +16,49 @@
       <article class="panel-card">
         <h2 class="section-title">待开发后台菜单</h2>
         <el-menu default-active="1">
-          <el-menu-item index="1">用户管理</el-menu-item>
-          <el-menu-item index="2">资源号管理</el-menu-item>
-          <el-menu-item index="3">回收订单管理</el-menu-item>
-          <el-menu-item index="4">租赁订单管理</el-menu-item>
-          <el-menu-item index="5">公告管理</el-menu-item>
-          <el-menu-item index="6">价格规则管理</el-menu-item>
+          <el-menu-item v-for="(item, index) in overview.menus" :key="item" :index="String(index + 1)">
+            {{ item }}
+          </el-menu-item>
         </el-menu>
       </article>
       <article class="panel-card">
-        <h2 class="section-title">当前工程目标</h2>
-        <p class="page-subtitle">
-          先把登录认证、RBAC、订单状态流转和后台 CRUD 做扎实，再逐步加入消息通知、统计分析和售后处理。
-        </p>
+        <h2 class="section-title">最近订单</h2>
+        <div class="detail-list">
+          <div v-for="order in overview.recentOrders" :key="order.orderNo" class="detail-item">
+            <strong>{{ order.orderNo }} · {{ order.status }}</strong>
+            <span>{{ order.user }} / {{ order.item }}</span>
+          </div>
+        </div>
       </article>
     </section>
   </div>
 </template>
+
+<script setup lang="ts">
+import { onMounted, reactive } from 'vue';
+import { ElMessage } from 'element-plus';
+import http from '@/api/http';
+import type { ApiResponse, DashboardOverview } from '@/types/api';
+
+const overview = reactive<DashboardOverview>({
+  metrics: [],
+  menus: [],
+  recentOrders: []
+});
+
+async function loadOverview() {
+  try {
+    const response = await http.get<ApiResponse<DashboardOverview>>('/dashboard/overview');
+    if (response.data.success) {
+      Object.assign(overview, response.data.data);
+      return;
+    }
+
+    ElMessage.error(response.data.message || '后台数据加载失败');
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '后台数据加载失败');
+  }
+}
+
+onMounted(loadOverview);
+</script>

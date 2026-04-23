@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import PortalView from '@/views/PortalView.vue';
 import LoginView from '@/views/LoginView.vue';
-import RecycleOrderView from '@/views/RecycleOrderView.vue';
+import RentalOrderCreateView from '@/views/RentalOrderCreateView.vue';
 import RentalListView from '@/views/RentalListView.vue';
 import AdminDashboardView from '@/views/AdminDashboardView.vue';
 
@@ -19,9 +19,9 @@ const router = createRouter({
       component: LoginView
     },
     {
-      path: '/recycle',
-      name: 'recycle',
-      component: RecycleOrderView
+      path: '/orders/create',
+      name: 'rental-create',
+      component: RentalOrderCreateView
     },
     {
       path: '/rentals',

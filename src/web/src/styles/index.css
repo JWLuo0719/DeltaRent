@@ -95,6 +95,26 @@ a {
   font-size: 20px;
 }
 
+.notice-list,
+.detail-list {
+  display: grid;
+  gap: 12px;
+}
+
+.notice-item,
+.detail-item {
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(241, 245, 249, 0.86);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.detail-item strong,
+.notice-item strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
 .toolbar {
   display: flex;
   flex-wrap: wrap;

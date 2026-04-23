@@ -14,11 +14,17 @@
 - 已提供统一返回体
 - 已预留健康检查接口：`GET /api/health`
 - 已放入跨域配置与基础安全配置
+- 已补齐与前端联调一致的占位接口：
+  - `POST /api/auth/login`
+  - `GET /api/portal/summary`
+  - `GET /api/rentals`
+  - `GET /api/dashboard/overview`
+  - `POST /api/orders`
 
 ## 后续建议优先级
 
 1. 用户认证与 JWT
 2. RBAC 权限模型
-3. 回收订单模块
+3. 账号商品模块
 4. 租赁订单模块
-5. 商品与公告模块
+5. 公告与售后模块

@@ -15,10 +15,8 @@ public class SecurityConfig {
         http
             .csrf().disable()
             .authorizeRequests()
-            .antMatchers("/api/health/**").permitAll()
-            .anyRequest().authenticated()
-            .and()
-            .httpBasic();
+            .antMatchers("/api/**").permitAll()
+            .anyRequest().authenticated();
 
         return http.build();
     }
