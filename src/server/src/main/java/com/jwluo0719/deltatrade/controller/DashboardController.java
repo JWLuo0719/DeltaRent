@@ -1,31 +1,40 @@
 package com.jwluo0719.deltatrade.controller;
 
 import com.jwluo0719.deltatrade.common.ApiResponse;
+import com.jwluo0719.deltatrade.mapper.RentalOrderMapper;
+import com.jwluo0719.deltatrade.mapper.SysUserMapper;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/dashboard")
 public class DashboardController {
 
+    private final RentalOrderMapper rentalOrderMapper;
+    private final SysUserMapper sysUserMapper;
+
+    public DashboardController(RentalOrderMapper rentalOrderMapper, SysUserMapper sysUserMapper) {
+        this.rentalOrderMapper = rentalOrderMapper;
+        this.sysUserMapper = sysUserMapper;
+    }
+
     @GetMapping("/overview")
     public ApiResponse<Map<String, Object>> overview() {
         Map<String, Object> result = new LinkedHashMap<String, Object>();
         result.put("metrics", Arrays.asList(
-            metric("待确认订单", "6"),
-            metric("进行中订单", "9"),
-            metric("今日新增用户", "4")
+            metric("Waiting orders", String.valueOf(rentalOrderMapper.countByStatus("WAITING_CONFIRM"))),
+            metric("Running orders", String.valueOf(rentalOrderMapper.countByStatus("IN_PROGRESS"))),
+            metric("Users", String.valueOf(sysUserMapper.countAll()))
         ));
-        result.put("menus", Arrays.asList("用户管理", "账号管理", "租赁订单管理", "售后申诉管理", "公告管理", "价格规则管理"));
-        result.put("recentOrders", Arrays.asList(
-            order("DR20260423001", "jwluo", "高战账号 A01", "待确认"),
-            order("DR20260423002", "test_user", "活动账号 B02", "进行中")
-        ));
+        result.put("menus", Arrays.asList("User Management", "Rental Products", "Rental Orders", "Appeals", "Notices", "Price Rules"));
+        result.put("recentOrders", recentOrders());
         return ApiResponse.success(result);
     }
 
@@ -34,6 +43,19 @@ public class DashboardController {
         item.put("label", label);
         item.put("value", value);
         return item;
+    }
+
+    private List<Map<String, Object>> recentOrders() {
+        List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
+        for (Map<String, Object> row : rentalOrderMapper.findRecent()) {
+            result.add(order(
+                String.valueOf(row.get("orderNo")),
+                String.valueOf(row.get("username")),
+                String.valueOf(row.get("productName")),
+                String.valueOf(row.get("status"))
+            ));
+        }
+        return result;
     }
 
     private Map<String, Object> order(String orderNo, String user, String itemName, String status) {

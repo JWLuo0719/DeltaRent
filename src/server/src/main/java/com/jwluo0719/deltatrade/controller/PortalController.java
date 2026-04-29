@@ -1,6 +1,8 @@
 package com.jwluo0719.deltatrade.controller;
 
 import com.jwluo0719.deltatrade.common.ApiResponse;
+import com.jwluo0719.deltatrade.mapper.RentalOrderMapper;
+import com.jwluo0719.deltatrade.mapper.RentalProductMapper;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,20 +15,28 @@ import java.util.Map;
 @RequestMapping("/api/portal")
 public class PortalController {
 
+    private final RentalProductMapper rentalProductMapper;
+    private final RentalOrderMapper rentalOrderMapper;
+
+    public PortalController(RentalProductMapper rentalProductMapper, RentalOrderMapper rentalOrderMapper) {
+        this.rentalProductMapper = rentalProductMapper;
+        this.rentalOrderMapper = rentalOrderMapper;
+    }
+
     @GetMapping("/summary")
     public ApiResponse<Map<String, Object>> summary() {
         Map<String, Object> result = new LinkedHashMap<String, Object>();
-        result.put("heroTitle", "三角洲行动账号租赁管理系统");
-        result.put("heroSubtitle", "Spring Boot 后端已预留与前端一致的数据结构，后续可以直接替换 Mock 服务。");
+        result.put("heroTitle", "DeltaRent Account Rental Management");
+        result.put("heroSubtitle", "A course prototype for account display, rental orders, and admin operations.");
         result.put("metrics", Arrays.asList(
-            metric("在线可租账号", "18"),
-            metric("今日新增订单", "12"),
-            metric("订单完成率", "97.4%")
+            metric("Available accounts", String.valueOf(rentalProductMapper.countAvailable())),
+            metric("Total orders", String.valueOf(rentalOrderMapper.countAll())),
+            metric("Demo completion", "Ready")
         ));
-        result.put("modules", Arrays.asList("用户认证", "账号展示", "账号租赁", "订单中心", "售后申诉", "后台审核", "公告管理", "数据看板"));
+        result.put("modules", Arrays.asList("Login", "Rental Products", "Order Create", "Order Status", "Admin Dashboard", "Notice Management"));
         result.put("notices", Arrays.asList(
-            notice(1, "课程演示提示", "当前返回的是后端占位数据，后续可替换为数据库查询。"),
-            notice(2, "联调说明", "接口字段已与前端页面保持一致。")
+            notice(1, "Demo Notice", "The Java backend is now connected to MySQL for core product and order data."),
+            notice(2, "Test Account", "Use admin / 123456 after importing the seed SQL.")
         ));
         return ApiResponse.success(result);
     }
