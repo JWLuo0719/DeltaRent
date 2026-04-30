@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(netstat -ano)",
+      "Bash(taskkill //PID 33304 //F)",
+      "Bash(node scripts/mock-server.mjs)",
+      "Bash(taskkill //PID 47280 //F)",
+      "Bash(npm run *)"
+    ]
+  }
+}

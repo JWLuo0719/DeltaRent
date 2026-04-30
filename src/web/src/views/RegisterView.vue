@@ -1,8 +1,8 @@
 <template>
-  <!-- 粒子背景 - 放最外层确保覆盖全屏 -->
-  <canvas ref="canvasRef" class="particle-canvas" />
+  <div class="register-shell">
+    <!-- 粒子背景 -->
+    <canvas ref="canvasRef" class="particle-canvas" />
 
-  <div class="login-shell">
     <!-- 左侧品牌区 -->
     <aside class="brand-panel">
       <!-- 战术网格背景 -->
@@ -36,7 +36,7 @@
           </span>
         </div>
 
-        <!-- 任务简报 -->
+        <!-- 任务列表 -->
         <div class="mission-list">
           <div class="mission-item">
             <span class="mission-icon">◆</span>
@@ -62,107 +62,84 @@
     <main class="form-panel">
       <div class="form-card">
         <div class="form-header">
-          <h2>登录</h2>
-          <p>欢迎回来，请登录您的账号</p>
+          <h2>注册</h2>
+          <p>创建账号，开始您的租赁之旅</p>
         </div>
 
-        <el-form label-position="top" @submit.prevent="handleLogin">
+        <el-form label-position="top" @submit.prevent="handleRegister">
           <div class="input-group">
             <label>用户名</label>
             <el-input
               v-model="form.username"
               placeholder="请输入用户名"
               size="large"
-              @keyup.enter="handleLogin"
+              @keyup.enter="handleRegister"
             />
           </div>
 
-          <div class="input-group">
-            <label>密码</label>
-            <el-input
-              v-model="form.password"
-              type="password"
-              show-password
-              placeholder="请输入密码"
-              size="large"
-              @keyup.enter="handleLogin"
-            />
+          <div class="input-row">
+            <div class="input-group">
+              <label>密码</label>
+              <el-input
+                v-model="form.password"
+                type="password"
+                show-password
+                placeholder="请输入密码"
+                size="large"
+                @keyup.enter="handleRegister"
+              />
+            </div>
+            <div class="input-group">
+              <label>确认密码</label>
+              <el-input
+                v-model="form.confirmPassword"
+                type="password"
+                show-password
+                placeholder="请再次输入"
+                size="large"
+                @keyup.enter="handleRegister"
+              />
+            </div>
           </div>
 
-          <div class="form-options">
-            <el-checkbox v-model="rememberMe">记住我</el-checkbox>
-            <el-button link type="primary" size="small" @click="showForgetDialog">忘记密码？</el-button>
+          <div class="input-row">
+            <div class="input-group">
+              <label>昵称（选填）</label>
+              <el-input
+                v-model="form.nickname"
+                placeholder="显示名称"
+                size="large"
+                @keyup.enter="handleRegister"
+              />
+            </div>
+            <div class="input-group">
+              <label>手机号（选填）</label>
+              <el-input
+                v-model="form.phone"
+                placeholder="联系方式"
+                size="large"
+                @keyup.enter="handleRegister"
+              />
+            </div>
           </div>
 
           <el-button
             type="primary"
             :loading="submitting"
             size="large"
-            class="login-btn"
-            @click="handleLogin"
+            class="register-btn"
+            @click="handleRegister"
           >
-            登 录
+            注 册
           </el-button>
         </el-form>
 
         <div class="form-footer">
-          <span>还没有账号？</span>
-          <el-button link type="primary" @click="$router.push('/register')">立即注册</el-button>
+          <span>已有账号？</span>
+          <el-button link type="primary" @click="$router.push('/login')">立即登录</el-button>
         </div>
-
-        <div class="divider">
-          <span>或者</span>
-        </div>
-
-        <el-button text size="large" class="guest-btn" @click="$router.push('/')">
-          游客访问 →
-        </el-button>
       </div>
     </main>
-
-    <!-- 忘记密码弹窗 -->
-    <el-dialog v-model="showForgetModal" title="找回密码" width="400px" :close-on-click-modal="false">
-      <el-form label-position="top">
-        <el-form-item label="手机号">
-          <el-input
-            v-model="forgetForm.phone"
-            placeholder="请输入注册手机号"
-            size="large"
-          />
-        </el-form-item>
-        <el-form-item label="验证码">
-          <div style="display: flex; gap: 12px;">
-            <el-input
-              v-model="forgetForm.verifyCode"
-              placeholder="请输入验证码"
-              size="large"
-              style="flex: 1;"
-            />
-            <el-button
-              size="large"
-              :loading="sendVerifyLoading"
-              :disabled="verifyCountdown > 0"
-              @click="handleSendVerifyCode"
-            >
-              {{ verifyCountdown > 0 ? `${verifyCountdown}s` : '获取验证码' }}
-            </el-button>
-          </div>
-        </el-form-item>
-        <el-form-item label="新密码">
-          <el-input
-            v-model="forgetForm.newPassword"
-            type="password"
-            show-password
-            placeholder="请输入新密码（至少6位）"
-            size="large"
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="showForgetModal = false">取消</el-button>
-        <el-button type="primary" @click="handleResetPassword">确认重置</el-button>
-      </template>
-    </el-dialog>
   </div>
 </template>
 
@@ -170,124 +147,59 @@
 import { reactive, ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { login, sendVerifyCode as sendVerifyCodeApi, resetPassword as resetPasswordApi } from '@/api';
-import type { LoginPayload } from '@/types/api';
+import { register } from '@/api';
 
 const router = useRouter();
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 let animationId: number | null = null;
 
+const form = reactive({
+  username: '',
+  password: '',
+  confirmPassword: '',
+  nickname: '',
+  phone: ''
+});
+
 const submitting = ref(false);
-const rememberMe = ref(!!localStorage.getItem('remembered_username'));
 
-const form = reactive<LoginPayload>({
-  username: sessionStorage.getItem('prefill_username') || localStorage.getItem('remembered_username') || '',
-  password: ''
-});
-
-sessionStorage.removeItem('prefill_username');
-
-const forgetForm = reactive({
-  phone: '',
-  verifyCode: '',
-  newPassword: ''
-});
-const showForgetModal = ref(false);
-const sendVerifyLoading = ref(false);
-const verifyCountdown = ref(0);
-let countdownTimer: number | null = null;
-
-async function handleLogin() {
-  if (!form.username || !form.password) {
-    ElMessage.warning('请输入用户名和密码');
+async function handleRegister() {
+  if (!form.username.trim()) {
+    ElMessage.warning('请输入用户名');
+    return;
+  }
+  if (!form.password) {
+    ElMessage.warning('请输入密码');
+    return;
+  }
+  if (form.password !== form.confirmPassword) {
+    ElMessage.warning('两次输入的密码不一致');
+    return;
+  }
+  if (form.password.length < 6) {
+    ElMessage.warning('密码长度不能少于6位');
     return;
   }
 
   submitting.value = true;
   try {
-    const response = await login(form);
+    const response = await register({
+      username: form.username.trim(),
+      password: form.password,
+      nickname: form.nickname.trim() || undefined,
+      phone: form.phone.trim() || undefined
+    });
     if (response.data.success) {
-      const result = response.data.data;
-      localStorage.setItem('mock_token', result.token);
-      localStorage.setItem('mock_user', JSON.stringify(result.user));
-      if (rememberMe.value) {
-        localStorage.setItem('remembered_username', form.username);
-      } else {
-        localStorage.removeItem('remembered_username');
-      }
-      ElMessage.success(`欢迎回来，${result.user.displayName}`);
-      router.push('/');
+      ElMessage.success('注册成功，请登录');
+      sessionStorage.setItem('prefill_username', form.username.trim());
+      router.push('/login');
       return;
     }
-    ElMessage.error(response.data.message || '登录失败');
+    ElMessage.error(response.data.message || '注册失败');
   } catch (error) {
-    ElMessage.error(error instanceof Error ? error.message : '登录失败');
+    ElMessage.error(error instanceof Error ? error.message : '注册失败');
   } finally {
     submitting.value = false;
-  }
-}
-
-function showForgetDialog() {
-  showForgetModal.value = true;
-  forgetForm.phone = '';
-  forgetForm.verifyCode = '';
-  forgetForm.newPassword = '';
-}
-
-async function handleSendVerifyCode() {
-  if (!forgetForm.phone) {
-    ElMessage.warning('请输入手机号');
-    return;
-  }
-  if (!/^1[3-9]\d{9}$/.test(forgetForm.phone)) {
-    ElMessage.warning('请输入正确的手机号');
-    return;
-  }
-  sendVerifyLoading.value = true;
-  try {
-    await sendVerifyCodeApi({ phone: forgetForm.phone, type: 'reset_password' });
-    ElMessage.success('验证码已发送');
-    verifyCountdown.value = 60;
-    countdownTimer = window.setInterval(() => {
-      verifyCountdown.value--;
-      if (verifyCountdown.value <= 0) {
-        if (countdownTimer) clearInterval(countdownTimer);
-      }
-    }, 1000);
-  } catch (error) {
-    ElMessage.error('发送失败，请重试');
-  } finally {
-    sendVerifyLoading.value = false;
-  }
-}
-
-async function handleResetPassword() {
-  if (!forgetForm.phone) {
-    ElMessage.warning('请输入手机号');
-    return;
-  }
-  if (!forgetForm.verifyCode) {
-    ElMessage.warning('请输入验证码');
-    return;
-  }
-  if (!forgetForm.newPassword) {
-    ElMessage.warning('请输入新密码');
-    return;
-  }
-  if (forgetForm.newPassword.length < 6) {
-    ElMessage.warning('密码长度不能少于6位');
-    return;
-  }
-  try {
-    await resetPasswordApi({
-      phone: forgetForm.phone,
-      verifyCode: forgetForm.verifyCode,
-      newPassword: forgetForm.newPassword
-    });
-    ElMessage.success('密码重置成功，请使用新密码登录');
-    showForgetModal.value = false;
-  } catch (error) {
-    ElMessage.error('重置失败，请重试');
   }
 }
 
@@ -394,7 +306,6 @@ onMounted(() => {
 
   onUnmounted(() => {
     if (animationId) cancelAnimationFrame(animationId);
-    if (countdownTimer) clearInterval(countdownTimer);
     window.removeEventListener('resize', handleResize);
   });
 });
@@ -411,7 +322,7 @@ body,
 </style>
 
 <style scoped>
-.login-shell {
+.register-shell {
   display: flex;
   min-height: 100vh;
   position: relative;
@@ -422,10 +333,7 @@ body,
 /* 粒子画布 */
 .particle-canvas {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
   z-index: 1;
   pointer-events: none;
 }
@@ -555,7 +463,7 @@ body,
 
 .form-card {
   width: 100%;
-  max-width: 380px;
+  max-width: 460px;
   padding: 44px 36px;
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(12px);
@@ -584,7 +492,7 @@ body,
 
 /* 输入框组 */
 .input-group {
-  margin-bottom: 18px;
+  margin-bottom: 14px;
 }
 
 .input-group label {
@@ -598,6 +506,12 @@ body,
 
 .input-group:focus-within label {
   color: #2563eb;
+}
+
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
 }
 
 :deep(.el-input__wrapper) {
@@ -619,14 +533,7 @@ body,
   height: 44px;
 }
 
-.form-options {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.login-btn {
+.register-btn {
   width: 100%;
   height: 46px;
   border-radius: 10px;
@@ -637,14 +544,15 @@ body,
   border: none;
   box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
   transition: all 0.2s;
+  margin-top: 6px;
 }
 
-.login-btn:hover:not(:disabled) {
+.register-btn:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(30, 64, 175, 0.4);
 }
 
-.login-btn:active:not(:disabled) {
+.register-btn:active:not(:disabled) {
   transform: translateY(0);
 }
 
@@ -655,36 +563,8 @@ body,
   font-size: 14px;
 }
 
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 18px 0;
-  color: #9ca3af;
-  font-size: 12px;
-}
-
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: #e5e7eb;
-}
-
-.guest-btn {
-  width: 100%;
-  color: #64748b;
-  font-size: 13px;
-  transition: color 0.2s;
-}
-
-.guest-btn:hover {
-  color: #2563eb;
-}
-
 @media (max-width: 900px) {
-  .login-shell {
+  .register-shell {
     flex-direction: column;
   }
 
@@ -700,6 +580,10 @@ body,
 
   .form-card {
     padding: 32px 24px;
+  }
+
+  .input-row {
+    grid-template-columns: 1fr;
   }
 }
 </style>

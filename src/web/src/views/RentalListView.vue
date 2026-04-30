@@ -35,8 +35,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import http from '@/api/http';
-import type { ApiResponse, RentalProduct } from '@/types/api';
+import { getRentals } from '@/api';
 
 const keyword = ref('');
 const duration = ref('');
@@ -58,10 +57,8 @@ const filteredProducts = computed(() =>
 async function loadRentals() {
   loading.value = true;
   try {
-    const response = await http.get<ApiResponse<RentalProduct[]>>('/rentals', {
-      params: {
-        duration: duration.value || undefined
-      }
+    const response = await getRentals({
+      duration: duration.value || undefined
     });
     if (response.data.success) {
       products.value = response.data.data;

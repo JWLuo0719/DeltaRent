@@ -18,7 +18,7 @@ const portalSummary = {
 };
 
 const rentals = [
-  {
+  {   
     id: 1001,
     name: '高战账号 A01',
     tag: '满配仓库',
@@ -135,6 +135,54 @@ const server = createServer(async (req, res) => {
 
     if (req.method === 'GET' && pathname === '/api/dashboard/overview') {
       sendJson(res, 200, ok(dashboardOverview));
+      return;
+    }
+
+    if (req.method === 'POST' && pathname === '/api/auth/register') {
+      const body = await parseBody(req);
+      if (!body.username || !body.password) {
+        sendJson(res, 400, fail('用户名和密码不能为空'));
+        return;
+      }
+      sendJson(
+        res,
+        200,
+        ok({
+          id: Math.floor(Math.random() * 10000) + 100,
+          username: body.username,
+          nickname: body.nickname || body.username,
+          role: 'USER'
+        }, '注册成功')
+      );
+      return;
+    }
+
+    if (req.method === 'POST' && pathname === '/api/auth/send-verify-code') {
+      const body = await parseBody(req);
+      if (!body.phone || !/^1[3-9]\d{9}$/.test(body.phone)) {
+        sendJson(res, 400, fail('请输入正确的手机号'));
+        return;
+      }
+      // 模拟发送验证码，3秒后生效（生产环境应调用短信网关）
+      setTimeout(() => {
+        console.log(`[mock] 验证码已发送到 ${body.phone}，类型: ${body.type || 'reset_password'}`);
+      }, 100);
+      sendJson(res, 200, ok(null, '验证码已发送'));
+      return;
+    }
+
+    if (req.method === 'POST' && pathname === '/api/auth/reset-password') {
+      const body = await parseBody(req);
+      if (!body.phone || !body.verifyCode || !body.newPassword) {
+        sendJson(res, 400, fail('参数不完整'));
+        return;
+      }
+      if (body.newPassword.length < 6) {
+        sendJson(res, 400, fail('密码长度不能少于6位'));
+        return;
+      }
+      // 模拟重置密码（生产环境应验证验证码并更新数据库）
+      sendJson(res, 200, ok(null, '密码重置成功'));
       return;
     }
 

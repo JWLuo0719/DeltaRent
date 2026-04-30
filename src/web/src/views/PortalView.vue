@@ -42,8 +42,7 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue';
 import { ElMessage } from 'element-plus';
-import http from '@/api/http';
-import type { ApiResponse, PortalSummary } from '@/types/api';
+import { getPortalSummary } from '@/api';
 
 const summary = reactive<PortalSummary>({
   heroTitle: '三角洲行动账号租赁管理系统',
@@ -55,7 +54,7 @@ const summary = reactive<PortalSummary>({
 
 async function loadSummary() {
   try {
-    const response = await http.get<ApiResponse<PortalSummary>>('/portal/summary');
+    const response = await getPortalSummary();
     if (response.data.success) {
       Object.assign(summary, response.data.data);
       return;
