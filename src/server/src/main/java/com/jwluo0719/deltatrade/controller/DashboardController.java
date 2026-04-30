@@ -1,69 +1,49 @@
 package com.jwluo0719.deltatrade.controller;
 
 import com.jwluo0719.deltatrade.common.ApiResponse;
-import com.jwluo0719.deltatrade.mapper.RentalOrderMapper;
-import com.jwluo0719.deltatrade.mapper.SysUserMapper;
+import com.jwluo0719.deltatrade.service.OrderService;
+import com.jwluo0719.deltatrade.service.UserService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+/**
+ * 后台管理看板控制器 — 展示核心运营指标、管理菜单入口和最近订单。
+ */
 @RestController
 @RequestMapping("/api/dashboard")
 public class DashboardController {
 
-    private final RentalOrderMapper rentalOrderMapper;
-    private final SysUserMapper sysUserMapper;
+    private final OrderService orderService;
+    private final UserService userService;
 
-    public DashboardController(RentalOrderMapper rentalOrderMapper, SysUserMapper sysUserMapper) {
-        this.rentalOrderMapper = rentalOrderMapper;
-        this.sysUserMapper = sysUserMapper;
+    public DashboardController(OrderService orderService, UserService userService) {
+        this.orderService = orderService;
+        this.userService = userService;
     }
 
+    /** 看板概览 — 待确认/进行中订单数、用户数、最近订单 */
     @GetMapping("/overview")
     public ApiResponse<Map<String, Object>> overview() {
-        Map<String, Object> result = new LinkedHashMap<String, Object>();
+        Map<String, Object> result = new LinkedHashMap<>();
         result.put("metrics", Arrays.asList(
-            metric("Waiting orders", String.valueOf(rentalOrderMapper.countByStatus("WAITING_CONFIRM"))),
-            metric("Running orders", String.valueOf(rentalOrderMapper.countByStatus("IN_PROGRESS"))),
-            metric("Users", String.valueOf(sysUserMapper.countAll()))
+                metric("待确认订单", orderService.countByStatus("WAITING_CONFIRM")),
+                metric("进行中订单", orderService.countByStatus("IN_PROGRESS")),
+                metric("注册用户数", userService.countAll())
         ));
-        result.put("menus", Arrays.asList("User Management", "Rental Products", "Rental Orders", "Appeals", "Notices", "Price Rules"));
-        result.put("recentOrders", recentOrders());
+        result.put("menus", Arrays.asList(
+                "用户管理", "账号管理", "租赁订单管理", "售后申诉管理", "公告管理", "价格规则管理"
+        ));
+        result.put("recentOrders", orderService.listRecent());
         return ApiResponse.success(result);
     }
 
-    private Map<String, Object> metric(String label, String value) {
-        Map<String, Object> item = new LinkedHashMap<String, Object>();
+    private Map<String, String> metric(String label, Object value) {
+        Map<String, String> item = new LinkedHashMap<>();
         item.put("label", label);
-        item.put("value", value);
-        return item;
-    }
-
-    private List<Map<String, Object>> recentOrders() {
-        List<Map<String, Object>> result = new ArrayList<Map<String, Object>>();
-        for (Map<String, Object> row : rentalOrderMapper.findRecent()) {
-            result.add(order(
-                String.valueOf(row.get("orderNo")),
-                String.valueOf(row.get("username")),
-                String.valueOf(row.get("productName")),
-                String.valueOf(row.get("status"))
-            ));
-        }
-        return result;
-    }
-
-    private Map<String, Object> order(String orderNo, String user, String itemName, String status) {
-        Map<String, Object> item = new LinkedHashMap<String, Object>();
-        item.put("orderNo", orderNo);
-        item.put("user", user);
-        item.put("item", itemName);
-        item.put("status", status);
+        item.put("value", String.valueOf(value));
         return item;
     }
 }

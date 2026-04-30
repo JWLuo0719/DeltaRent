@@ -79,6 +79,9 @@ public class UserService {
         return user;
     }
 
+    /** 统计用户总数 */
+    public long countAll() { return sysUserMapper.countAll(); }
+
     /** 管理员 — 查看全部用户 */
     public List<SysUser> listAll() {
         return sysUserMapper.findAll();

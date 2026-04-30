@@ -86,6 +86,15 @@ public class OrderService {
         orderMapper.updateStatus(orderId, targetStatus);
     }
 
+    /** 统计全部订单数 */
+    public long countAll() { return orderMapper.countAll(); }
+
+    /** 按状态统计订单数 */
+    public long countByStatus(String status) { return orderMapper.countByStatus(status); }
+
+    /** 最近订单列表（看板用） */
+    public List<Map<String, Object>> listRecent() { return orderMapper.findRecent(); }
+
     /** 判断状态流转是否合法 */
     private boolean isValidTransition(String from, String to) {
         if ("CANCELLED".equals(to) && !"COMPLETED".equals(from) && !"CANCELLED".equals(from)) {

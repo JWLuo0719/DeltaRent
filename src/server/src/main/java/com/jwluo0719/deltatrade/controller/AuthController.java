@@ -1,59 +1,49 @@
 package com.jwluo0719.deltatrade.controller;
 
 import com.jwluo0719.deltatrade.common.ApiResponse;
-import com.jwluo0719.deltatrade.domain.SysUser;
-import com.jwluo0719.deltatrade.mapper.SysUserMapper;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.jwluo0719.deltatrade.service.UserService;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * 认证控制器 — 负责用户登录和注册。
+ */
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final SysUserMapper sysUserMapper;
-    private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
-    public AuthController(SysUserMapper sysUserMapper, PasswordEncoder passwordEncoder) {
-        this.sysUserMapper = sysUserMapper;
-        this.passwordEncoder = passwordEncoder;
+    public AuthController(UserService userService) {
+        this.userService = userService;
     }
 
+    /** 登录 — 校验用户名密码，返回 JWT 令牌 */
     @PostMapping("/login")
     public ApiResponse<Map<String, Object>> login(@RequestBody Map<String, Object> payload) {
-        String username = String.valueOf(payload.getOrDefault("username", ""));
-        String password = String.valueOf(payload.getOrDefault("password", ""));
-
-        if (username.isBlank() || password.isBlank()) {
-            return ApiResponse.fail("Username and password are required");
+        try {
+            String username = String.valueOf(payload.getOrDefault("username", ""));
+            String password = String.valueOf(payload.getOrDefault("password", ""));
+            Map<String, Object> result = userService.login(username, password);
+            return ApiResponse.success("登录成功", result);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.fail(e.getMessage());
         }
+    }
 
-        SysUser userRecord = sysUserMapper.findByUsername(username);
-        if (userRecord == null || userRecord.getStatus() == null || userRecord.getStatus() != 1) {
-            return ApiResponse.fail("Invalid username or password");
+    /** 注册 — 创建新用户 */
+    @PostMapping("/register")
+    public ApiResponse<Map<String, Object>> register(@RequestBody Map<String, Object> payload) {
+        try {
+            String username = String.valueOf(payload.getOrDefault("username", ""));
+            String password = String.valueOf(payload.getOrDefault("password", ""));
+            String nickname = String.valueOf(payload.getOrDefault("nickname", ""));
+            String phone = String.valueOf(payload.getOrDefault("phone", ""));
+            userService.register(username, password, nickname, phone);
+            return ApiResponse.success("注册成功", null);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.fail(e.getMessage());
         }
-
-        String savedPassword = userRecord.getPasswordHash();
-        boolean passwordOk = savedPassword != null
-            && (savedPassword.equals(password) || (savedPassword.startsWith("$2") && passwordEncoder.matches(password, savedPassword)));
-        if (!passwordOk) {
-            return ApiResponse.fail("Invalid username or password");
-        }
-
-        Map<String, Object> user = new LinkedHashMap<String, Object>();
-        user.put("id", userRecord.getId());
-        user.put("username", userRecord.getUsername());
-        user.put("displayName", userRecord.getNickname());
-        user.put("role", "ADMIN");
-
-        Map<String, Object> result = new LinkedHashMap<String, Object>();
-        result.put("token", "java-backend-demo-token-" + userRecord.getId());
-        result.put("user", user);
-        return ApiResponse.success("Login success", result);
     }
 }
