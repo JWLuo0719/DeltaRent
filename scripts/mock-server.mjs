@@ -140,8 +140,8 @@ const server = createServer(async (req, res) => {
 
     if (req.method === 'POST' && pathname === '/api/auth/register') {
       const body = await parseBody(req);
-      if (!body.username || !body.password) {
-        sendJson(res, 400, fail('用户名和密码不能为空'));
+      if (!body.phone || !body.password) {
+        sendJson(res, 400, fail('手机号和密码不能为空'));
         return;
       }
       sendJson(
@@ -149,8 +149,7 @@ const server = createServer(async (req, res) => {
         200,
         ok({
           id: Math.floor(Math.random() * 10000) + 100,
-          username: body.username,
-          nickname: body.nickname || body.username,
+          nickname: body.nickname || body.phone,
           role: 'USER'
         }, '注册成功')
       );
@@ -188,19 +187,14 @@ const server = createServer(async (req, res) => {
 
     if (req.method === 'POST' && pathname === '/api/auth/login') {
       const body = await parseBody(req);
-      sendJson(
-        res,
-        200,
-        ok({
-          token: 'mock-token-20260423',
-          user: {
-            id: 1,
-            username: body.username || 'demo_user',
-            displayName: '课程演示账号',
-            role: 'ADMIN'
-          }
-        }, '登录成功')
-      );
+      // 根据手机号返回不同角色，方便前端测试权限
+      const roleMap = {
+        '13800000000': { id: 1, displayName: 'Admin Demo User', role: 'ADMIN' },
+        '13900000000': { id: 2, displayName: 'CS Demo User', role: 'CS' },
+        '13700000000': { id: 3, displayName: 'User Demo', role: 'USER' }
+      };
+      const user = roleMap[body.phone] || { id: 99, displayName: '匿名用户', role: 'USER' };
+      sendJson(res, 200, ok({ token: `mock-token-${body.phone}`, user }, '登录成功'));
       return;
     }
 
