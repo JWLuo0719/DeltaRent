@@ -21,10 +21,9 @@ export function login(data: LoginPayload) {
 
 /** POST /api/auth/register */
 export function register(data: {
-  username: string;
+  phone: string;
   password: string;
   nickname?: string;
-  phone?: string;
 }) {
   return http.post<ApiResponse<void>>('/auth/register', data);
 }

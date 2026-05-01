@@ -68,10 +68,10 @@
 
         <el-form label-position="top" @submit.prevent="handleRegister">
           <div class="input-group">
-            <label>用户名</label>
+            <label>手机号</label>
             <el-input
-              v-model="form.username"
-              placeholder="请输入用户名"
+              v-model="form.phone"
+              placeholder="用于登录"
               size="large"
               @keyup.enter="handleRegister"
             />
@@ -102,25 +102,14 @@
             </div>
           </div>
 
-          <div class="input-row">
-            <div class="input-group">
-              <label>昵称（选填）</label>
-              <el-input
-                v-model="form.nickname"
-                placeholder="显示名称"
-                size="large"
-                @keyup.enter="handleRegister"
-              />
-            </div>
-            <div class="input-group">
-              <label>手机号（选填）</label>
-              <el-input
-                v-model="form.phone"
-                placeholder="联系方式"
-                size="large"
-                @keyup.enter="handleRegister"
-              />
-            </div>
+          <div class="input-group">
+            <label>昵称（选填）</label>
+            <el-input
+              v-model="form.nickname"
+              placeholder="显示名称"
+              size="large"
+              @keyup.enter="handleRegister"
+            />
           </div>
 
           <el-button
@@ -154,18 +143,21 @@ const canvasRef = ref<HTMLCanvasElement | null>(null);
 let animationId: number | null = null;
 
 const form = reactive({
-  username: '',
+  phone: '',
   password: '',
   confirmPassword: '',
-  nickname: '',
-  phone: ''
+  nickname: ''
 });
 
 const submitting = ref(false);
 
 async function handleRegister() {
-  if (!form.username.trim()) {
-    ElMessage.warning('请输入用户名');
+  if (!form.phone.trim()) {
+    ElMessage.warning('请输入手机号');
+    return;
+  }
+  if (!/^1[3-9]\d{9}$/.test(form.phone)) {
+    ElMessage.warning('请输入正确的手机号');
     return;
   }
   if (!form.password) {
@@ -184,14 +176,13 @@ async function handleRegister() {
   submitting.value = true;
   try {
     const response = await register({
-      username: form.username.trim(),
+      phone: form.phone.trim(),
       password: form.password,
-      nickname: form.nickname.trim() || undefined,
-      phone: form.phone.trim() || undefined
+      nickname: form.nickname.trim() || undefined
     });
     if (response.data.success) {
       ElMessage.success('注册成功，请登录');
-      sessionStorage.setItem('prefill_username', form.username.trim());
+      localStorage.setItem('remembered_phone', form.phone.trim());
       router.push('/login');
       return;
     }
