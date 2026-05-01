@@ -76,3 +76,14 @@ export interface CreateOrderResult {
   status: string;
   estimatedDelivery: string;
 }
+
+export interface SendVerifyCodePayload {
+  phone: string;
+  type: 'reset_password' | 'register' | 'login';
+}
+
+export interface ResetPasswordPayload {
+  phone: string;
+  verifyCode: string;
+  newPassword: string;
+}

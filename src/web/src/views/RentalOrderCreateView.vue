@@ -47,8 +47,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
 import { ElMessage } from 'element-plus';
-import http from '@/api/http';
-import type { ApiResponse, CreateOrderPayload, CreateOrderResult } from '@/types/api';
+import { createOrder } from '@/api';
 
 const form = reactive<CreateOrderPayload>({
   accountId: 1001,
@@ -68,7 +67,7 @@ async function submitOrder() {
 
   submitting.value = true;
   try {
-    const response = await http.post<ApiResponse<CreateOrderResult>>('/orders', form);
+    const response = await createOrder(form);
     if (response.data.success) {
       const result = response.data.data;
       resultMessage.value = `订单 ${result.orderNo} 已创建，状态：${result.status}，${result.estimatedDelivery}`;

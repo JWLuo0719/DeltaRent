@@ -37,8 +37,7 @@
 <script setup lang="ts">
 import { onMounted, reactive } from 'vue';
 import { ElMessage } from 'element-plus';
-import http from '@/api/http';
-import type { ApiResponse, DashboardOverview } from '@/types/api';
+import { getDashboardOverview } from '@/api';
 
 const overview = reactive<DashboardOverview>({
   metrics: [],
@@ -48,7 +47,7 @@ const overview = reactive<DashboardOverview>({
 
 async function loadOverview() {
   try {
-    const response = await http.get<ApiResponse<DashboardOverview>>('/dashboard/overview');
+    const response = await getDashboardOverview();
     if (response.data.success) {
       Object.assign(overview, response.data.data);
       return;

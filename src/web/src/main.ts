@@ -6,9 +6,12 @@ import App from './App.vue';
 import router from './router';
 import './styles/index.css';
 
-const app = createApp(App);
+const app = createApp(App); // 创建 Vue 应用实例
 
-app.use(createPinia());
-app.use(router);
+//安装插件
+app.use(createPinia());  
+app.use(router);    
 app.use(ElementPlus);
+
+//挂载应用
 app.mount('#app');
