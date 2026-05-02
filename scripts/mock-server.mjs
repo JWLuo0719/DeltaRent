@@ -6,7 +6,7 @@ const portalSummary = {
   heroTitle: '三角洲行动账号租赁管理系统',
   heroSubtitle: '一期先跑通账号展示、下单、订单状态和后台看板，确保课程项目可演示、可联调、可扩展。',
   metrics: [
-    { label: '在线可租账号', value: '18' },
+    { label: '在线可租账号', value: '3' },
     { label: '今日新增订单', value: '12' },
     { label: '订单完成率', value: '97.4%' }
   ],
@@ -18,35 +18,41 @@ const portalSummary = {
 };
 
 const rentals = [
-  {   
+  {
     id: 1001,
     name: '高战账号 A01',
-    tag: '满配仓库',
-    price: '￥28 / 小时',
-    status: '可租',
-    coinAmount: '1200万哈夫币',
-    equipmentLevel: '六套毕业装',
-    warehouseValue: '高价值仓库'
+    category: 'premium',
+    tagText: '满配仓库,稀有外观',
+    hourPrice: 28,
+    coinAmountText: '1200万哈夫币',
+    equipmentLevelText: '六套毕业装',
+    warehouseValueText: '高价值仓库',
+    status: 'AVAILABLE',
+    description: '顶级作战账号，仓库满配，稀有外观齐全，适合高强度对局。'
   },
   {
     id: 1002,
     name: '活动账号 B02',
-    tag: '稀有外观',
-    price: '￥18 / 小时',
-    status: '可租',
-    coinAmount: '340万哈夫币',
-    equipmentLevel: '中高配作战装',
-    warehouseValue: '活动收藏资源'
+    category: 'event',
+    tagText: '稀有外观,活动道具',
+    hourPrice: 18,
+    coinAmountText: '340万哈夫币',
+    equipmentLevelText: '中高配作战装',
+    warehouseValueText: '活动收藏资源',
+    status: 'AVAILABLE',
+    description: '包含多种限定活动道具，外观收藏价值高，适合休闲体验。'
   },
   {
     id: 1003,
     name: '新手体验号 C03',
-    tag: '新手试用',
-    price: '￥9 / 小时',
-    status: '维护中',
-    coinAmount: '80万哈夫币',
-    equipmentLevel: '基础装备',
-    warehouseValue: '入门资源'
+    category: 'trial',
+    tagText: '新手试用',
+    hourPrice: 9,
+    coinAmountText: '80万哈夫币',
+    equipmentLevelText: '基础装备',
+    warehouseValueText: '入门资源',
+    status: 'MAINTENANCE',
+    description: '新手入门体验账号，适合首次体验租赁流程，配置基础。'
   }
 ];
 

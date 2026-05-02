@@ -46,12 +46,15 @@
 
 <script setup lang="ts">
 import { reactive, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { createOrder } from '@/api';
 import type { CreateOrderPayload } from '@/types/api';
 
+const route = useRoute();
+
 const form = reactive<CreateOrderPayload>({
-  accountId: 1001,
+  accountId: Number(route.query.accountId) || 1001,
   rentHours: 1,
   contactInfo: '',
   remark: ''

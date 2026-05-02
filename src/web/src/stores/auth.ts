@@ -19,6 +19,13 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('auth_user');
   }
 
+  // 启动校验：若 token 无效，清除残留状态
+  function validateAuth() {
+    if (token.value && (!user.value || !user.value.id)) {
+      logout();
+    }
+  }
+
   const isLoggedIn = computed(() => !!token.value && !!user.value);
   const isAdmin = computed(() => user.value?.role === 'ADMIN');
   const isCS = computed(() => user.value?.role === 'CS');
@@ -46,6 +53,7 @@ export const useAuthStore = defineStore('auth', () => {
     isCS,
     isUser,
     setAuth,
-    logout
+    logout,
+    validateAuth
   };
 });

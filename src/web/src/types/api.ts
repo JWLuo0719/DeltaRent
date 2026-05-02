@@ -26,12 +26,20 @@ export interface PortalSummary {
 export interface RentalProduct {
   id: number;
   name: string;
-  tag: string;
-  price: string;
-  status: string;
-  coinAmount: string;
-  equipmentLevel: string;
-  warehouseValue: string;
+  category: string;
+  tagText: string;
+  hourPrice: number;
+  coinAmountText: string;
+  equipmentLevelText: string;
+  warehouseValueText: string;
+  status: 'AVAILABLE' | 'RENTED' | 'MAINTENANCE' | string;
+  description: string;
+  isHot?: boolean;
+}
+
+export interface AccountDetail extends RentalProduct {
+  imageUrls: string[];
+  availableDurations: number[];
 }
 
 export interface DashboardOrder {
@@ -85,4 +93,9 @@ export interface ResetPasswordPayload {
   phone: string;
   verifyCode: string;
   newPassword: string;
+}
+
+export interface FaqItem {
+  question: string;
+  answer: string;
 }
