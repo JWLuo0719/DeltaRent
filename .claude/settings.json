@@ -1,7 +1,21 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(curl -s http://localhost:5173/)",
+      "Bash(curl -s http://localhost:8080/api/health)",
+      "Bash(curl -s http://localhost:8080/api/rentals)",
+      "Bash(python3 -m json.tool)",
+      "Bash(node -e \"console.log\\(require\\('fs'\\).readFileSync\\('d:/Project/DeltaRent/src/web/src/main.ts', 'utf8'\\)\\)\")",
+      "Bash(npx vue-tsc *)",
+      "Bash(curl -s http://localhost:5180/ -o /dev/null -w \"%{http_code}\")",
+      "WebFetch(domain:www.zxfps.com)",
+      "WebFetch(domain:www.mddjclub.com)",
+      "WebFetch(domain:hbwl9.com)",
+      "WebSearch"
+    ],
     "additionalDirectories": [
-      "D:\\"
+      "D:\\",
+      "d:\\Project\\DeltaRent\\src\\web\\src\\mock"
     ]
   }
 }
