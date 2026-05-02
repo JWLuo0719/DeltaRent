@@ -5,7 +5,20 @@
       "Bash(taskkill //PID 33304 //F)",
       "Bash(node scripts/mock-server.mjs)",
       "Bash(taskkill //PID 47280 //F)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(node -e \"const bcrypt = require\\('bcryptjs'\\); console.log\\(bcrypt.hashSync\\('123456', 10\\)\\);\")",
+      "Bash(npm install *)",
+      "Bash(python -c ' *)",
+      "Read(//c/Program Files/MySQL/MySQL Server 8.0/bin/**)",
+      "Read(//c/Program Files/MySQL/MySQL Server 8.1/bin/**)",
+      "Read(//c/Program Files/MySQL/MySQL Server 8.2/bin/**)",
+      "Read(//c/Program Files/**)",
+      "Read(//c/Program Files/MySQL/**)",
+      "Bash(where.exe mysql *)",
+      "Read(//c/Users/Lenovo/**)",
+      "Bash(\"C:/Program Files/MySQL/MySQL Server 9.7/bin/mysql.exe\" -u root -e \"SELECT VERSION\\(\\);\")",
+      "Read(//Users/**)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5176/)"
     ]
   }
 }

@@ -68,10 +68,10 @@
 
         <el-form label-position="top" @submit.prevent="handleLogin">
           <div class="input-group">
-            <label>用户名</label>
+            <label>手机号</label>
             <el-input
-              v-model="form.username"
-              placeholder="请输入用户名"
+              v-model="form.phone"
+              placeholder="请输入手机号"
               size="large"
               @keyup.enter="handleLogin"
             />
@@ -114,7 +114,7 @@
           <span>或者</span>
         </div>
 
-        <el-button text size="large" class="guest-btn" @click="$router.push('/')">
+        <el-button text size="large" class="guest-btn" @click="$router.push('/home')">
           游客访问 →
         </el-button>
       </div>
@@ -171,21 +171,22 @@ import { reactive, ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { login, sendVerifyCode as sendVerifyCodeApi, resetPassword as resetPasswordApi } from '@/api';
+import { useAuthStore } from '@/stores/auth';
 import type { LoginPayload } from '@/types/api';
 
 const router = useRouter();
+const auth = useAuthStore();
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 let animationId: number | null = null;
 
 const submitting = ref(false);
-const rememberMe = ref(!!localStorage.getItem('remembered_username'));
+const rememberMe = ref(!!localStorage.getItem('remembered_phone'));
 
 const form = reactive<LoginPayload>({
-  username: sessionStorage.getItem('prefill_username') || localStorage.getItem('remembered_username') || '',
+  phone: localStorage.getItem('remembered_phone') || '',
   password: ''
 });
 
-sessionStorage.removeItem('prefill_username');
 
 const forgetForm = reactive({
   phone: '',
@@ -198,8 +199,12 @@ const verifyCountdown = ref(0);
 let countdownTimer: number | null = null;
 
 async function handleLogin() {
-  if (!form.username || !form.password) {
-    ElMessage.warning('请输入用户名和密码');
+  if (!form.phone || !form.password) {
+    ElMessage.warning('请输入手机号和密码');
+    return;
+  }
+  if (!/^1[3-9]\d{9}$/.test(form.phone)) {
+    ElMessage.warning('请输入正确的手机号');
     return;
   }
 
@@ -208,15 +213,18 @@ async function handleLogin() {
     const response = await login(form);
     if (response.data.success) {
       const result = response.data.data;
-      localStorage.setItem('mock_token', result.token);
-      localStorage.setItem('mock_user', JSON.stringify(result.user));
+      // 同步到 auth store（role 类型断言）
+      auth.setAuth(result.token, {
+        ...result.user,
+        role: result.user.role as 'ADMIN' | 'USER' | 'CS'
+      });
       if (rememberMe.value) {
-        localStorage.setItem('remembered_username', form.username);
+        localStorage.setItem('remembered_phone', form.phone);
       } else {
-        localStorage.removeItem('remembered_username');
+        localStorage.removeItem('remembered_phone');
       }
       ElMessage.success(`欢迎回来，${result.user.displayName}`);
-      router.push('/');
+      router.push('/home');
       return;
     }
     ElMessage.error(response.data.message || '登录失败');
@@ -373,6 +381,9 @@ function animateParticles(canvas: HTMLCanvasElement, particles: Particle[]) {
   animationId = requestAnimationFrame(() => animateParticles(canvas, particles));
 }
 
+const particles: Particle[] = [];
+let handleResize: (() => void) | null = null;
+
 onMounted(() => {
   const canvas = canvasRef.value;
   if (!canvas) return;
@@ -380,23 +391,22 @@ onMounted(() => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  const particles: Particle[] = [];
   initParticles(canvas, particles);
   animateParticles(canvas, particles);
 
-  const handleResize = () => {
+  handleResize = () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     particles.length = 0;
     initParticles(canvas, particles);
   };
   window.addEventListener('resize', handleResize);
+});
 
-  onUnmounted(() => {
-    if (animationId) cancelAnimationFrame(animationId);
-    if (countdownTimer) clearInterval(countdownTimer);
-    window.removeEventListener('resize', handleResize);
-  });
+onUnmounted(() => {
+  if (animationId) cancelAnimationFrame(animationId);
+  if (countdownTimer) clearInterval(countdownTimer);
+  if (handleResize) window.removeEventListener('resize', handleResize);
 });
 </script>
 

@@ -19,6 +19,8 @@
   "devDependencies": {
     "@types/node": "^22.14.1",
     "@vitejs/plugin-vue": "^5.2.3",
+    "bcryptjs": "^3.0.3",
+    "mockjs": "^1.1.0",
     "typescript": "^5.8.3",
     "vite": "^6.3.5",
     "vue-tsc": "^2.2.8"

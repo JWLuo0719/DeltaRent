@@ -21,10 +21,9 @@ export function login(data: LoginPayload) {
 
 /** POST /api/auth/register */
 export function register(data: {
-  username: string;
+  phone: string;
   password: string;
   nickname?: string;
-  phone?: string;
 }) {
   return http.post<ApiResponse<void>>('/auth/register', data);
 }
@@ -49,7 +48,15 @@ export function getPortalSummary() {
 // ==================== 账号产品 ====================
 
 /** GET /api/rentals */
-export function getRentals(params?: { duration?: string }) {
+export function getRentals(params?: {
+  keyword?: string;
+  tags?: string;
+  level?: string;
+  status?: string;
+  sortBy?: string;
+  page?: number;
+  pageSize?: number;
+}) {
   return http.get<ApiResponse<RentalProduct[]>>('/rentals', { params });
 }
 
