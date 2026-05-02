@@ -21,8 +21,8 @@ import java.util.Collections;
  */
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    // 不需要认证即可访问的接口路径前缀
-    private static final String[] PUBLIC_PATHS = {
+    // 不需要认证即可访问的接口路径前缀（仅 GET 对 rentals/notices 公开）
+    private static final String[] PUBLIC_PATH_PREFIXES = {
             "/api/health",
             "/api/auth/",
             "/api/portal/"
@@ -35,7 +35,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         // 公开接口直接放行，不校验令牌
-        if (isPublicPath(path)) {
+        if (isPublicRequest(request, path)) {
             chain.doFilter(request, response);
             return;
         }
@@ -62,10 +62,16 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         chain.doFilter(request, response);
     }
 
-    /** 判断请求路径是否为公开接口 */
-    private boolean isPublicPath(String path) {
-        for (String prefix : PUBLIC_PATHS) {
+    /** 公开接口直接放行，GET 请求的 rentals/notices 也公开 */
+    private boolean isPublicRequest(HttpServletRequest request, String path) {
+        for (String prefix : PUBLIC_PATH_PREFIXES) {
             if (path.startsWith(prefix)) {
+                return true;
+            }
+        }
+        // GET 方式的商品和公告读接口公开
+        if ("GET".equalsIgnoreCase(request.getMethod())) {
+            if (path.startsWith("/api/rentals") || path.startsWith("/api/notices")) {
                 return true;
             }
         }
