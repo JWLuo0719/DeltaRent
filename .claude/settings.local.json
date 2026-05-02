@@ -16,7 +16,9 @@
       "Read(//c/Program Files/MySQL/**)",
       "Bash(where.exe mysql *)",
       "Read(//c/Users/Lenovo/**)",
-      "Bash(\"C:/Program Files/MySQL/MySQL Server 9.7/bin/mysql.exe\" -u root -e \"SELECT VERSION\\(\\);\")"
+      "Bash(\"C:/Program Files/MySQL/MySQL Server 9.7/bin/mysql.exe\" -u root -e \"SELECT VERSION\\(\\);\")",
+      "Read(//Users/**)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5176/)"
     ]
   }
 }

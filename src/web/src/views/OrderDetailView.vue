@@ -23,7 +23,7 @@
         <h3>订单进度</h3>
         <el-timeline>
           <el-timeline-item
-            v-for="(event, index) in order.events"
+            v-for="(event, index) in order.events ?? []"
             :key="index"
             :timestamp="event.time"
             :type="index === 0 ? 'primary' : ''"

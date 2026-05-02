@@ -36,6 +36,7 @@
 import { computed, onMounted, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { getRentals } from '@/api';
+import type { RentalProduct } from '@/types/api';
 
 const keyword = ref('');
 const duration = ref('');

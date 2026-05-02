@@ -276,6 +276,9 @@ function animateParticles(canvas: HTMLCanvasElement, particles: Particle[]) {
   animationId = requestAnimationFrame(() => animateParticles(canvas, particles));
 }
 
+const particles: Particle[] = [];
+let handleResize: (() => void) | null = null;
+
 onMounted(() => {
   const canvas = canvasRef.value;
   if (!canvas) return;
@@ -283,22 +286,21 @@ onMounted(() => {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
-  const particles: Particle[] = [];
   initParticles(canvas, particles);
   animateParticles(canvas, particles);
 
-  const handleResize = () => {
+  handleResize = () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     particles.length = 0;
     initParticles(canvas, particles);
   };
   window.addEventListener('resize', handleResize);
+});
 
-  onUnmounted(() => {
-    if (animationId) cancelAnimationFrame(animationId);
-    window.removeEventListener('resize', handleResize);
-  });
+onUnmounted(() => {
+  if (animationId) cancelAnimationFrame(animationId);
+  if (handleResize) window.removeEventListener('resize', handleResize);
 });
 </script>
 

@@ -80,7 +80,7 @@ const router = createRouter({
 // 路由守卫
 router.beforeEach((to, from, next) => {
   const auth = useAuthStore();
-  const { requireAuth, roles } = to.meta;
+  const { requireAuth, roles } = to.meta as { requireAuth?: boolean; roles?: string[] };
 
   // 白名单：公开页面直接放行
   if (!requireAuth) {
