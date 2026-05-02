@@ -14,7 +14,8 @@ import java.util.List;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(RentalController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -28,33 +29,34 @@ class RentalControllerTest {
 
     @Test
     void list_shouldReturnProducts() throws Exception {
-        RentalProduct p = new RentalProduct();
-        p.setId(1001L);
-        p.setName("Test Product");
-        p.setCategory("premium");
-        p.setTagText("tag");
-        p.setHourPrice(new BigDecimal("18.00"));
-        p.setCoinAmountText("1000 coins");
-        p.setEquipmentLevelText("Advanced");
-        p.setWarehouseValueText("High");
-        p.setStatus("AVAILABLE");
-        when(productService.listAll()).thenReturn(List.of(p));
+        RentalProduct product = new RentalProduct();
+        product.setId(1001L);
+        product.setName("Test Product");
+        product.setCategory("premium");
+        product.setTagText("tag");
+        product.setHourPrice(new BigDecimal("18.00"));
+        product.setCoinAmountText("1000 coins");
+        product.setEquipmentLevelText("Advanced");
+        product.setWarehouseValueText("High");
+        product.setStatus("AVAILABLE");
+        when(productService.listForBrowse(null, null, null, null)).thenReturn(List.of(product));
 
         mockMvc.perform(get("/api/rentals"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data[0].name").value("Test Product"))
+                .andExpect(jsonPath("$.data[0].tagText").value("tag"))
                 .andExpect(jsonPath("$.data[0].status").value("AVAILABLE"));
     }
 
     @Test
     void detail_shouldReturnProduct_whenFound() throws Exception {
-        RentalProduct p = new RentalProduct();
-        p.setId(1001L);
-        p.setName("Test Product");
-        p.setHourPrice(new BigDecimal("18.00"));
-        p.setStatus("AVAILABLE");
-        when(productService.getById(1001L)).thenReturn(p);
+        RentalProduct product = new RentalProduct();
+        product.setId(1001L);
+        product.setName("Test Product");
+        product.setHourPrice(new BigDecimal("18.00"));
+        product.setStatus("AVAILABLE");
+        when(productService.getById(1001L)).thenReturn(product);
 
         mockMvc.perform(get("/api/rentals/1001"))
                 .andExpect(status().isOk())

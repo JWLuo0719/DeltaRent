@@ -3,14 +3,22 @@ package com.jwluo0719.deltatrade.controller;
 import com.jwluo0719.deltatrade.common.ApiResponse;
 import com.jwluo0719.deltatrade.domain.RentalProduct;
 import com.jwluo0719.deltatrade.service.ProductService;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-/**
- * 租赁商品控制器 — 前台展示 + 后台管理 CRUD。
- */
 @RestController
 @RequestMapping("/api/rentals")
 public class RentalController {
@@ -21,93 +29,99 @@ public class RentalController {
         this.productService = productService;
     }
 
-    /** 前台 — 列出全部商品 */
     @GetMapping
-    public ApiResponse<List<Map<String, Object>>> list() {
+    public ApiResponse<List<Map<String, Object>>> list(@RequestParam(required = false) String keyword,
+                                                       @RequestParam(required = false) String status,
+                                                       @RequestParam(required = false) String tags,
+                                                       @RequestParam(required = false) String sortBy) {
         List<Map<String, Object>> result = new ArrayList<>();
-        for (RentalProduct p : productService.listAll()) {
-            result.add(toView(p));
+        for (RentalProduct product : productService.listForBrowse(keyword, status, tags, sortBy)) {
+            result.add(toView(product));
         }
         return ApiResponse.success(result);
     }
 
-    /** 查看单个商品详情 */
     @GetMapping("/{id}")
     public ApiResponse<Map<String, Object>> detail(@PathVariable Long id) {
-        RentalProduct p = productService.getById(id);
-        if (p == null) return ApiResponse.fail("商品不存在");
-        return ApiResponse.success(toView(p));
+        RentalProduct product = productService.getById(id);
+        if (product == null) return ApiResponse.fail("鍟嗗搧涓嶅瓨鍦?");
+        return ApiResponse.success(toView(product));
     }
 
-    /** 管理员 — 新增商品 */
     @PostMapping
     public ApiResponse<Map<String, Object>> create(@RequestBody Map<String, Object> payload) {
         try {
-            RentalProduct p = new RentalProduct();
-            p.setName(String.valueOf(payload.getOrDefault("name", "")));
-            p.setCategory(String.valueOf(payload.getOrDefault("category", "")));
-            p.setTagText(String.valueOf(payload.getOrDefault("tagText", "")));
-            p.setHourPrice(new BigDecimal(String.valueOf(payload.getOrDefault("hourPrice", "0"))));
-            p.setCoinAmountText(String.valueOf(payload.getOrDefault("coinAmountText", "")));
-            p.setEquipmentLevelText(String.valueOf(payload.getOrDefault("equipmentLevelText", "")));
-            p.setWarehouseValueText(String.valueOf(payload.getOrDefault("warehouseValueText", "")));
-            p.setStatus(String.valueOf(payload.getOrDefault("status", "AVAILABLE")));
-            p.setDescription(String.valueOf(payload.getOrDefault("description", "")));
-            productService.create(p);
-            return ApiResponse.success("创建成功", toView(p));
+            RentalProduct product = new RentalProduct();
+            product.setName(String.valueOf(payload.getOrDefault("name", "")));
+            product.setCategory(String.valueOf(payload.getOrDefault("category", "")));
+            product.setTagText(String.valueOf(payload.getOrDefault("tagText", "")));
+            product.setHourPrice(new BigDecimal(String.valueOf(payload.getOrDefault("hourPrice", "0"))));
+            product.setCoinAmountText(String.valueOf(payload.getOrDefault("coinAmountText", "")));
+            product.setEquipmentLevelText(String.valueOf(payload.getOrDefault("equipmentLevelText", "")));
+            product.setWarehouseValueText(String.valueOf(payload.getOrDefault("warehouseValueText", "")));
+            product.setStatus(String.valueOf(payload.getOrDefault("status", "AVAILABLE")));
+            product.setDescription(String.valueOf(payload.getOrDefault("description", "")));
+            productService.create(product);
+            return ApiResponse.success("鍒涘缓鎴愬姛", toView(product));
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }
     }
 
-    /** 管理员 — 更新商品 */
     @PutMapping("/{id}")
     public ApiResponse<?> update(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
         try {
-            RentalProduct p = new RentalProduct();
-            p.setId(id);
-            p.setName(String.valueOf(payload.getOrDefault("name", "")));
-            p.setCategory(String.valueOf(payload.getOrDefault("category", "")));
-            p.setTagText(String.valueOf(payload.getOrDefault("tagText", "")));
-            p.setHourPrice(new BigDecimal(String.valueOf(payload.getOrDefault("hourPrice", "0"))));
-            p.setCoinAmountText(String.valueOf(payload.getOrDefault("coinAmountText", "")));
-            p.setEquipmentLevelText(String.valueOf(payload.getOrDefault("equipmentLevelText", "")));
-            p.setWarehouseValueText(String.valueOf(payload.getOrDefault("warehouseValueText", "")));
-            p.setStatus(String.valueOf(payload.getOrDefault("status", "AVAILABLE")));
-            p.setDescription(String.valueOf(payload.getOrDefault("description", "")));
-            productService.update(p);
-            return ApiResponse.success("更新成功", null);
+            RentalProduct product = new RentalProduct();
+            product.setId(id);
+            product.setName(String.valueOf(payload.getOrDefault("name", "")));
+            product.setCategory(String.valueOf(payload.getOrDefault("category", "")));
+            product.setTagText(String.valueOf(payload.getOrDefault("tagText", "")));
+            product.setHourPrice(new BigDecimal(String.valueOf(payload.getOrDefault("hourPrice", "0"))));
+            product.setCoinAmountText(String.valueOf(payload.getOrDefault("coinAmountText", "")));
+            product.setEquipmentLevelText(String.valueOf(payload.getOrDefault("equipmentLevelText", "")));
+            product.setWarehouseValueText(String.valueOf(payload.getOrDefault("warehouseValueText", "")));
+            product.setStatus(String.valueOf(payload.getOrDefault("status", "AVAILABLE")));
+            product.setDescription(String.valueOf(payload.getOrDefault("description", "")));
+            productService.update(product);
+            return ApiResponse.success("鏇存柊鎴愬姛", null);
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }
     }
 
-    /** 管理员 — 删除商品 */
     @DeleteMapping("/{id}")
     public ApiResponse<?> delete(@PathVariable Long id) {
         productService.delete(id);
-        return ApiResponse.success("删除成功", null);
+        return ApiResponse.success("鍒犻櫎鎴愬姛", null);
     }
 
-    /** 管理员 — 更改商品状态（上架/下架/维护） */
     @PutMapping("/{id}/status")
     public ApiResponse<?> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> payload) {
         String status = payload.getOrDefault("status", "AVAILABLE");
         productService.updateStatus(id, status);
-        return ApiResponse.success("状态更新成功", null);
+        return ApiResponse.success("鐘舵€佹洿鏂版垚鍔?", null);
     }
 
-    /** 将领域对象转为前端视图格式 */
-    private Map<String, Object> toView(RentalProduct p) {
+    private Map<String, Object> toView(RentalProduct product) {
         Map<String, Object> item = new LinkedHashMap<>();
-        item.put("id", p.getId());
-        item.put("name", p.getName());
-        item.put("tag", p.getTagText());
-        item.put("price", p.getHourPrice() + " / 小时");
-        item.put("status", p.getStatus());
-        item.put("coinAmount", p.getCoinAmountText());
-        item.put("equipmentLevel", p.getEquipmentLevelText());
-        item.put("warehouseValue", p.getWarehouseValueText());
+        item.put("id", product.getId());
+        item.put("name", product.getName());
+        item.put("category", product.getCategory());
+        item.put("tagText", product.getTagText());
+        item.put("hourPrice", product.getHourPrice());
+        item.put("coinAmountText", product.getCoinAmountText());
+        item.put("equipmentLevelText", product.getEquipmentLevelText());
+        item.put("warehouseValueText", product.getWarehouseValueText());
+        item.put("tag", product.getTagText());
+        item.put("price", product.getHourPrice() + " / 灏忔椂");
+        item.put("status", product.getStatus());
+        item.put("coinAmount", product.getCoinAmountText());
+        item.put("equipmentLevel", product.getEquipmentLevelText());
+        item.put("warehouseValue", product.getWarehouseValueText());
+        item.put("description", product.getDescription());
+        item.put("isHot", "AVAILABLE".equals(product.getStatus())
+                && product.getHourPrice() != null
+                && product.getHourPrice().compareTo(new BigDecimal("15")) >= 0);
         return item;
     }
 }

@@ -3,10 +3,11 @@ MERGE INTO sys_user (id, username, password_hash, nickname, phone, status)
   (1, 'admin', '123456', 'Admin Demo User', '13800000000', 1),
   (2, 'demo_user', '123456', 'Rental Demo User', '13900000000', 1);
 
-MERGE INTO sys_role (id, role_code, role_name)
+MERGE INTO sys_role (id, role_code, role_name, description)
   KEY (id) VALUES
-  (1, 'ADMIN', 'Administrator'),
-  (2, 'USER', 'Normal User');
+  (1, 'ADMIN', 'Administrator', 'System administrator with full access.'),
+  (2, 'USER', 'Normal User', 'Registered rental user.'),
+  (3, 'CS', 'Customer Service', 'Customer service staff for order and after-sales handling.');
 
 MERGE INTO sys_user_role (id, user_id, role_id)
   KEY (id) VALUES

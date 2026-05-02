@@ -22,7 +22,8 @@ CREATE TABLE sys_user (
 CREATE TABLE sys_role (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   role_code VARCHAR(50) NOT NULL UNIQUE,
-  role_name VARCHAR(50) NOT NULL
+  role_name VARCHAR(50) NOT NULL,
+  description VARCHAR(255)
 );
 
 CREATE TABLE sys_user_role (
@@ -94,9 +95,10 @@ INSERT INTO sys_user (id, username, password_hash, nickname, phone, status) VALU
   (1, 'admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Admin Demo User', '13800000000', 1),
   (2, 'demo_user', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Rental Demo User', '13900000000', 1);
 
-INSERT INTO sys_role (id, role_code, role_name) VALUES
-  (1, 'ADMIN', 'Administrator'),
-  (2, 'USER', 'Normal User');
+INSERT INTO sys_role (id, role_code, role_name, description) VALUES
+  (1, 'ADMIN', 'Administrator', 'System administrator with full access.'),
+  (2, 'USER', 'Normal User', 'Registered rental user.'),
+  (3, 'CS', 'Customer Service', 'Customer service staff for order and after-sales handling.');
 
 INSERT INTO sys_user_role (id, user_id, role_id) VALUES
   (1, 1, 1),

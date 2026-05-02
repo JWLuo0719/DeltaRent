@@ -1,38 +1,84 @@
 package com.jwluo0719.deltatrade.mapper;
 
 import com.jwluo0719.deltatrade.domain.SysUser;
-import org.apache.ibatis.annotations.*;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
-/**
- * 用户数据访问层 — 负责 sys_user 表的增删改查，支撑登录认证和用户管理。
- */
 @Mapper
 public interface SysUserMapper {
 
-    /** 按用户名精确查找，用于登录校验 */
-    @Select("select id, username, password_hash, nickname, phone, status from sys_user where username = #{username} limit 1")
+    @Select("""
+            select u.id, u.username, u.password_hash, u.nickname, u.phone, u.status, u.created_at, u.updated_at, r.role_code
+            from sys_user u
+            left join sys_user_role ur on ur.user_id = u.id
+            left join sys_role r on r.id = ur.role_id
+            where u.username = #{username}
+            order by ur.id asc
+            limit 1
+            """)
     SysUser findByUsername(String username);
 
-    /** 统计用户总数 */
+    @Select("""
+            select u.id, u.username, u.password_hash, u.nickname, u.phone, u.status, u.created_at, u.updated_at, r.role_code
+            from sys_user u
+            left join sys_user_role ur on ur.user_id = u.id
+            left join sys_role r on r.id = ur.role_id
+            where u.username = #{loginKey} or u.phone = #{loginKey}
+            order by ur.id asc
+            limit 1
+            """)
+    SysUser findByLoginKey(String loginKey);
+
+    @Select("""
+            select u.id, u.username, u.password_hash, u.nickname, u.phone, u.status, u.created_at, u.updated_at, r.role_code
+            from sys_user u
+            left join sys_user_role ur on ur.user_id = u.id
+            left join sys_role r on r.id = ur.role_id
+            where u.phone = #{phone}
+            order by ur.id asc
+            limit 1
+            """)
+    SysUser findByPhone(String phone);
+
     @Select("select count(*) from sys_user")
     long countAll();
 
-    /** 查询全部用户（管理员用） */
-    @Select("select id, username, password_hash, nickname, phone, status from sys_user order by id")
+    @Select("""
+            select u.id, u.username, u.password_hash, u.nickname, u.phone, u.status, u.created_at, u.updated_at, r.role_code
+            from sys_user u
+            left join sys_user_role ur on ur.user_id = u.id
+            left join sys_role r on r.id = ur.role_id
+            order by u.id
+            """)
     List<SysUser> findAll();
 
-    /** 按 ID 查询用户 */
-    @Select("select id, username, password_hash, nickname, phone, status from sys_user where id = #{id}")
+    @Select("""
+            select u.id, u.username, u.password_hash, u.nickname, u.phone, u.status, u.created_at, u.updated_at, r.role_code
+            from sys_user u
+            left join sys_user_role ur on ur.user_id = u.id
+            left join sys_role r on r.id = ur.role_id
+            where u.id = #{id}
+            order by ur.id asc
+            limit 1
+            """)
     SysUser findById(Long id);
 
-    /** 新增用户（注册），密码存储 BCrypt 哈希 */
     @Insert("insert into sys_user(username, password_hash, nickname, phone, status) values(#{username}, #{passwordHash}, #{nickname}, #{phone}, 1)")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(SysUser user);
 
-    /** 更新用户状态（启用/禁用） */
     @Update("update sys_user set status = #{status} where id = #{id}")
     int updateStatus(@Param("id") Long id, @Param("status") Integer status);
+
+    @Update("update sys_user set nickname = #{nickname}, updated_at = current_timestamp where id = #{id}")
+    int updateProfile(@Param("id") Long id, @Param("nickname") String nickname);
+
+    @Update("update sys_user set password_hash = #{passwordHash}, updated_at = current_timestamp where id = #{id}")
+    int updatePassword(@Param("id") Long id, @Param("passwordHash") String passwordHash);
 }

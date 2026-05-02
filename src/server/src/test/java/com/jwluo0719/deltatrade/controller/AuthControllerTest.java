@@ -11,10 +11,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -28,12 +28,15 @@ class AuthControllerTest {
 
     @Test
     void login_shouldReturnToken_whenCredentialsCorrect() throws Exception {
-        Map<String, Object> loginResult = Map.of("token", "test.jwt.token", "user", Map.of("id", 1, "username", "admin"));
-        when(userService.login("admin", "123456")).thenReturn(loginResult);
+        Map<String, Object> loginResult = Map.of(
+                "token", "test.jwt.token",
+                "user", Map.of("id", 1, "username", "admin", "role", "ADMIN")
+        );
+        when(userService.login("13800000000", "123456")).thenReturn(loginResult);
 
         mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"admin\",\"password\":\"123456\"}"))
+                        .content("{\"phone\":\"13800000000\",\"password\":\"123456\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.token").value("test.jwt.token"));
@@ -54,7 +57,7 @@ class AuthControllerTest {
     void register_shouldReturnSuccess() throws Exception {
         mockMvc.perform(post("/api/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\":\"newuser\",\"password\":\"123456\",\"nickname\":\"New\",\"phone\":\"13800000000\"}"))
+                        .content("{\"phone\":\"13800000000\",\"password\":\"123456\",\"nickname\":\"New\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true));
     }

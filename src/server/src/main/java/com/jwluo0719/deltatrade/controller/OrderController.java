@@ -4,13 +4,24 @@ import com.jwluo0719.deltatrade.common.ApiResponse;
 import com.jwluo0719.deltatrade.common.JwtUtil;
 import com.jwluo0719.deltatrade.domain.RentalOrder;
 import com.jwluo0719.deltatrade.service.OrderService;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
-/**
- * 订单控制器 — 负责下单、订单查询和状态管理。
- */
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
@@ -21,12 +32,11 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    /** 用户 — 创建租赁订单 */
     @PostMapping
     public ApiResponse<Map<String, Object>> create(@RequestBody Map<String, Object> payload,
-                                                    @RequestHeader(value = "Authorization", required = false) String auth) {
+                                                   @RequestHeader(value = "Authorization", required = false) String auth) {
         try {
-            Long userId = extractUserId(auth); // 从 JWT 中提取当前登录用户
+            Long userId = extractUserId(auth);
             Long productId = toLong(payload.get("accountId"), 0L);
             Integer rentHours = toInt(payload.get("rentHours"), 1);
             String contactInfo = String.valueOf(payload.getOrDefault("contactInfo", ""));
@@ -39,82 +49,132 @@ public class OrderController {
             result.put("rentHours", order.getRentHours());
             result.put("amount", order.getOrderAmount());
             result.put("status", order.getStatus());
-            result.put("estimatedDelivery", "等待管理员确认");
-            return ApiResponse.success("订单已提交", result);
+            result.put("estimatedDelivery", "绛夊緟绠＄悊鍛樼‘璁?");
+            return ApiResponse.success("璁㈠崟宸叉彁浜?", result);
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }
     }
 
-    /** 用户 — 查看自己的订单 */
     @GetMapping("/my")
-    public ApiResponse<List<Map<String, Object>>> myOrders(@RequestHeader(value = "Authorization", required = false) String auth) {
+    public ApiResponse<List<Map<String, Object>>> myOrders(@RequestHeader(value = "Authorization", required = false) String auth,
+                                                           @RequestParam(required = false) String status) {
         Long userId = extractUserId(auth);
-        List<Map<String, Object>> result = new ArrayList<>();
-        for (RentalOrder o : orderService.listByUser(userId)) {
-            result.add(toView(o));
-        }
-        return ApiResponse.success(result);
+        return ApiResponse.success(orderService.listByUserWithDetails(userId, status));
     }
 
-    /** 管理员 — 查看全部订单（含用户名和商品名） */
     @GetMapping
-    public ApiResponse<List<Map<String, Object>>> listAll() {
-        return ApiResponse.success(orderService.listAllWithDetails());
+    public ApiResponse<List<Map<String, Object>>> listAll(@RequestHeader(value = "Authorization", required = false) String auth,
+                                                          @RequestParam(required = false) String status) {
+        if (!isAdmin(auth)) {
+            return ApiResponse.fail("鏃犳潈璁块棶");
+        }
+        return ApiResponse.success(orderService.listAllWithDetails(status));
     }
 
-    /** 查看单个订单详情 */
-    @GetMapping("/{id}")
-    public ApiResponse<Map<String, Object>> detail(@PathVariable Long id) {
-        RentalOrder o = orderService.getById(id);
-        if (o == null) return ApiResponse.fail("订单不存在");
-        return ApiResponse.success(toView(o));
+    @GetMapping("/{orderNo}")
+    public ApiResponse<Map<String, Object>> detail(@PathVariable String orderNo,
+                                                   @RequestHeader(value = "Authorization", required = false) String auth) {
+        RentalOrder order = orderService.getByOrderNo(orderNo);
+        if (order == null) return ApiResponse.fail("璁㈠崟涓嶅瓨鍦?");
+        if (!isAdmin(auth) && !Objects.equals(order.getUserId(), extractUserId(auth))) {
+            return ApiResponse.fail("鏃犳潈鏌ョ湅璇ヨ鍗?");
+        }
+
+        Map<String, Object> detail = orderService.getDetailByOrderNo(orderNo);
+        if (detail == null) return ApiResponse.fail("璁㈠崟涓嶅瓨鍦?");
+        detail.put("events", buildEvents(order));
+        return ApiResponse.success(detail);
     }
 
-    /** 管理员 — 变更订单状态 */
     @PutMapping("/{id}/status")
     public ApiResponse<?> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> payload) {
         try {
             String status = payload.getOrDefault("status", "");
             orderService.transitionStatus(id, status);
-            return ApiResponse.success("状态更新成功", null);
+            return ApiResponse.success("鐘舵€佹洿鏂版垚鍔?", null);
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }
     }
 
-    /** 从 Authorization 头提取用户 ID */
+    @PutMapping("/{orderNo}/cancel")
+    public ApiResponse<?> cancel(@PathVariable String orderNo,
+                                 @RequestHeader(value = "Authorization", required = false) String auth) {
+        try {
+            RentalOrder order = orderService.getByOrderNo(orderNo);
+            if (order == null) return ApiResponse.fail("璁㈠崟涓嶅瓨鍦?");
+            if (!Objects.equals(order.getUserId(), extractUserId(auth)) && !isAdmin(auth)) {
+                return ApiResponse.fail("鏃犳潈鍙栨秷璇ヨ鍗?");
+            }
+            orderService.transitionStatus(order.getId(), "CANCELLED");
+            return ApiResponse.success("璁㈠崟宸插彇娑?", null);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.fail(e.getMessage());
+        }
+    }
+
     private Long extractUserId(String auth) {
         if (auth != null && auth.startsWith("Bearer ")) {
             Long uid = JwtUtil.getUserId(auth.substring(7));
             if (uid != null) return uid;
         }
-        return 1L; // 兼容 Mock 模式，默认用 admin
+        return 1L;
+    }
+
+    private boolean isAdmin(String auth) {
+        if (auth != null && auth.startsWith("Bearer ")) {
+            String role = JwtUtil.getRole(auth.substring(7));
+            return "ADMIN".equals(role) || "CS".equals(role);
+        }
+        return false;
     }
 
     private Long toLong(Object value, Long defaultVal) {
         if (value == null) return defaultVal;
-        if (value instanceof Number) return ((Number) value).longValue();
+        if (value instanceof Number number) return number.longValue();
         return Long.parseLong(String.valueOf(value));
     }
 
     private Integer toInt(Object value, Integer defaultVal) {
         if (value == null) return defaultVal;
-        if (value instanceof Number) return ((Number) value).intValue();
+        if (value instanceof Number number) return number.intValue();
         return Integer.parseInt(String.valueOf(value));
     }
 
-    private Map<String, Object> toView(RentalOrder o) {
+    private List<Map<String, Object>> buildEvents(RentalOrder order) {
+        List<Map<String, Object>> events = new ArrayList<>();
+        events.add(event(formatDateTime(order.getCreatedAt()), "订单已提交"));
+
+        switch (order.getStatus()) {
+            case "IN_PROGRESS", "COMPLETED", "AFTER_SALE" ->
+                    events.add(event(formatDateTime(order.getUpdatedAt()), "客服已确认，订单进行中"));
+            case "CANCELLED" ->
+                    events.add(event(formatDateTime(order.getUpdatedAt()), "订单已取消"));
+            default -> {
+            }
+        }
+
+        if ("COMPLETED".equals(order.getStatus()) || "AFTER_SALE".equals(order.getStatus())) {
+            events.add(event(formatDateTime(order.getUpdatedAt()), "订单已完成"));
+        }
+        if ("AFTER_SALE".equals(order.getStatus())) {
+            events.add(event(formatDateTime(order.getUpdatedAt()), "售后已开启"));
+        }
+        return events;
+    }
+
+    private Map<String, Object> event(String time, String content) {
         Map<String, Object> item = new LinkedHashMap<>();
-        item.put("id", o.getId());
-        item.put("orderNo", o.getOrderNo());
-        item.put("userId", o.getUserId());
-        item.put("productId", o.getProductId());
-        item.put("rentHours", o.getRentHours());
-        item.put("amount", o.getOrderAmount());
-        item.put("contactInfo", o.getContactInfo());
-        item.put("deliveryNote", o.getDeliveryNote());
-        item.put("status", o.getStatus());
+        item.put("time", time);
+        item.put("content", content);
         return item;
+    }
+
+    private String formatDateTime(LocalDateTime value) {
+        if (value == null) {
+            return "";
+        }
+        return value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
     }
 }

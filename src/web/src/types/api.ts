@@ -35,6 +35,11 @@ export interface RentalProduct {
   status: 'AVAILABLE' | 'RENTED' | 'MAINTENANCE' | string;
   description: string;
   isHot?: boolean;
+  tag?: string;
+  price?: string;
+  coinAmount?: string;
+  equipmentLevel?: string;
+  warehouseValue?: string;
 }
 
 export interface AccountDetail extends RentalProduct {
@@ -66,6 +71,7 @@ export interface LoginResult {
     id: number;
     displayName: string;
     role: string;
+    phone?: string;
   };
 }
 
@@ -80,6 +86,7 @@ export interface CreateOrderResult {
   orderNo: string;
   accountId: number;
   rentHours: number;
+  amount: number;
   status: string;
   estimatedDelivery: string;
 }
@@ -98,4 +105,90 @@ export interface ResetPasswordPayload {
 export interface FaqItem {
   question: string;
   answer: string;
+}
+
+export interface OrderSummary {
+  id: number;
+  orderNo: string;
+  item: string;
+  user?: string;
+  productId?: number;
+  rentHours: number;
+  amount: number;
+  status: string;
+  contactInfo: string;
+  remark: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface OrderEvent {
+  time: string;
+  content: string;
+}
+
+export interface OrderDetail extends OrderSummary {
+  userId?: number;
+  events: OrderEvent[];
+}
+
+export interface UserProfile {
+  id: number;
+  username: string;
+  displayName: string;
+  nickname: string;
+  phone: string;
+  role: string;
+  createdAt: string;
+}
+
+export interface UpdateProfilePayload {
+  nickname: string;
+}
+
+export interface ChangePasswordPayload {
+  oldPassword: string;
+  newPassword: string;
+}
+
+export interface SubmitAppealPayload {
+  orderType: string;
+  orderId: number;
+  content: string;
+}
+
+export interface PageResult<T> {
+  list: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+export interface AdminUser {
+  id: number;
+  phone: string;
+  nickname: string;
+  role: 'ADMIN' | 'USER' | 'CS' | string;
+  status: number;
+  createdAt: string;
+}
+
+export interface AdminRole {
+  roleCode: string;
+  roleName: string;
+  description: string;
+  userCount: number;
+}
+
+export interface RolePayload {
+  roleCode?: string;
+  roleName: string;
+  description: string;
+}
+
+export interface NoticeItem {
+  id: number;
+  title: string;
+  content: string;
+  status: number;
 }

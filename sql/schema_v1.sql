@@ -3,6 +3,7 @@ USE `delta_trade`;
 
 CREATE TABLE IF NOT EXISTS `sys_user` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `username` VARCHAR(50) NOT NULL,
   `phone` VARCHAR(20) NOT NULL,
   `password_hash` VARCHAR(255) NOT NULL,
   `nickname` VARCHAR(50) DEFAULT NULL,
@@ -10,6 +11,7 @@ CREATE TABLE IF NOT EXISTS `sys_user` (
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_sys_user_username` (`username`),
   UNIQUE KEY `uk_sys_user_phone` (`phone`)
 );
 
@@ -17,6 +19,7 @@ CREATE TABLE IF NOT EXISTS `sys_role` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `role_code` VARCHAR(50) NOT NULL,
   `role_name` VARCHAR(50) NOT NULL,
+  `description` VARCHAR(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_sys_role_code` (`role_code`)
 );
@@ -92,21 +95,24 @@ CREATE TABLE IF NOT EXISTS `operation_log` (
   PRIMARY KEY (`id`)
 );
 
-INSERT INTO `sys_user` (`id`, `phone`, `password_hash`, `nickname`, `status`)
+INSERT INTO `sys_user` (`id`, `username`, `phone`, `password_hash`, `nickname`, `status`)
 VALUES
-  (1, '13800000000', '$2b$10$XDmeodVhzAZhIq16Pkc32eGSeWJNiCwR2ouqTXWqvAAFFW0cFF0C', 'Admin Demo User', 1),
-  (2, '13900000000', '$2b$10$XDmeodVhzAZhIq16Pkc32eGSeWJNiCwR2ouqTXWqvAAFFW0cFF0C', 'Rental Demo User', 1)
+  (1, 'admin', '13800000000', '$2b$10$XDmeodVhzAZhIq16Pkc32eGSeWJNiCwR2ouqTXWqvAAFFW0cFF0C', 'Admin Demo User', 1),
+  (2, 'demo_user', '13900000000', '$2b$10$XDmeodVhzAZhIq16Pkc32eGSeWJNiCwR2ouqTXWqvAAFFW0cFF0C', 'Rental Demo User', 1)
 ON DUPLICATE KEY UPDATE
+  `username` = VALUES(`username`),
   `password_hash` = VALUES(`password_hash`),
   `nickname` = VALUES(`nickname`),
   `status` = VALUES(`status`);
 
-INSERT INTO `sys_role` (`id`, `role_code`, `role_name`)
+INSERT INTO `sys_role` (`id`, `role_code`, `role_name`, `description`)
 VALUES
-  (1, 'ADMIN', 'Administrator'),
-  (2, 'USER', 'Normal User')
+  (1, 'ADMIN', 'Administrator', 'System administrator with full access.'),
+  (2, 'USER', 'Normal User', 'Registered rental user.'),
+  (3, 'CS', 'Customer Service', 'Customer service staff for order and after-sales handling.')
 ON DUPLICATE KEY UPDATE
-  `role_name` = VALUES(`role_name`);
+  `role_name` = VALUES(`role_name`),
+  `description` = VALUES(`description`);
 
 INSERT INTO `sys_user_role` (`id`, `user_id`, `role_id`)
 VALUES
