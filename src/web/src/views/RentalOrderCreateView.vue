@@ -48,6 +48,7 @@
 import { reactive, ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { createOrder } from '@/api';
+import type { CreateOrderPayload } from '@/types/api';
 
 const form = reactive<CreateOrderPayload>({
   accountId: 1001,

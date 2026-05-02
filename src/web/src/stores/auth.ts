@@ -9,9 +9,15 @@ export interface UserInfo {
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(localStorage.getItem('auth_token'));
-  const user = ref<UserInfo | null>(
-    JSON.parse(localStorage.getItem('auth_user') || 'null')
-  );
+  const user = ref<UserInfo | null>(null);
+  try {
+    const raw = localStorage.getItem('auth_user');
+    if (raw) {
+      user.value = JSON.parse(raw);
+    }
+  } catch {
+    localStorage.removeItem('auth_user');
+  }
 
   const isLoggedIn = computed(() => !!token.value && !!user.value);
   const isAdmin = computed(() => user.value?.role === 'ADMIN');

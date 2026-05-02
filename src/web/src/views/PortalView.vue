@@ -68,12 +68,14 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { getPortalSummary } from '@/api';
 import { useAuthStore } from '@/stores/auth';
 import type { PortalSummary } from '@/types/api';
 
 const auth = useAuthStore();
+const router = useRouter();
 
 const canShowAdmin = computed(() => {
   return auth.user?.role === 'ADMIN' || auth.user?.role === 'CS';
@@ -94,9 +96,6 @@ function handleLogout() {
   router.push('/home');
   ElMessage.success('已退出登录');
 }
-
-import { useRouter } from 'vue-router';
-const router = useRouter();
 
 const summary = reactive<PortalSummary>({
   heroTitle: '三角洲行动账号租赁管理系统',
