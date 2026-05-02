@@ -48,7 +48,15 @@ export function getPortalSummary() {
 // ==================== 账号产品 ====================
 
 /** GET /api/rentals */
-export function getRentals(params?: { duration?: string; tags?: string; keyword?: string; page?: number; pageSize?: number }) {
+export function getRentals(params?: {
+  keyword?: string;
+  tags?: string;
+  level?: string;
+  status?: string;
+  sortBy?: string;
+  page?: number;
+  pageSize?: number;
+}) {
   return http.get<ApiResponse<RentalProduct[]>>('/rentals', { params });
 }
 

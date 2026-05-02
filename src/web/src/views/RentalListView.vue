@@ -264,7 +264,8 @@ const selectedStatus = ref('');
 const sortBy = ref('default');
 const currentPage = ref(1);
 const pageSize = ref(12);
-const total = computed(() => filteredList.value.length);
+const total = ref(0);
+const allTags = ref<string[]>([]);
 
 // ---- 详情 Drawer ----
 const drawerVisible = ref(false);
@@ -295,58 +296,8 @@ function selectDuration(h: number) {
   selectedDuration.value = selectedDuration.value === h ? null : h;
 }
 
-// ---- 所有标签聚合 ----
-const allTags = computed(() => {
-  const tags = new Set<string>();
-  products.value.forEach(p => {
-    (p.tagText ?? '').split(',').forEach(t => { const t2 = t.trim(); if (t2) tags.add(t2); });
-  });
-  return Array.from(tags);
-});
-
-// ---- 筛选 + 排序 ----
-const filteredList = computed(() => {
-  let list = [...products.value];
-
-  if (keyword.value) {
-    const kw = keyword.value.toLowerCase();
-    list = list.filter(p =>
-      p.name.toLowerCase().includes(kw) ||
-      (p.tagText ?? '').toLowerCase().includes(kw) ||
-      (p.equipmentLevelText ?? '').toLowerCase().includes(kw)
-    );
-  }
-
-  if (selectedTags.value.length) {
-    list = list.filter(p =>
-      selectedTags.value.every(st =>
-        (p.tagText ?? '').split(',').map(t => t.trim()).includes(st)
-      )
-    );
-  }
-
-  if (selectedLevel.value) {
-    list = list.filter(p => (p.equipmentLevelText ?? '').includes(selectedLevel.value));
-  }
-
-  if (selectedStatus.value) {
-    list = list.filter(p => p.status === selectedStatus.value);
-  }
-
-  if (sortBy.value === 'price_asc') {
-    list.sort((a, b) => a.hourPrice - b.hourPrice);
-  } else if (sortBy.value === 'price_desc') {
-    list.sort((a, b) => b.hourPrice - a.hourPrice);
-  }
-
-  return list;
-});
-
-// 分页
-const filteredProducts = computed(() => {
-  const start = (currentPage.value - 1) * pageSize.value;
-  return filteredList.value.slice(start, start + pageSize.value);
-});
+// ---- 筛选 + 排序（后端处理，前端只做展示） ----
+const filteredProducts = computed(() => products.value);
 
 function clearFilters() {
   keyword.value = '';
@@ -356,13 +307,28 @@ function clearFilters() {
   sortBy.value = 'default';
 }
 
-// ---- 加载数据 ----
+// ---- 加载数据（后端筛选） ----
 async function loadRentals() {
   loading.value = true;
   try {
-    const res = await getRentals({ keyword: keyword.value || undefined });
+    const res = await getRentals({
+      keyword: keyword.value || undefined,
+      tags: selectedTags.value.length ? selectedTags.value.join(',') : undefined,
+      page: currentPage.value,
+      pageSize: pageSize.value,
+      level: selectedLevel.value || undefined,
+      status: selectedStatus.value || undefined,
+      sortBy: sortBy.value !== 'default' ? sortBy.value : undefined
+    });
     if (res.data.success) {
-      products.value = res.data.data;
+      const data = res.data.data;
+      if (Array.isArray(data)) {
+        products.value = data;
+      } else if (data && typeof data === 'object') {
+        products.value = (data as any).list ?? data;
+        total.value = (data as any).total ?? 0;
+        if ((data as any).allTags) allTags.value = (data as any).allTags;
+      }
     } else {
       ElMessage.error(res.data.message || '账号列表加载失败');
     }
@@ -382,16 +348,28 @@ function openDrawer(p: RentalProduct) {
 
 // ---- 跳转下单 ----
 function goToOrder() {
-  if (!selectedProduct.value) return;
+  if (!selectedProduct.value || !selectedDuration.value) return;
+  sessionStorage.setItem('detailProduct', JSON.stringify(selectedProduct.value));
+  sessionStorage.setItem('detailDuration', String(selectedDuration.value));
   router.push({
     path: '/orders/create',
-    query: { accountId: String(selectedProduct.value.id) }
+    query: {
+      accountId: String(selectedProduct.value.id),
+      duration: String(selectedDuration.value)
+    }
   });
   drawerVisible.value = false;
 }
 
 function goToLogin() {
-  router.push({ path: '/login', query: { redirect: '/orders/create?accountId=' + selectedProduct.value?.id } });
+  sessionStorage.setItem('detailProduct', JSON.stringify(selectedProduct.value ?? '{}'));
+  sessionStorage.setItem('detailDuration', String(selectedDuration.value ?? ''));
+  router.push({
+    path: '/login',
+    query: {
+      redirect: '/orders/create?accountId=' + selectedProduct.value?.id + '&duration=' + (selectedDuration.value ?? '')
+    }
+  });
   drawerVisible.value = false;
 }
 
@@ -423,7 +401,21 @@ watch([selectedTags, selectedLevel, selectedStatus, sortBy], () => {
   currentPage.value = 1;
 });
 
-onMounted(loadRentals);
+onMounted(() => {
+  loadRentals();
+  const saved = sessionStorage.getItem('detailProduct');
+  if (saved) {
+    try {
+      const product = JSON.parse(saved);
+      const savedDuration = sessionStorage.getItem('detailDuration');
+      selectedProduct.value = product;
+      selectedDuration.value = savedDuration ? Number(savedDuration) : null;
+      setTimeout(() => { drawerVisible.value = true; }, 50);
+    } catch { /* ignore */ }
+    sessionStorage.removeItem('detailProduct');
+    sessionStorage.removeItem('detailDuration');
+  }
+});
 </script>
 
 <script lang="ts">

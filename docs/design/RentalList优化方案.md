@@ -205,23 +205,50 @@ RentalListView.vue
 
 ## 七、接口调整建议
 
-### 7.1 `GET /api/rentals` 新增参数
+### 7.1 `GET /api/rentals` 参数更新
 
 ```typescript
+// 请求参数（query string）
 interface RentalsParams {
   page?: number;        // 页码，默认 1
   pageSize?: number;     // 每页条数，默认 12
-  tags?: string[];      // 标签数组（多选）
-  level?: string;        // 装备等级
-  minPrice?: number;     // 最低价
-  maxPrice?: number;    // 最高价
-  status?: 'AVAILABLE' | ''; // 空=全部
-  keyword?: string;     // 关键词
-  sortBy?: 'price_asc' | 'price_desc' | 'level' | 'default';
+  keyword?: string;      // 关键词，匹配 name / tagText / equipmentLevelText
+  tags?: string;        // 标签，多个用英文逗号分隔，如 "满配仓库,稀有外观"
+  level?: string;       // 装备等级，如 "Basic" / "Mid" / "Advanced" / "Full"
+  status?: string;       // 可租状态，"AVAILABLE" 或空（全部）
+  sortBy?: string;       // 排序："price_asc" / "price_desc" / "default"
 }
 ```
 
-### 7.2 `GET /api/rentals/:id` 账号详情接口（新增）
+### 7.2 `GET /api/rentals` 响应格式（新增分页）
+
+```typescript
+// 旧格式（直接返回数组）
+ApiResponse<RentalProduct[]>
+
+// 新格式（分页 + 聚合标签）
+ApiResponse<{
+  list: RentalProduct[];   // 当前页账号列表
+  total: number;           // 符合条件的总数量
+  allTags: string[];       // 所有可用标签（用于筛选下拉）
+}>
+```
+
+### 7.3 后端 Mock 更新（scripts/mock-server.mjs）
+
+```javascript
+// GET /api/rentals 需要支持以下查询参数过滤
+// keyword: 模糊匹配 name
+// tags: 逗号分隔，匹配 tagText
+// level: 匹配 equipmentLevelText
+// status: 匹配 status 字段
+// sortBy: price_asc / price_desc
+// page, pageSize: 分页
+
+// 响应需返回 { list, total, allTags } 格式
+```
+
+### 7.4 `GET /api/rentals/:id` 账号详情接口（新增）
 
 返回账号完整信息，包含资源详情和可选时长列表。
 
