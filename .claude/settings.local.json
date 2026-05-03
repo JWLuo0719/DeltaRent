@@ -49,7 +49,11 @@
       "Bash(\"/c/Program Files/MySQL/MySQL Server 9.7/bin/mysql.exe\" -u root -p123456 -e \"SELECT id, username, nickname FROM delta_trade.sys_user WHERE id >= 3;\")",
       "Bash('/c/Program Files/MySQL/MySQL Server 9.7/bin/mysql.exe' -u root -p123456 -e ' *)",
       "Bash('/c/Program Files/MySQL/MySQL Server 9.7/bin/mysql.exe' -u root -p123456 delta_trade -e ' *)",
-      "Bash(git checkout *)"
+      "Bash(git checkout *)",
+      "Bash(git ls-tree *)"
+    ],
+    "additionalDirectories": [
+      "D:\\DeltaRent"
     ]
   }
 }
