@@ -29,7 +29,7 @@ public class RoleService {
     public Map<String, Object> create(String roleCode, String roleName, String description) {
         validate(roleCode, roleName);
         if (sysRoleMapper.findByCode(roleCode) != null) {
-            throw new IllegalArgumentException("瑙掕壊浠ｇ爜宸插瓨鍦?");
+            throw new IllegalArgumentException("角色编码已存在");
         }
 
         SysRole role = new SysRole();
@@ -44,7 +44,7 @@ public class RoleService {
         validate(roleCode, roleName);
         SysRole existing = sysRoleMapper.findByCode(roleCode);
         if (existing == null) {
-            throw new IllegalArgumentException("瑙掕壊涓嶅瓨鍦?");
+            throw new IllegalArgumentException("角色不存在");
         }
 
         SysRole role = new SysRole();
@@ -56,10 +56,10 @@ public class RoleService {
 
     private void validate(String roleCode, String roleName) {
         if (roleCode == null || roleCode.isBlank()) {
-            throw new IllegalArgumentException("瑙掕壊浠ｇ爜涓嶈兘涓虹┖");
+            throw new IllegalArgumentException("角色编码不能为空");
         }
         if (roleName == null || roleName.isBlank()) {
-            throw new IllegalArgumentException("瑙掕壊鍚嶇О涓嶈兘涓虹┖");
+            throw new IllegalArgumentException("角色名称不能为空");
         }
     }
 

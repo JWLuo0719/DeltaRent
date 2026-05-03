@@ -1,7 +1,9 @@
 package com.jwluo0719.deltatrade.service;
 
+import com.jwluo0719.deltatrade.domain.SmsVerifyCode;
 import com.jwluo0719.deltatrade.domain.SysUser;
 import com.jwluo0719.deltatrade.domain.SysRole;
+import com.jwluo0719.deltatrade.mapper.SmsVerifyCodeMapper;
 import com.jwluo0719.deltatrade.mapper.SysRoleMapper;
 import com.jwluo0719.deltatrade.mapper.SysUserMapper;
 import com.jwluo0719.deltatrade.mapper.SysUserRoleMapper;
@@ -15,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
@@ -30,13 +33,15 @@ class UserServiceTest {
     @Mock
     private SysUserRoleMapper sysUserRoleMapper;
     @Mock
+    private SmsVerifyCodeMapper smsVerifyCodeMapper;
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     private UserService userService;
 
     @BeforeEach
     void setUp() {
-        userService = new UserService(sysUserMapper, sysRoleMapper, sysUserRoleMapper, passwordEncoder);
+        userService = new UserService(sysUserMapper, sysRoleMapper, sysUserRoleMapper, smsVerifyCodeMapper, passwordEncoder);
     }
 
     @Test
@@ -151,5 +156,48 @@ class UserServiceTest {
     void register_shouldFail_whenPasswordTooShort() {
         assertThrows(IllegalArgumentException.class,
                 () -> userService.register("newuser", "12345", "", "13800000001"));
+    }
+
+    @Test
+    void sendVerifyCode_shouldPersistCode_whenRequestValid() {
+        when(sysUserMapper.findByPhone("13800000000")).thenReturn(new SysUser());
+        when(smsVerifyCodeMapper.findLatestByPhone("13800000000")).thenReturn(null);
+
+        userService.sendVerifyCode("13800000000", "reset_password");
+
+        verify(smsVerifyCodeMapper).insert(any(SmsVerifyCode.class));
+    }
+
+    @Test
+    void sendVerifyCode_shouldFail_whenCooldownNotExpired() {
+        SysUser user = new SysUser();
+        when(sysUserMapper.findByPhone("13800000000")).thenReturn(user);
+        SmsVerifyCode latest = new SmsVerifyCode();
+        latest.setCreatedAt(java.time.LocalDateTime.now().minusSeconds(30));
+        when(smsVerifyCodeMapper.findLatestByPhone("13800000000")).thenReturn(latest);
+
+        assertThrows(IllegalArgumentException.class,
+                () -> userService.sendVerifyCode("13800000000", "reset_password"));
+    }
+
+    @Test
+    void resetPassword_shouldUpdatePasswordAndMarkCodeUsed_whenCodeValid() {
+        SysUser user = new SysUser();
+        user.setId(2L);
+        when(sysUserMapper.findByPhone("13800000000")).thenReturn(user);
+        when(passwordEncoder.encode("newPassword123")).thenReturn("$2a$10$newHash");
+
+        SmsVerifyCode latest = new SmsVerifyCode();
+        latest.setId(10L);
+        latest.setPhone("13800000000");
+        latest.setType("reset_password");
+        latest.setCode("123456");
+        latest.setExpireTime(java.time.LocalDateTime.now().plusMinutes(5));
+        when(smsVerifyCodeMapper.findLatestByPhoneAndType("13800000000", "reset_password")).thenReturn(latest);
+
+        userService.resetPassword("13800000000", "123456", "newPassword123");
+
+        verify(sysUserMapper).updatePassword(eq(2L), eq("$2a$10$newHash"), any(java.time.LocalDateTime.class));
+        verify(smsVerifyCodeMapper).markUsed(eq(10L), any(java.time.LocalDateTime.class));
     }
 }

@@ -25,7 +25,7 @@ public class AuthController {
             String loginKey = firstNonBlank(payload.get("phone"), payload.get("username"));
             String password = String.valueOf(payload.getOrDefault("password", ""));
             Map<String, Object> result = userService.login(loginKey, password);
-            return ApiResponse.success("鐧诲綍鎴愬姛", result);
+            return ApiResponse.success("登录成功", result);
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }
@@ -39,7 +39,7 @@ public class AuthController {
             String nickname = String.valueOf(payload.getOrDefault("nickname", ""));
             String phone = String.valueOf(payload.getOrDefault("phone", ""));
             userService.register(username, password, nickname, phone);
-            return ApiResponse.success("娉ㄥ唽鎴愬姛", null);
+            return ApiResponse.success("注册成功", null);
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }
@@ -51,7 +51,7 @@ public class AuthController {
             String phone = String.valueOf(payload.getOrDefault("phone", ""));
             String type = String.valueOf(payload.getOrDefault("type", "reset_password"));
             userService.sendVerifyCode(phone, type);
-            return ApiResponse.success("楠岃瘉鐮佸凡鍙戦€侊紙娴嬭瘯鐮?123456锛?", null);
+            return ApiResponse.success("验证码已发送", null);
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }
@@ -64,7 +64,7 @@ public class AuthController {
             String verifyCode = String.valueOf(payload.getOrDefault("verifyCode", ""));
             String newPassword = String.valueOf(payload.getOrDefault("newPassword", ""));
             userService.resetPassword(phone, verifyCode, newPassword);
-            return ApiResponse.success("瀵嗙爜宸查噸缃?", null);
+            return ApiResponse.success("密码重置成功", null);
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }

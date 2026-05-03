@@ -6,8 +6,11 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,8 +26,15 @@ public class ProductService {
         return productMapper.findAll();
     }
 
-    public List<RentalProduct> listForBrowse(String keyword, String status, String tags, String sortBy) {
+    public Map<String, Object> listForBrowse(String keyword,
+                                             String tags,
+                                             String level,
+                                             String status,
+                                             String sortBy,
+                                             Integer page,
+                                             Integer pageSize) {
         List<RentalProduct> products = productMapper.findAll();
+        List<String> allTags = collectAllTags(products);
 
         if (keyword != null && !keyword.isBlank()) {
             String normalized = keyword.trim().toLowerCase(Locale.ROOT);
@@ -33,6 +43,12 @@ public class ProductService {
                             || containsIgnoreCase(product.getCategory(), normalized)
                             || containsIgnoreCase(product.getTagText(), normalized)
                             || containsIgnoreCase(product.getEquipmentLevelText(), normalized))
+                    .collect(Collectors.toList());
+        }
+
+        if (level != null && !level.isBlank()) {
+            products = products.stream()
+                    .filter(product -> matchesLevel(product.getEquipmentLevelText(), level))
                     .collect(Collectors.toList());
         }
 
@@ -69,7 +85,17 @@ public class ProductService {
                     .collect(Collectors.toList());
         }
 
-        return products;
+        int currentPage = page == null || page < 1 ? 1 : page;
+        int currentPageSize = pageSize == null || pageSize < 1 ? 12 : pageSize;
+        int total = products.size();
+        int fromIndex = Math.min((currentPage - 1) * currentPageSize, total);
+        int toIndex = Math.min(fromIndex + currentPageSize, total);
+
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("list", products.subList(fromIndex, toIndex));
+        result.put("total", total);
+        result.put("allTags", allTags);
+        return result;
     }
 
     public RentalProduct getById(Long id) {
@@ -82,10 +108,10 @@ public class ProductService {
 
     public RentalProduct create(RentalProduct product) {
         if (product.getName() == null || product.getName().isBlank()) {
-            throw new IllegalArgumentException("鍟嗗搧鍚嶇О涓嶈兘涓虹┖");
+            throw new IllegalArgumentException("账号名称不能为空");
         }
         if (product.getHourPrice() == null || product.getHourPrice().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("浠锋牸蹇呴』澶т簬 0");
+            throw new IllegalArgumentException("价格必须大于 0");
         }
         if (product.getStatus() == null) {
             product.setStatus("AVAILABLE");
@@ -96,7 +122,7 @@ public class ProductService {
 
     public void update(RentalProduct product) {
         RentalProduct exist = productMapper.findById(product.getId());
-        if (exist == null) throw new IllegalArgumentException("鍟嗗搧涓嶅瓨鍦?");
+        if (exist == null) throw new IllegalArgumentException("账号不存在");
         productMapper.update(product);
     }
 
@@ -110,5 +136,34 @@ public class ProductService {
 
     private boolean containsIgnoreCase(String raw, String expectedLowerCase) {
         return raw != null && raw.toLowerCase(Locale.ROOT).contains(expectedLowerCase);
+    }
+
+    private boolean matchesLevel(String equipmentLevelText, String level) {
+        String normalizedLevel = level == null ? "" : level.trim();
+        return switch (normalizedLevel) {
+            case "Basic" -> containsAny(equipmentLevelText, "新手", "基础");
+            case "Mid" -> containsAny(equipmentLevelText, "进阶", "中阶");
+            case "Advanced" -> containsAny(equipmentLevelText, "高阶", "毕业");
+            case "Full" -> containsAny(equipmentLevelText, "满配", "顶级", "毕业装", "六套");
+            default -> true;
+        };
+    }
+
+    private boolean containsAny(String raw, String... parts) {
+        if (raw == null || raw.isBlank()) {
+            return false;
+        }
+        return Arrays.stream(parts).filter(Objects::nonNull).anyMatch(raw::contains);
+    }
+
+    private List<String> collectAllTags(List<RentalProduct> products) {
+        return products.stream()
+                .map(RentalProduct::getTagText)
+                .filter(Objects::nonNull)
+                .flatMap(tagText -> Arrays.stream(tagText.split(",")))
+                .map(String::trim)
+                .filter(tag -> !tag.isBlank())
+                .distinct()
+                .collect(Collectors.toList());
     }
 }

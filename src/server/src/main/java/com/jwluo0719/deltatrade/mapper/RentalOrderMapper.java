@@ -25,6 +25,15 @@ public interface RentalOrderMapper {
     long countByStatus(String status);
 
     @Select("""
+            select count(*)
+            from rental_order
+            where user_id = #{userId}
+              and product_id = #{productId}
+              and status in ('WAITING_CONFIRM', 'IN_PROGRESS')
+            """)
+    long countActiveByUserAndProduct(@Param("userId") Long userId, @Param("productId") Long productId);
+
+    @Select("""
             select o.order_no as orderNo,
                    coalesce(u.nickname, u.username) as user,
                    p.name as item,

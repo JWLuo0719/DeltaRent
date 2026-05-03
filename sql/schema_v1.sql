@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS `sys_user` (
   `status` TINYINT NOT NULL DEFAULT 1,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `password_updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_sys_user_username` (`username`),
   UNIQUE KEY `uk_sys_user_phone` (`phone`)
@@ -72,6 +73,19 @@ CREATE TABLE IF NOT EXISTS `notice` (
   `status` TINYINT NOT NULL DEFAULT 1,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
+);
+
+CREATE TABLE IF NOT EXISTS `sms_verify_code` (
+  `id` BIGINT NOT NULL AUTO_INCREMENT,
+  `phone` VARCHAR(20) NOT NULL,
+  `code` VARCHAR(6) NOT NULL,
+  `type` VARCHAR(20) NOT NULL,
+  `expire_time` DATETIME NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `used_at` DATETIME DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_sms_verify_code_phone_created` (`phone`, `created_at`),
+  KEY `idx_sms_verify_code_phone_type_created` (`phone`, `type`, `created_at`)
 );
 
 CREATE TABLE IF NOT EXISTS `appeal_record` (

@@ -14,7 +14,8 @@ import java.util.List;
 public interface SysUserMapper {
 
     @Select("""
-            select u.id, u.username, u.password_hash, u.nickname, u.phone, u.status, u.created_at, u.updated_at, r.role_code
+            select u.id, u.username, u.password_hash, u.nickname, u.phone, u.status,
+                   u.created_at, u.updated_at, u.password_updated_at, r.role_code
             from sys_user u
             left join sys_user_role ur on ur.user_id = u.id
             left join sys_role r on r.id = ur.role_id
@@ -25,7 +26,8 @@ public interface SysUserMapper {
     SysUser findByUsername(String username);
 
     @Select("""
-            select u.id, u.username, u.password_hash, u.nickname, u.phone, u.status, u.created_at, u.updated_at, r.role_code
+            select u.id, u.username, u.password_hash, u.nickname, u.phone, u.status,
+                   u.created_at, u.updated_at, u.password_updated_at, r.role_code
             from sys_user u
             left join sys_user_role ur on ur.user_id = u.id
             left join sys_role r on r.id = ur.role_id
@@ -36,7 +38,8 @@ public interface SysUserMapper {
     SysUser findByLoginKey(String loginKey);
 
     @Select("""
-            select u.id, u.username, u.password_hash, u.nickname, u.phone, u.status, u.created_at, u.updated_at, r.role_code
+            select u.id, u.username, u.password_hash, u.nickname, u.phone, u.status,
+                   u.created_at, u.updated_at, u.password_updated_at, r.role_code
             from sys_user u
             left join sys_user_role ur on ur.user_id = u.id
             left join sys_role r on r.id = ur.role_id
@@ -50,7 +53,8 @@ public interface SysUserMapper {
     long countAll();
 
     @Select("""
-            select u.id, u.username, u.password_hash, u.nickname, u.phone, u.status, u.created_at, u.updated_at, r.role_code
+            select u.id, u.username, u.password_hash, u.nickname, u.phone, u.status,
+                   u.created_at, u.updated_at, u.password_updated_at, r.role_code
             from sys_user u
             left join sys_user_role ur on ur.user_id = u.id
             left join sys_role r on r.id = ur.role_id
@@ -59,7 +63,8 @@ public interface SysUserMapper {
     List<SysUser> findAll();
 
     @Select("""
-            select u.id, u.username, u.password_hash, u.nickname, u.phone, u.status, u.created_at, u.updated_at, r.role_code
+            select u.id, u.username, u.password_hash, u.nickname, u.phone, u.status,
+                   u.created_at, u.updated_at, u.password_updated_at, r.role_code
             from sys_user u
             left join sys_user_role ur on ur.user_id = u.id
             left join sys_role r on r.id = ur.role_id
@@ -69,7 +74,10 @@ public interface SysUserMapper {
             """)
     SysUser findById(Long id);
 
-    @Insert("insert into sys_user(username, password_hash, nickname, phone, status) values(#{username}, #{passwordHash}, #{nickname}, #{phone}, 1)")
+    @Insert("""
+            insert into sys_user(username, password_hash, nickname, phone, status)
+            values(#{username}, #{passwordHash}, #{nickname}, #{phone}, 1)
+            """)
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(SysUser user);
 
@@ -79,6 +87,14 @@ public interface SysUserMapper {
     @Update("update sys_user set nickname = #{nickname}, updated_at = current_timestamp where id = #{id}")
     int updateProfile(@Param("id") Long id, @Param("nickname") String nickname);
 
-    @Update("update sys_user set password_hash = #{passwordHash}, updated_at = current_timestamp where id = #{id}")
-    int updatePassword(@Param("id") Long id, @Param("passwordHash") String passwordHash);
+    @Update("""
+            update sys_user
+            set password_hash = #{passwordHash},
+                password_updated_at = #{passwordUpdatedAt},
+                updated_at = current_timestamp
+            where id = #{id}
+            """)
+    int updatePassword(@Param("id") Long id,
+                       @Param("passwordHash") String passwordHash,
+                       @Param("passwordUpdatedAt") java.time.LocalDateTime passwordUpdatedAt);
 }

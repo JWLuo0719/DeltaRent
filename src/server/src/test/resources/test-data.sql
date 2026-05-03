@@ -2,6 +2,7 @@
 DROP TABLE IF EXISTS operation_log;
 DROP TABLE IF EXISTS appeal_record;
 DROP TABLE IF EXISTS notice;
+DROP TABLE IF EXISTS sms_verify_code;
 DROP TABLE IF EXISTS rental_order;
 DROP TABLE IF EXISTS rental_product;
 DROP TABLE IF EXISTS sys_user_role;
@@ -16,7 +17,8 @@ CREATE TABLE sys_user (
   phone VARCHAR(30),
   status TINYINT NOT NULL DEFAULT 1,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  password_updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE sys_role (
@@ -71,6 +73,16 @@ CREATE TABLE notice (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE sms_verify_code (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  phone VARCHAR(20) NOT NULL,
+  code VARCHAR(6) NOT NULL,
+  type VARCHAR(20) NOT NULL,
+  expire_time TIMESTAMP NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  used_at TIMESTAMP
+);
+
 CREATE TABLE appeal_record (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   order_type VARCHAR(30) NOT NULL,
@@ -91,9 +103,9 @@ CREATE TABLE operation_log (
 );
 
 -- 种子数据
-INSERT INTO sys_user (id, username, password_hash, nickname, phone, status) VALUES
-  (1, 'admin', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Admin Demo User', '13800000000', 1),
-  (2, 'demo_user', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Rental Demo User', '13900000000', 1);
+INSERT INTO sys_user (id, username, password_hash, nickname, phone, status, password_updated_at) VALUES
+  (1, 'admin', '$2a$10$2BaCTh/DRdPHcSc8RfNccuMh4ZFHPJTxyNneHgnitGnc3UiwRHH42', '管理员示例用户', '13800000000', 1, CURRENT_TIMESTAMP),
+  (2, 'demo_user', '$2a$10$2BaCTh/DRdPHcSc8RfNccuMh4ZFHPJTxyNneHgnitGnc3UiwRHH42', '租赁演示用户', '13900000000', 1, CURRENT_TIMESTAMP);
 
 INSERT INTO sys_role (id, role_code, role_name, description) VALUES
   (1, 'ADMIN', 'Administrator', 'System administrator with full access.'),

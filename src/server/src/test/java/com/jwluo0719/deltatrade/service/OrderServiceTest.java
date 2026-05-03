@@ -40,6 +40,7 @@ class OrderServiceTest {
         product.setHourPrice(new BigDecimal("18.00"));
         product.setStatus("AVAILABLE");
         when(productMapper.findById(1001L)).thenReturn(product);
+        when(orderMapper.countActiveByUserAndProduct(1L, 1001L)).thenReturn(0L);
 
         RentalOrder order = orderService.create(1L, 1001L, 3, "13800000000", "remark");
 
@@ -78,6 +79,21 @@ class OrderServiceTest {
 
         assertThrows(IllegalArgumentException.class,
                 () -> orderService.create(1L, 1001L, 3, "", ""));
+    }
+
+    @Test
+    void create_shouldFail_whenDuplicateActiveOrderExists() {
+        RentalProduct product = new RentalProduct();
+        product.setId(1001L);
+        product.setHourPrice(new BigDecimal("18.00"));
+        product.setStatus("AVAILABLE");
+        when(productMapper.findById(1001L)).thenReturn(product);
+        when(orderMapper.countActiveByUserAndProduct(1L, 1001L)).thenReturn(1L);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+                () -> orderService.create(1L, 1001L, 3, "", ""));
+
+        assertEquals("该账号已有进行中的订单，请勿重复提交", ex.getMessage());
     }
 
     // ==================== status transitions ====================

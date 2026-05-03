@@ -3,6 +3,7 @@ import type {
   ApiResponse,
   PortalSummary,
   RentalProduct,
+  RentalListResult,
   LoginPayload,
   LoginResult,
   CreateOrderPayload,
@@ -59,7 +60,7 @@ export function getRentals(params?: {
   page?: number;
   pageSize?: number;
 }) {
-  return http.get<ApiResponse<RentalProduct[]>>('/rentals', { params });
+  return http.get<ApiResponse<RentalListResult>>('/rentals', { params });
 }
 
 export function createOrder(data: CreateOrderPayload) {

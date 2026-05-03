@@ -347,7 +347,7 @@ async function loadHotProducts() {
   try {
     const res = await getRentals();
     if (res.data.success) {
-      const all = res.data.data;
+      const all = res.data.data.list;
       const available = all.filter(p => p.status === 'AVAILABLE');
       hotProducts.value = (available.length ? available : all).slice(0, 3);
     }

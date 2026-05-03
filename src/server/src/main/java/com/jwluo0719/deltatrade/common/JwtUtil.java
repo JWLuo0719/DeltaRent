@@ -6,6 +6,8 @@ import io.jsonwebtoken.security.Keys;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 
 /**
@@ -17,6 +19,7 @@ public final class JwtUtil {
     // 签名密钥（课程项目使用固定密钥，生产环境应从配置中心读取）
     private static final String SECRET = "DeltaRent-JWT-Secret-Key-2026-Course-Project-Must-Be-Long-Enough-For-HS256";
     private static final long EXPIRATION_MS = 24 * 60 * 60 * 1000L; // 24 小时
+    private static final DateTimeFormatter PASSWORD_VERSION_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
     private JwtUtil() {
     }
@@ -24,13 +27,14 @@ public final class JwtUtil {
     /**
      * 为用户生成 JWT 令牌，载荷中包含用户 ID、用户名和角色。
      */
-    public static String generateToken(Long userId, String username, String role) {
+    public static String generateToken(Long userId, String username, String role, LocalDateTime passwordUpdatedAt) {
         SecretKey key = Keys.hmacShaKeyFor(SECRET.getBytes(StandardCharsets.UTF_8));
         Date now = new Date();
         return Jwts.builder()
                 .subject(String.valueOf(userId))
                 .claim("username", username)
                 .claim("role", role)
+                .claim("pwdUpdatedAt", formatPasswordVersion(passwordUpdatedAt))
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + EXPIRATION_MS))
                 .signWith(key)
@@ -85,5 +89,15 @@ public final class JwtUtil {
         Claims claims = parseToken(token);
         if (claims == null) return null;
         return claims.get("role", String.class);
+    }
+
+    public static String getPasswordVersion(String token) {
+        Claims claims = parseToken(token);
+        if (claims == null) return null;
+        return claims.get("pwdUpdatedAt", String.class);
+    }
+
+    public static String formatPasswordVersion(LocalDateTime passwordUpdatedAt) {
+        return passwordUpdatedAt == null ? "" : PASSWORD_VERSION_FORMATTER.format(passwordUpdatedAt);
     }
 }

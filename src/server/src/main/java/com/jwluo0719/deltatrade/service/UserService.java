@@ -1,13 +1,18 @@
 package com.jwluo0719.deltatrade.service;
 
 import com.jwluo0719.deltatrade.common.JwtUtil;
+import com.jwluo0719.deltatrade.domain.SmsVerifyCode;
 import com.jwluo0719.deltatrade.domain.SysRole;
 import com.jwluo0719.deltatrade.domain.SysUser;
+import com.jwluo0719.deltatrade.mapper.SmsVerifyCodeMapper;
 import com.jwluo0719.deltatrade.mapper.SysRoleMapper;
 import com.jwluo0719.deltatrade.mapper.SysUserMapper;
 import com.jwluo0719.deltatrade.mapper.SysUserRoleMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -15,47 +20,57 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Locale;
+import java.util.Random;
 import java.util.stream.Collectors;
+import java.util.regex.Pattern;
 
 @Service
 public class UserService {
 
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+    private static final Pattern PHONE_PATTERN = Pattern.compile("^1[3-9]\\d{9}$");
+    private static final Random RANDOM = new Random();
+    private static final long VERIFY_CODE_EXPIRE_MINUTES = 10L;
+    private static final long VERIFY_CODE_COOLDOWN_SECONDS = 60L;
+
     private final SysUserMapper sysUserMapper;
     private final SysRoleMapper sysRoleMapper;
     private final SysUserRoleMapper sysUserRoleMapper;
+    private final SmsVerifyCodeMapper smsVerifyCodeMapper;
     private final PasswordEncoder passwordEncoder;
-    private final Map<String, String> verifyCodeStore = new ConcurrentHashMap<>();
 
     public UserService(SysUserMapper sysUserMapper,
                        SysRoleMapper sysRoleMapper,
                        SysUserRoleMapper sysUserRoleMapper,
+                       SmsVerifyCodeMapper smsVerifyCodeMapper,
                        PasswordEncoder passwordEncoder) {
         this.sysUserMapper = sysUserMapper;
         this.sysRoleMapper = sysRoleMapper;
         this.sysUserRoleMapper = sysUserRoleMapper;
+        this.smsVerifyCodeMapper = smsVerifyCodeMapper;
         this.passwordEncoder = passwordEncoder;
     }
 
     public Map<String, Object> login(String loginKey, String password) {
         if (loginKey == null || loginKey.isBlank() || password == null || password.isBlank()) {
-            throw new IllegalArgumentException("鐢ㄦ埛鍚嶅拰瀵嗙爜涓嶈兘涓虹┖");
+            throw new IllegalArgumentException("手机号或用户名和密码不能为空");
         }
 
         SysUser user = sysUserMapper.findByLoginKey(loginKey);
         if (user == null || user.getStatus() == null || user.getStatus() != 1) {
-            throw new IllegalArgumentException("鐢ㄦ埛鍚嶆垨瀵嗙爜閿欒");
+            throw new IllegalArgumentException("手机号或密码错误");
         }
 
         String saved = user.getPasswordHash();
         boolean ok = saved != null
                 && (saved.equals(password) || (saved.startsWith("$2") && passwordEncoder.matches(password, saved)));
         if (!ok) {
-            throw new IllegalArgumentException("鐢ㄦ埛鍚嶆垨瀵嗙爜閿欒");
+            throw new IllegalArgumentException("手机号或密码错误");
         }
 
         String roleCode = normalizeRole(user.getRoleCode());
-        String token = JwtUtil.generateToken(user.getId(), user.getUsername(), roleCode);
+        String token = JwtUtil.generateToken(user.getId(), user.getUsername(), roleCode, resolvePasswordUpdatedAt(user));
 
         Map<String, Object> userInfo = new LinkedHashMap<>();
         userInfo.put("id", user.getId());
@@ -71,20 +86,20 @@ public class UserService {
     }
 
     public SysUser register(String username, String password, String nickname, String phone) {
-        String actualUsername = (username == null || username.isBlank()) ? phone : username;
-        if (actualUsername == null || actualUsername.isBlank()) throw new IllegalArgumentException("鐢ㄦ埛鍚嶄笉鑳戒负绌?");
-        if (password == null || password.length() < 6) throw new IllegalArgumentException("瀵嗙爜鑷冲皯 6 浣?");
-        if (phone == null || phone.isBlank()) throw new IllegalArgumentException("鎵嬫満鍙蜂笉鑳戒负绌?");
+        String normalizedPhone = normalizePhone(phone);
+        String actualUsername = (username == null || username.isBlank()) ? normalizedPhone : username.trim();
+        if (actualUsername.isBlank()) throw new IllegalArgumentException("用户名不能为空");
+        if (password == null || password.length() < 6) throw new IllegalArgumentException("密码长度不能少于 6 位");
 
         SysUser exist = sysUserMapper.findByUsername(actualUsername);
-        if (exist != null) throw new IllegalArgumentException("鐢ㄦ埛鍚嶅凡瀛樺湪");
-        if (sysUserMapper.findByPhone(phone) != null) throw new IllegalArgumentException("鎵嬫満鍙峰凡娉ㄥ唽");
+        if (exist != null) throw new IllegalArgumentException("用户名已存在");
+        if (sysUserMapper.findByPhone(normalizedPhone) != null) throw new IllegalArgumentException("手机号已注册");
 
         SysUser user = new SysUser();
         user.setUsername(actualUsername);
         user.setPasswordHash(passwordEncoder.encode(password));
-        user.setNickname((nickname != null && !nickname.isBlank()) ? nickname : actualUsername);
-        user.setPhone(phone);
+        user.setNickname((nickname != null && !nickname.isBlank()) ? nickname.trim() : normalizedPhone);
+        user.setPhone(normalizedPhone);
         user.setStatus(1);
         sysUserMapper.insert(user);
         assignRole(user.getId(), "USER");
@@ -92,28 +107,54 @@ public class UserService {
     }
 
     public void sendVerifyCode(String phone, String type) {
-        if (phone == null || phone.isBlank()) {
-            throw new IllegalArgumentException("鎵嬫満鍙蜂笉鑳戒负绌?");
+        String normalizedPhone = normalizePhone(phone);
+        String normalizedType = normalizeVerifyType(type);
+        validateVerifyCodeTarget(normalizedPhone, normalizedType);
+
+        SmsVerifyCode latest = smsVerifyCodeMapper.findLatestByPhone(normalizedPhone);
+        LocalDateTime now = LocalDateTime.now();
+        if (latest != null && latest.getCreatedAt() != null
+                && latest.getCreatedAt().plusSeconds(VERIFY_CODE_COOLDOWN_SECONDS).isAfter(now)) {
+            throw new IllegalArgumentException("验证码发送过于频繁，请 60 秒后再试");
         }
-        if ("reset_password".equalsIgnoreCase(type) && sysUserMapper.findByPhone(phone) == null) {
-            throw new IllegalArgumentException("鎵嬫満鍙锋湭娉ㄥ唽");
-        }
-        verifyCodeStore.put(phone, "123456");
+
+        SmsVerifyCode verifyCode = new SmsVerifyCode();
+        verifyCode.setPhone(normalizedPhone);
+        verifyCode.setType(normalizedType);
+        verifyCode.setCode(generateVerifyCode());
+        verifyCode.setCreatedAt(now);
+        verifyCode.setExpireTime(now.plusMinutes(VERIFY_CODE_EXPIRE_MINUTES));
+        smsVerifyCodeMapper.insert(verifyCode);
+
+        log.info("模拟发送验证码成功：phone={}, type={}, code={}", normalizedPhone, normalizedType, verifyCode.getCode());
     }
 
+    @Transactional
     public void resetPassword(String phone, String verifyCode, String newPassword) {
-        if (phone == null || phone.isBlank()) throw new IllegalArgumentException("鎵嬫満鍙蜂笉鑳戒负绌?");
-        if (newPassword == null || newPassword.length() < 6) throw new IllegalArgumentException("瀵嗙爜鑷冲皯 6 浣?");
-        String expectedCode = verifyCodeStore.get(phone);
-        if (!"123456".equals(verifyCode) && (expectedCode == null || !expectedCode.equals(verifyCode))) {
-            throw new IllegalArgumentException("楠岃瘉鐮侀敊璇?");
+        String normalizedPhone = normalizePhone(phone);
+        if (verifyCode == null || verifyCode.isBlank()) {
+            throw new IllegalArgumentException("验证码不能为空");
+        }
+        if (newPassword == null || newPassword.length() < 6) {
+            throw new IllegalArgumentException("密码长度不能少于 6 位");
         }
 
-        SysUser user = sysUserMapper.findByPhone(phone);
-        if (user == null) throw new IllegalArgumentException("鐢ㄦ埛涓嶅瓨鍦?");
+        SmsVerifyCode latest = smsVerifyCodeMapper.findLatestByPhoneAndType(normalizedPhone, "reset_password");
+        LocalDateTime now = LocalDateTime.now();
+        if (latest == null
+                || latest.getUsedAt() != null
+                || latest.getExpireTime() == null
+                || latest.getExpireTime().isBefore(now)
+                || !verifyCode.trim().equals(latest.getCode())) {
+            throw new IllegalArgumentException("验证码错误或已失效");
+        }
 
-        sysUserMapper.updatePassword(user.getId(), passwordEncoder.encode(newPassword));
-        verifyCodeStore.remove(phone);
+        SysUser user = sysUserMapper.findByPhone(normalizedPhone);
+        if (user == null) throw new IllegalArgumentException("用户不存在");
+
+        LocalDateTime passwordUpdatedAt = LocalDateTime.now();
+        sysUserMapper.updatePassword(user.getId(), passwordEncoder.encode(newPassword), passwordUpdatedAt);
+        smsVerifyCodeMapper.markUsed(latest.getId(), now);
     }
 
     public long countAll() {
@@ -158,7 +199,7 @@ public class UserService {
     public Map<String, Object> getProfile(Long id) {
         SysUser user = sysUserMapper.findById(id);
         if (user == null) {
-            throw new IllegalArgumentException("鐢ㄦ埛涓嶅瓨鍦?");
+            throw new IllegalArgumentException("用户不存在");
         }
 
         Map<String, Object> result = new LinkedHashMap<>();
@@ -174,42 +215,43 @@ public class UserService {
 
     public Map<String, Object> updateProfile(Long id, String nickname) {
         if (nickname == null || nickname.isBlank()) {
-            throw new IllegalArgumentException("鏄电О涓嶈兘涓虹┖");
+            throw new IllegalArgumentException("昵称不能为空");
         }
         SysUser user = sysUserMapper.findById(id);
         if (user == null) {
-            throw new IllegalArgumentException("鐢ㄦ埛涓嶅瓨鍦?");
+            throw new IllegalArgumentException("用户不存在");
         }
         sysUserMapper.updateProfile(id, nickname.trim());
         return getProfile(id);
     }
 
+    @Transactional
     public void changePassword(Long id, String oldPassword, String newPassword) {
         if (oldPassword == null || oldPassword.isBlank()) {
-            throw new IllegalArgumentException("鍘熷瘑鐮佷笉鑳戒负绌?");
+            throw new IllegalArgumentException("原密码不能为空");
         }
         if (newPassword == null || newPassword.length() < 6) {
-            throw new IllegalArgumentException("鏂板瘑鐮佽嚦灏?6 浣?");
+            throw new IllegalArgumentException("新密码长度不能少于 6 位");
         }
 
         SysUser user = sysUserMapper.findById(id);
         if (user == null) {
-            throw new IllegalArgumentException("鐢ㄦ埛涓嶅瓨鍦?");
+            throw new IllegalArgumentException("用户不存在");
         }
 
         String saved = user.getPasswordHash();
         boolean match = saved != null
                 && (saved.equals(oldPassword) || (saved.startsWith("$2") && passwordEncoder.matches(oldPassword, saved)));
         if (!match) {
-            throw new IllegalArgumentException("鍘熷瘑鐮佷笉姝ｇ‘");
+            throw new IllegalArgumentException("原密码不正确");
         }
 
-        sysUserMapper.updatePassword(id, passwordEncoder.encode(newPassword));
+        sysUserMapper.updatePassword(id, passwordEncoder.encode(newPassword), LocalDateTime.now());
     }
 
     public void updateStatus(Long id, Integer status) {
         if (sysUserMapper.findById(id) == null) {
-            throw new IllegalArgumentException("鐢ㄦ埛涓嶅瓨鍦?");
+            throw new IllegalArgumentException("用户不存在");
         }
         sysUserMapper.updateStatus(id, status);
     }
@@ -217,14 +259,14 @@ public class UserService {
     public void updateRole(Long id, String roleCode) {
         SysUser user = sysUserMapper.findById(id);
         if (user == null) {
-            throw new IllegalArgumentException("鐢ㄦ埛涓嶅瓨鍦?");
+            throw new IllegalArgumentException("用户不存在");
         }
         if (roleCode == null || roleCode.isBlank()) {
-            throw new IllegalArgumentException("瑙掕壊涓嶈兘涓虹┖");
+            throw new IllegalArgumentException("角色不能为空");
         }
         SysRole role = sysRoleMapper.findByCode(roleCode);
         if (role == null) {
-            throw new IllegalArgumentException("瑙掕壊涓嶅瓨鍦?");
+            throw new IllegalArgumentException("角色不存在");
         }
         assignRole(id, roleCode);
     }
@@ -236,10 +278,60 @@ public class UserService {
     private void assignRole(Long userId, String roleCode) {
         SysRole role = sysRoleMapper.findByCode(roleCode);
         if (role == null) {
-            throw new IllegalArgumentException("瑙掕壊涓嶅瓨鍦?");
+            throw new IllegalArgumentException("角色不存在");
         }
         sysUserRoleMapper.deleteByUserId(userId);
         sysUserRoleMapper.insert(userId, role.getId());
+    }
+
+    private String normalizePhone(String phone) {
+        String normalizedPhone = phone == null ? "" : phone.trim();
+        if (!PHONE_PATTERN.matcher(normalizedPhone).matches()) {
+            throw new IllegalArgumentException("请输入正确的手机号");
+        }
+        return normalizedPhone;
+    }
+
+    private String normalizeVerifyType(String type) {
+        String normalizedType = type == null ? "" : type.trim().toLowerCase(Locale.ROOT);
+        return switch (normalizedType) {
+            case "reset_password", "register", "login" -> normalizedType;
+            default -> throw new IllegalArgumentException("验证码类型不支持");
+        };
+    }
+
+    private void validateVerifyCodeTarget(String phone, String type) {
+        SysUser user = sysUserMapper.findByPhone(phone);
+        switch (type) {
+            case "reset_password", "login" -> {
+                if (user == null) {
+                    throw new IllegalArgumentException("该手机号尚未注册");
+                }
+            }
+            case "register" -> {
+                if (user != null) {
+                    throw new IllegalArgumentException("该手机号已注册");
+                }
+            }
+            default -> throw new IllegalArgumentException("验证码类型不支持");
+        }
+    }
+
+    private String generateVerifyCode() {
+        return String.format("%06d", RANDOM.nextInt(1_000_000));
+    }
+
+    private LocalDateTime resolvePasswordUpdatedAt(SysUser user) {
+        if (user.getPasswordUpdatedAt() != null) {
+            return user.getPasswordUpdatedAt();
+        }
+        if (user.getUpdatedAt() != null) {
+            return user.getUpdatedAt();
+        }
+        if (user.getCreatedAt() != null) {
+            return user.getCreatedAt();
+        }
+        return LocalDateTime.now();
     }
 
     private boolean contains(String raw, String keyword) {

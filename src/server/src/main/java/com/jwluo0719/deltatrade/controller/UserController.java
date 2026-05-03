@@ -36,7 +36,7 @@ public class UserController {
                                                           @RequestBody Map<String, Object> payload) {
         try {
             String nickname = String.valueOf(payload.getOrDefault("nickname", ""));
-            return ApiResponse.success("璧勬枡宸蹭繚瀛?", userService.updateProfile(extractUserId(auth), nickname));
+            return ApiResponse.success("资料已保存", userService.updateProfile(extractUserId(auth), nickname));
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }
@@ -49,7 +49,7 @@ public class UserController {
             String oldPassword = String.valueOf(payload.getOrDefault("oldPassword", ""));
             String newPassword = String.valueOf(payload.getOrDefault("newPassword", ""));
             userService.changePassword(extractUserId(auth), oldPassword, newPassword);
-            return ApiResponse.success("瀵嗙爜淇敼鎴愬姛", null);
+            return ApiResponse.success("密码修改成功", null);
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }
@@ -62,6 +62,6 @@ public class UserController {
                 return userId;
             }
         }
-        return 1L;
+        throw new IllegalArgumentException("请先登录");
     }
 }

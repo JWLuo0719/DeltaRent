@@ -34,7 +34,7 @@ public class AdminRoleController {
             String roleCode = String.valueOf(payload.getOrDefault("roleCode", ""));
             String roleName = String.valueOf(payload.getOrDefault("roleName", ""));
             String description = String.valueOf(payload.getOrDefault("description", ""));
-            return ApiResponse.success("瑙掕壊鍒涘缓鎴愬姛", roleService.create(roleCode, roleName, description));
+            return ApiResponse.success("角色创建成功", roleService.create(roleCode, roleName, description));
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }
@@ -46,7 +46,7 @@ public class AdminRoleController {
             String roleName = String.valueOf(payload.getOrDefault("roleName", ""));
             String description = String.valueOf(payload.getOrDefault("description", ""));
             roleService.update(roleCode, roleName, description);
-            return ApiResponse.success("瑙掕壊宸叉洿鏂?", null);
+            return ApiResponse.success("角色已更新", null);
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }

@@ -49,8 +49,8 @@ public class OrderController {
             result.put("rentHours", order.getRentHours());
             result.put("amount", order.getOrderAmount());
             result.put("status", order.getStatus());
-            result.put("estimatedDelivery", "绛夊緟绠＄悊鍛樼‘璁?");
-            return ApiResponse.success("璁㈠崟宸叉彁浜?", result);
+            result.put("estimatedDelivery", "5分钟内由客服确认");
+            return ApiResponse.success("订单已提交", result);
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }
@@ -58,16 +58,20 @@ public class OrderController {
 
     @GetMapping("/my")
     public ApiResponse<List<Map<String, Object>>> myOrders(@RequestHeader(value = "Authorization", required = false) String auth,
-                                                           @RequestParam(required = false) String status) {
-        Long userId = extractUserId(auth);
-        return ApiResponse.success(orderService.listByUserWithDetails(userId, status));
+                                                            @RequestParam(required = false) String status) {
+        try {
+            Long userId = extractUserId(auth);
+            return ApiResponse.success(orderService.listByUserWithDetails(userId, status));
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.fail(e.getMessage());
+        }
     }
 
     @GetMapping
     public ApiResponse<List<Map<String, Object>>> listAll(@RequestHeader(value = "Authorization", required = false) String auth,
                                                           @RequestParam(required = false) String status) {
         if (!isAdmin(auth)) {
-            return ApiResponse.fail("鏃犳潈璁块棶");
+            return ApiResponse.fail("无权访问");
         }
         return ApiResponse.success(orderService.listAllWithDetails(status));
     }
@@ -75,16 +79,20 @@ public class OrderController {
     @GetMapping("/{orderNo}")
     public ApiResponse<Map<String, Object>> detail(@PathVariable String orderNo,
                                                    @RequestHeader(value = "Authorization", required = false) String auth) {
-        RentalOrder order = orderService.getByOrderNo(orderNo);
-        if (order == null) return ApiResponse.fail("璁㈠崟涓嶅瓨鍦?");
-        if (!isAdmin(auth) && !Objects.equals(order.getUserId(), extractUserId(auth))) {
-            return ApiResponse.fail("鏃犳潈鏌ョ湅璇ヨ鍗?");
-        }
+        try {
+            RentalOrder order = orderService.getByOrderNo(orderNo);
+            if (order == null) return ApiResponse.fail("订单不存在");
+            if (!isAdmin(auth) && !Objects.equals(order.getUserId(), extractUserId(auth))) {
+                return ApiResponse.fail("无权查看该订单");
+            }
 
-        Map<String, Object> detail = orderService.getDetailByOrderNo(orderNo);
-        if (detail == null) return ApiResponse.fail("璁㈠崟涓嶅瓨鍦?");
-        detail.put("events", buildEvents(order));
-        return ApiResponse.success(detail);
+            Map<String, Object> detail = orderService.getDetailByOrderNo(orderNo);
+            if (detail == null) return ApiResponse.fail("订单不存在");
+            detail.put("events", buildEvents(order));
+            return ApiResponse.success(detail);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.fail(e.getMessage());
+        }
     }
 
     @PutMapping("/{id}/status")
@@ -92,7 +100,7 @@ public class OrderController {
         try {
             String status = payload.getOrDefault("status", "");
             orderService.transitionStatus(id, status);
-            return ApiResponse.success("鐘舵€佹洿鏂版垚鍔?", null);
+            return ApiResponse.success("状态更新成功", null);
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }
@@ -103,12 +111,12 @@ public class OrderController {
                                  @RequestHeader(value = "Authorization", required = false) String auth) {
         try {
             RentalOrder order = orderService.getByOrderNo(orderNo);
-            if (order == null) return ApiResponse.fail("璁㈠崟涓嶅瓨鍦?");
+            if (order == null) return ApiResponse.fail("订单不存在");
             if (!Objects.equals(order.getUserId(), extractUserId(auth)) && !isAdmin(auth)) {
-                return ApiResponse.fail("鏃犳潈鍙栨秷璇ヨ鍗?");
+                return ApiResponse.fail("无权取消该订单");
             }
             orderService.transitionStatus(order.getId(), "CANCELLED");
-            return ApiResponse.success("璁㈠崟宸插彇娑?", null);
+            return ApiResponse.success("订单已取消", null);
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }
@@ -119,7 +127,7 @@ public class OrderController {
             Long uid = JwtUtil.getUserId(auth.substring(7));
             if (uid != null) return uid;
         }
-        return 1L;
+        throw new IllegalArgumentException("请先登录");
     }
 
     private boolean isAdmin(String auth) {

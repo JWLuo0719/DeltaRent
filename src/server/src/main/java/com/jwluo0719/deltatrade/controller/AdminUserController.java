@@ -36,7 +36,7 @@ public class AdminUserController {
         try {
             String role = String.valueOf(payload.getOrDefault("role", ""));
             userService.updateRole(id, role);
-            return ApiResponse.success("瑙掕壊宸叉洿鏂?", null);
+            return ApiResponse.success("角色已更新", null);
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }
@@ -47,7 +47,7 @@ public class AdminUserController {
         try {
             Integer status = payload.get("status") instanceof Number number ? number.intValue() : Integer.parseInt(String.valueOf(payload.getOrDefault("status", "1")));
             userService.updateStatus(id, status);
-            return ApiResponse.success("鐢ㄦ埛鐘舵€佸凡鏇存柊", null);
+            return ApiResponse.success("用户状态已更新", null);
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }

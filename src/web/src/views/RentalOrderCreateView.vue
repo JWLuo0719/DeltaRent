@@ -148,9 +148,9 @@ const finalPrice = computed(() => {
 async function loadAccounts() {
   accountsLoading.value = true;
   try {
-    const response = await getRentals({ status: 'AVAILABLE' });
+    const response = await getRentals({ status: 'AVAILABLE', page: 1, pageSize: 1000 });
     if (response.data.success) {
-      accounts.value = response.data.data;
+      accounts.value = response.data.data.list;
 
       if (!form.accountId && accounts.value.length > 0) {
         form.accountId = accounts.value[0].id;

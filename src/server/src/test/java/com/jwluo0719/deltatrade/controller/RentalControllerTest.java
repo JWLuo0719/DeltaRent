@@ -10,6 +10,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.List;
 
 import static org.mockito.Mockito.when;
@@ -39,14 +40,20 @@ class RentalControllerTest {
         product.setEquipmentLevelText("Advanced");
         product.setWarehouseValueText("High");
         product.setStatus("AVAILABLE");
-        when(productService.listForBrowse(null, null, null, null)).thenReturn(List.of(product));
+        when(productService.listForBrowse(null, null, null, null, null, null, null)).thenReturn(Map.of(
+                "list", List.of(product),
+                "total", 1,
+                "allTags", List.of("tag")
+        ));
 
         mockMvc.perform(get("/api/rentals"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
-                .andExpect(jsonPath("$.data[0].name").value("Test Product"))
-                .andExpect(jsonPath("$.data[0].tagText").value("tag"))
-                .andExpect(jsonPath("$.data[0].status").value("AVAILABLE"));
+                .andExpect(jsonPath("$.data.total").value(1))
+                .andExpect(jsonPath("$.data.allTags[0]").value("tag"))
+                .andExpect(jsonPath("$.data.list[0].name").value("Test Product"))
+                .andExpect(jsonPath("$.data.list[0].tagText").value("tag"))
+                .andExpect(jsonPath("$.data.list[0].status").value("AVAILABLE"));
     }
 
     @Test

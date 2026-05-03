@@ -30,21 +30,33 @@ public class RentalController {
     }
 
     @GetMapping
-    public ApiResponse<List<Map<String, Object>>> list(@RequestParam(required = false) String keyword,
-                                                       @RequestParam(required = false) String status,
-                                                       @RequestParam(required = false) String tags,
-                                                       @RequestParam(required = false) String sortBy) {
+    public ApiResponse<Map<String, Object>> list(@RequestParam(required = false) String keyword,
+                                                 @RequestParam(required = false) String tags,
+                                                 @RequestParam(required = false) String level,
+                                                 @RequestParam(required = false) String status,
+                                                 @RequestParam(required = false) String sortBy,
+                                                 @RequestParam(required = false) Integer page,
+                                                 @RequestParam(required = false) Integer pageSize) {
+        Map<String, Object> payload = productService.listForBrowse(keyword, tags, level, status, sortBy, page, pageSize);
+        @SuppressWarnings("unchecked")
+        List<RentalProduct> list = (List<RentalProduct>) payload.getOrDefault("list", List.of());
+
         List<Map<String, Object>> result = new ArrayList<>();
-        for (RentalProduct product : productService.listForBrowse(keyword, status, tags, sortBy)) {
+        for (RentalProduct product : list) {
             result.add(toView(product));
         }
-        return ApiResponse.success(result);
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("list", result);
+        response.put("total", payload.get("total"));
+        response.put("allTags", payload.get("allTags"));
+        return ApiResponse.success(response);
     }
 
     @GetMapping("/{id}")
     public ApiResponse<Map<String, Object>> detail(@PathVariable Long id) {
         RentalProduct product = productService.getById(id);
-        if (product == null) return ApiResponse.fail("鍟嗗搧涓嶅瓨鍦?");
+        if (product == null) return ApiResponse.fail("账号不存在");
         return ApiResponse.success(toView(product));
     }
 
@@ -62,7 +74,7 @@ public class RentalController {
             product.setStatus(String.valueOf(payload.getOrDefault("status", "AVAILABLE")));
             product.setDescription(String.valueOf(payload.getOrDefault("description", "")));
             productService.create(product);
-            return ApiResponse.success("鍒涘缓鎴愬姛", toView(product));
+            return ApiResponse.success("创建成功", toView(product));
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }
@@ -83,7 +95,7 @@ public class RentalController {
             product.setStatus(String.valueOf(payload.getOrDefault("status", "AVAILABLE")));
             product.setDescription(String.valueOf(payload.getOrDefault("description", "")));
             productService.update(product);
-            return ApiResponse.success("鏇存柊鎴愬姛", null);
+            return ApiResponse.success("更新成功", null);
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }
@@ -92,14 +104,14 @@ public class RentalController {
     @DeleteMapping("/{id}")
     public ApiResponse<?> delete(@PathVariable Long id) {
         productService.delete(id);
-        return ApiResponse.success("鍒犻櫎鎴愬姛", null);
+        return ApiResponse.success("删除成功", null);
     }
 
     @PutMapping("/{id}/status")
     public ApiResponse<?> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> payload) {
         String status = payload.getOrDefault("status", "AVAILABLE");
         productService.updateStatus(id, status);
-        return ApiResponse.success("鐘舵€佹洿鏂版垚鍔?", null);
+        return ApiResponse.success("状态更新成功", null);
     }
 
     private Map<String, Object> toView(RentalProduct product) {
@@ -113,7 +125,7 @@ public class RentalController {
         item.put("equipmentLevelText", product.getEquipmentLevelText());
         item.put("warehouseValueText", product.getWarehouseValueText());
         item.put("tag", product.getTagText());
-        item.put("price", product.getHourPrice() + " / 灏忔椂");
+        item.put("price", product.getHourPrice() + " / 小时");
         item.put("status", product.getStatus());
         item.put("coinAmount", product.getCoinAmountText());
         item.put("equipmentLevel", product.getEquipmentLevelText());

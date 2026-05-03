@@ -118,9 +118,13 @@ function statusText(status: string) {
 async function loadProducts() {
   loading.value = true;
   try {
-    const response = await getRentals({ keyword: keyword.value || undefined });
+    const response = await getRentals({
+      keyword: keyword.value || undefined,
+      page: 1,
+      pageSize: 1000
+    });
     if (response.data.success) {
-      products.value = response.data.data;
+      products.value = response.data.data.list;
       return;
     }
     ElMessage.error(response.data.message || '账号列表加载失败');

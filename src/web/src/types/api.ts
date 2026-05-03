@@ -42,6 +42,12 @@ export interface RentalProduct {
   warehouseValue?: string;
 }
 
+export interface RentalListResult {
+  list: RentalProduct[];
+  total: number;
+  allTags: string[];
+}
+
 export interface AccountDetail extends RentalProduct {
   imageUrls: string[];
   availableDurations: number[];

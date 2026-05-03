@@ -24,15 +24,18 @@ public class OrderService {
 
     public RentalOrder create(Long userId, Long productId, Integer rentHours, String contactInfo, String deliveryNote) {
         if (rentHours == null || rentHours < 1) {
-            throw new IllegalArgumentException("绉熻祦鏃堕暱蹇呴』澶т簬 0");
+            throw new IllegalArgumentException("租赁时长必须大于 0");
         }
 
         RentalProduct product = productMapper.findById(productId);
         if (product == null) {
-            throw new IllegalArgumentException("绉熻祦鍟嗗搧涓嶅瓨鍦?");
+            throw new IllegalArgumentException("租赁账号不存在");
         }
         if (!"AVAILABLE".equals(product.getStatus())) {
-            throw new IllegalArgumentException("璇ュ晢鍝佸綋鍓嶄笉鍙");
+            throw new IllegalArgumentException("该账号当前不可租");
+        }
+        if (orderMapper.countActiveByUserAndProduct(userId, productId) > 0) {
+            throw new IllegalArgumentException("该账号已有进行中的订单，请勿重复提交");
         }
 
         BigDecimal amount = product.getHourPrice().multiply(BigDecimal.valueOf(rentHours));
@@ -90,11 +93,11 @@ public class OrderService {
 
     public void transitionStatus(Long orderId, String targetStatus) {
         RentalOrder order = orderMapper.findById(orderId);
-        if (order == null) throw new IllegalArgumentException("璁㈠崟涓嶅瓨鍦?");
+        if (order == null) throw new IllegalArgumentException("订单不存在");
 
         String current = order.getStatus();
         if (!isValidTransition(current, targetStatus)) {
-            throw new IllegalArgumentException("涓嶅厑璁镐粠 " + current + " 鍙樻洿涓? " + targetStatus);
+            throw new IllegalArgumentException("不允许从 " + current + " 变更为 " + targetStatus);
         }
         orderMapper.updateStatus(orderId, targetStatus);
     }

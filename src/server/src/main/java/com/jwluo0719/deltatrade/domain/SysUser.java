@@ -13,6 +13,7 @@ public class SysUser {
     private String roleCode;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime passwordUpdatedAt;
 
     public Long getId() {
         return id;
@@ -84,5 +85,13 @@ public class SysUser {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public LocalDateTime getPasswordUpdatedAt() {
+        return passwordUpdatedAt;
+    }
+
+    public void setPasswordUpdatedAt(LocalDateTime passwordUpdatedAt) {
+        this.passwordUpdatedAt = passwordUpdatedAt;
     }
 }
