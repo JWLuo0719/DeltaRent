@@ -135,7 +135,40 @@ const server = createServer(async (req, res) => {
     }
 
     if (req.method === 'GET' && pathname === '/api/rentals') {
-      sendJson(res, 200, ok(rentals));
+      const url = new URL(req.url, `http://localhost:${port}`);
+      const keyword = (url.searchParams.get('keyword') || '').toLowerCase();
+      const tagsFilter = url.searchParams.get('tags') || '';
+      const level = url.searchParams.get('level') || '';
+      const status = url.searchParams.get('status') || '';
+      const sortBy = url.searchParams.get('sortBy') || 'default';
+      const page = Math.max(1, Number(url.searchParams.get('page') || 1));
+      const pageSize = Math.max(1, Number(url.searchParams.get('pageSize') || 12));
+
+      // 过滤
+      let list = rentals.filter(r => {
+        if (keyword && !r.name.toLowerCase().includes(keyword) && !r.tagText.toLowerCase().includes(keyword)) return false;
+        if (tagsFilter && !tagsFilter.split(',').every(t => r.tagText.includes(t.trim()))) return false;
+        if (level && !r.equipmentLevelText.includes(level)) return false;
+        if (status && r.status !== status) return false;
+        return true;
+      });
+
+      // 排序
+      if (sortBy === 'price_asc') list.sort((a, b) => a.hourPrice - b.hourPrice);
+      else if (sortBy === 'price_desc') list.sort((a, b) => b.hourPrice - a.hourPrice);
+
+      const total = list.length;
+
+      // 聚合所有标签
+      const allTagsSet = new Set();
+      rentals.forEach(r => r.tagText.split(',').forEach(t => { const tt = t.trim(); if (tt) allTagsSet.add(tt); }));
+      const allTags = Array.from(allTagsSet);
+
+      // 分页
+      const start = (page - 1) * pageSize;
+      const paginatedList = list.slice(start, start + pageSize);
+
+      sendJson(res, 200, ok({ list: paginatedList, total, allTags }));
       return;
     }
 

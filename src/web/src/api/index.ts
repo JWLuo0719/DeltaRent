@@ -47,10 +47,14 @@ export function getPortalSummary() {
   return http.get<ApiResponse<PortalSummary>>('/portal/summary');
 }
 
+// ==================== 账号产品 ====================
+
+/** GET /api/rentals */
 export function getRentals(params?: {
-  status?: string;
-  tags?: string;
   keyword?: string;
+  tags?: string;
+  level?: string;
+  status?: string;
   sortBy?: string;
   page?: number;
   pageSize?: number;
