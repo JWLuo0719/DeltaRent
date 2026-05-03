@@ -198,6 +198,13 @@ const sendVerifyLoading = ref(false);
 const verifyCountdown = ref(0);
 let countdownTimer: number | null = null;
 
+function clearCountdown() {
+  if (countdownTimer) {
+    clearInterval(countdownTimer);
+    countdownTimer = null;
+  }
+}
+
 async function handleLogin() {
   if (!form.phone || !form.password) {
     ElMessage.warning('请输入手机号和密码');
@@ -256,10 +263,11 @@ async function handleSendVerifyCode() {
     await sendVerifyCodeApi({ phone: forgetForm.phone, type: 'reset_password' });
     ElMessage.success('验证码已发送');
     verifyCountdown.value = 60;
+    clearCountdown();
     countdownTimer = window.setInterval(() => {
       verifyCountdown.value--;
       if (verifyCountdown.value <= 0) {
-        if (countdownTimer) clearInterval(countdownTimer);
+        clearCountdown();
       }
     }, 1000);
   } catch (error) {
@@ -292,9 +300,11 @@ async function handleResetPassword() {
       verifyCode: forgetForm.verifyCode,
       newPassword: forgetForm.newPassword
     });
+    clearCountdown();
     ElMessage.success('密码重置成功，请使用新密码登录');
     showForgetModal.value = false;
   } catch (error) {
+    clearCountdown();
     ElMessage.error('重置失败，请重试');
   }
 }

@@ -8,7 +8,7 @@
         <p class="page-subtitle">浏览所有可租账号，选择心仪套餐，快速完成租赁</p>
       </div>
       <div class="hero-stat">
-        <span class="stat-num">{{ products.length }}</span>
+        <span class="stat-num">{{ total }}</span>
         <span class="stat-label">个账号在架</span>
       </div>
     </section>
@@ -321,14 +321,9 @@ async function loadRentals() {
       sortBy: sortBy.value !== 'default' ? sortBy.value : undefined
     });
     if (res.data.success) {
-      const data = res.data.data;
-      if (Array.isArray(data)) {
-        products.value = data;
-      } else if (data && typeof data === 'object') {
-        products.value = (data as any).list ?? data;
-        total.value = (data as any).total ?? 0;
-        if ((data as any).allTags) allTags.value = (data as any).allTags;
-      }
+      products.value = res.data.data.list;
+      total.value = res.data.data.total;
+      allTags.value = res.data.data.allTags;
     } else {
       ElMessage.error(res.data.message || '账号列表加载失败');
     }
@@ -397,9 +392,17 @@ function onKeywordChange() {
 }
 
 // ---- 重置分页 ----
-watch([selectedTags, selectedLevel, selectedStatus, sortBy], () => {
-  currentPage.value = 1;
+watch(currentPage, () => {
+  loadRentals();
 });
+
+watch([selectedTags, selectedLevel, selectedStatus, sortBy], () => {
+  if (currentPage.value !== 1) {
+    currentPage.value = 1;
+    return;
+  }
+  loadRentals();
+}, { deep: true });
 
 onMounted(() => {
   loadRentals();

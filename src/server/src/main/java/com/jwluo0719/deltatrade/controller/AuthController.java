@@ -1,59 +1,80 @@
 package com.jwluo0719.deltatrade.controller;
 
 import com.jwluo0719.deltatrade.common.ApiResponse;
-import com.jwluo0719.deltatrade.domain.SysUser;
-import com.jwluo0719.deltatrade.mapper.SysUserMapper;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import com.jwluo0719.deltatrade.service.UserService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    private final SysUserMapper sysUserMapper;
-    private final PasswordEncoder passwordEncoder;
+    private final UserService userService;
 
-    public AuthController(SysUserMapper sysUserMapper, PasswordEncoder passwordEncoder) {
-        this.sysUserMapper = sysUserMapper;
-        this.passwordEncoder = passwordEncoder;
+    public AuthController(UserService userService) {
+        this.userService = userService;
     }
 
     @PostMapping("/login")
     public ApiResponse<Map<String, Object>> login(@RequestBody Map<String, Object> payload) {
-        String username = String.valueOf(payload.getOrDefault("username", ""));
-        String password = String.valueOf(payload.getOrDefault("password", ""));
-
-        if (username.isBlank() || password.isBlank()) {
-            return ApiResponse.fail("Username and password are required");
+        try {
+            String loginKey = firstNonBlank(payload.get("phone"), payload.get("username"));
+            String password = String.valueOf(payload.getOrDefault("password", ""));
+            Map<String, Object> result = userService.login(loginKey, password);
+            return ApiResponse.success("登录成功", result);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.fail(e.getMessage());
         }
+    }
 
-        SysUser userRecord = sysUserMapper.findByUsername(username);
-        if (userRecord == null || userRecord.getStatus() == null || userRecord.getStatus() != 1) {
-            return ApiResponse.fail("Invalid username or password");
+    @PostMapping("/register")
+    public ApiResponse<Map<String, Object>> register(@RequestBody Map<String, Object> payload) {
+        try {
+            String username = firstNonBlank(payload.get("username"), payload.get("phone"));
+            String password = String.valueOf(payload.getOrDefault("password", ""));
+            String nickname = String.valueOf(payload.getOrDefault("nickname", ""));
+            String phone = String.valueOf(payload.getOrDefault("phone", ""));
+            userService.register(username, password, nickname, phone);
+            return ApiResponse.success("注册成功", null);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.fail(e.getMessage());
         }
+    }
 
-        String savedPassword = userRecord.getPasswordHash();
-        boolean passwordOk = savedPassword != null
-            && (savedPassword.equals(password) || (savedPassword.startsWith("$2") && passwordEncoder.matches(password, savedPassword)));
-        if (!passwordOk) {
-            return ApiResponse.fail("Invalid username or password");
+    @PostMapping("/send-verify-code")
+    public ApiResponse<Void> sendVerifyCode(@RequestBody Map<String, Object> payload) {
+        try {
+            String phone = String.valueOf(payload.getOrDefault("phone", ""));
+            String type = String.valueOf(payload.getOrDefault("type", "reset_password"));
+            userService.sendVerifyCode(phone, type);
+            return ApiResponse.success("验证码已发送", null);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.fail(e.getMessage());
         }
+    }
 
-        Map<String, Object> user = new LinkedHashMap<String, Object>();
-        user.put("id", userRecord.getId());
-        user.put("username", userRecord.getUsername());
-        user.put("displayName", userRecord.getNickname());
-        user.put("role", "ADMIN");
+    @PostMapping("/reset-password")
+    public ApiResponse<Void> resetPassword(@RequestBody Map<String, Object> payload) {
+        try {
+            String phone = String.valueOf(payload.getOrDefault("phone", ""));
+            String verifyCode = String.valueOf(payload.getOrDefault("verifyCode", ""));
+            String newPassword = String.valueOf(payload.getOrDefault("newPassword", ""));
+            userService.resetPassword(phone, verifyCode, newPassword);
+            return ApiResponse.success("密码重置成功", null);
+        } catch (IllegalArgumentException e) {
+            return ApiResponse.fail(e.getMessage());
+        }
+    }
 
-        Map<String, Object> result = new LinkedHashMap<String, Object>();
-        result.put("token", "java-backend-demo-token-" + userRecord.getId());
-        result.put("user", user);
-        return ApiResponse.success("Login success", result);
+    private String firstNonBlank(Object first, Object second) {
+        String firstValue = first == null ? "" : String.valueOf(first).trim();
+        if (!firstValue.isBlank()) {
+            return firstValue;
+        }
+        return second == null ? "" : String.valueOf(second).trim();
     }
 }

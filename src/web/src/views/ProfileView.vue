@@ -52,9 +52,10 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed, onMounted } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
+import { changeMyPassword, getMyProfile, updateMyProfile } from '@/api';
 import { useAuthStore } from '@/stores/auth';
 
 const router = useRouter();
@@ -62,11 +63,13 @@ const auth = useAuthStore();
 
 const saving = ref(false);
 const pwdSaving = ref(false);
+const originalNickname = ref('');
 
 const form = reactive({
   phone: '',
   nickname: '',
-  createdAt: ''
+  createdAt: '',
+  role: ''
 });
 
 const pwdForm = reactive({
@@ -77,36 +80,93 @@ const pwdForm = reactive({
 
 const roleText = computed(() => {
   const map: Record<string, string> = { ADMIN: '管理员', USER: '普通用户', CS: '客服' };
-  return map[auth.user?.role || ''] || '未知';
+  return map[form.role || auth.user?.role || ''] || '未知';
 });
 
-function handleSave() {
-  // TODO: 调用后端接口保存资料
-  ElMessage.success('资料已保存');
+async function loadProfile() {
+  try {
+    const response = await getMyProfile();
+    if (response.data.success) {
+      const profile = response.data.data;
+      form.phone = profile.phone;
+      form.nickname = profile.nickname;
+      form.createdAt = profile.createdAt;
+      form.role = profile.role;
+      originalNickname.value = profile.nickname;
+      return;
+    }
+    ElMessage.error(response.data.message || '资料加载失败');
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '资料加载失败');
+  }
+}
+
+async function handleSave() {
+  if (!form.nickname.trim()) {
+    ElMessage.warning('请输入昵称');
+    return;
+  }
+  saving.value = true;
+  try {
+    const response = await updateMyProfile({ nickname: form.nickname.trim() });
+    if (response.data.success) {
+      const profile = response.data.data;
+      form.nickname = profile.nickname;
+      originalNickname.value = profile.nickname;
+      if (auth.user) {
+        auth.setAuth(auth.token!, {
+          ...auth.user,
+          displayName: profile.nickname
+        });
+      }
+      ElMessage.success('资料已保存');
+      return;
+    }
+    ElMessage.error(response.data.message || '保存失败');
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '保存失败');
+  } finally {
+    saving.value = false;
+  }
 }
 
 function handleReset() {
-  form.nickname = auth.user?.displayName || '';
+  form.nickname = originalNickname.value;
 }
 
-function handleChangePwd() {
+async function handleChangePwd() {
   if (!pwdForm.oldPassword) {
     ElMessage.warning('请输入原密码');
     return;
   }
   if (!pwdForm.newPassword || pwdForm.newPassword.length < 6) {
-    ElMessage.warning('新密码至少6位');
+    ElMessage.warning('新密码至少 6 位');
     return;
   }
   if (pwdForm.newPassword !== pwdForm.confirmPassword) {
     ElMessage.warning('两次输入的密码不一致');
     return;
   }
-  // TODO: 调用后端接口修改密码
-  ElMessage.success('密码已修改');
-  pwdForm.oldPassword = '';
-  pwdForm.newPassword = '';
-  pwdForm.confirmPassword = '';
+
+  pwdSaving.value = true;
+  try {
+    const response = await changeMyPassword({
+      oldPassword: pwdForm.oldPassword,
+      newPassword: pwdForm.newPassword
+    });
+    if (response.data.success) {
+      ElMessage.success('密码已修改');
+      pwdForm.oldPassword = '';
+      pwdForm.newPassword = '';
+      pwdForm.confirmPassword = '';
+      return;
+    }
+    ElMessage.error(response.data.message || '密码修改失败');
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '密码修改失败');
+  } finally {
+    pwdSaving.value = false;
+  }
 }
 
 function handleLogout() {
@@ -114,13 +174,7 @@ function handleLogout() {
   router.push('/home');
 }
 
-onMounted(() => {
-  if (auth.user) {
-    form.phone = '138****0000'; // TODO: 真实手机号脱敏
-    form.nickname = auth.user.displayName;
-    form.createdAt = '2026-04-20';
-  }
-});
+onMounted(loadProfile);
 </script>
 
 <style scoped>

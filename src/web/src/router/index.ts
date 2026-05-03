@@ -100,7 +100,7 @@ router.beforeEach((to, _from, next) => {
     return;
   }
 
-  if (roles && roles.length > 0 && auth.user) {
+  if (roles !== undefined && roles.length > 0 && auth.user) {
     if (roles.includes(auth.user.role)) {
       next();
     } else {
@@ -109,7 +109,10 @@ router.beforeEach((to, _from, next) => {
     return;
   }
 
-  next();
+  if (roles !== undefined && auth.user && requireAuth) {
+    next({ name: 'portal' });
+    return;
+  }
 });
 
 export default router;

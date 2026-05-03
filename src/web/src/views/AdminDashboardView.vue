@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, shallowRef } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { useAuthStore } from '@/stores/auth';
@@ -70,6 +70,12 @@ const allMenus = [
 const visibleMenus = computed(() => {
   if (!auth.user) return [];
   return allMenus.filter(m => m.roles.includes(auth.user!.role));
+});
+
+watchEffect(() => {
+  if (!visibleMenus.value.find(menu => menu.key === activeMenu.value) && visibleMenus.value.length > 0) {
+    activeMenu.value = visibleMenus.value[0].key;
+  }
 });
 
 // 当前选中菜单项

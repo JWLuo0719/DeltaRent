@@ -1,7 +1,7 @@
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $serverRoot = Join-Path $projectRoot 'src\server'
-$jdkHome = 'D:\ProgrammingLanguage\Java\Jdk-21'
-$gradleHome = Join-Path $projectRoot '.tools\gradle-8.10.2'
+$jdkHome = 'C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot'
+$gradleHome = Join-Path $projectRoot '.tools\gradle-8.14'
 $gradleExe = Join-Path $gradleHome 'bin\gradle.bat'
 
 if (-not (Test-Path $jdkHome)) {
@@ -13,6 +13,9 @@ if (-not (Test-Path $gradleExe)) {
   Write-Error "Gradle was not found at $gradleExe"
   exit 1
 }
+
+$env:JAVA_HOME = $jdkHome
+$env:Path = "$jdkHome\bin;$env:Path"
 
 $env:JAVA_HOME = $jdkHome
 $env:Path = "$jdkHome\bin;$env:Path"

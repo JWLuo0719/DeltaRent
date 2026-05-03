@@ -11,7 +11,19 @@
       "WebFetch(domain:www.zxfps.com)",
       "WebFetch(domain:www.mddjclub.com)",
       "WebFetch(domain:hbwl9.com)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(cmd.exe /c \"where java\")",
+      "Bash(cmd.exe /c \"dir /s /b D:\\\\*java.exe\")",
+      "Bash(cmd.exe /c \"dir /s /b D:\\\\*jdk* 2>nul\")",
+      "Bash(cmd.exe /c \"dir /s /b C:\\\\*jdk* 2>nul\")",
+      "Bash(cmd.exe /c \"java -version\")",
+      "Bash(taskkill //F //PID 27860)",
+      "Bash(mkdir -p ~/.gradle/wrapper/dists/gradle-8.14-bin/38aieal9i53h9rfe7vjup95b9/)",
+      "Bash(ln -sf ~/.gradle/wrapper/dists/gradle-8.14-bin/38aieal9i53h9rfe7vjup95b9/gradle-8.14 ~/gradle-8.14)",
+      "Bash(curl -s -X POST http://localhost:8080/api/auth/login -H \"Content-Type: application/json\" -d '{\"phone\":\"13999990002\",\"password\":\"test123456\"}')",
+      "Bash(taskkill //F //PID 37492)",
+      "Bash(curl -s -X POST http://localhost:8080/api/auth/register -H \"Content-Type: application/json\" -d '{\"phone\":\"13999990003\",\"password\":\"test123456\"}')",
+      "Bash(curl -s -X POST http://localhost:8080/api/auth/login -H \"Content-Type: application/json\" -d '{\"phone\":\"13999990003\",\"password\":\"test123456\"}')"
     ],
     "additionalDirectories": [
       "D:\\",

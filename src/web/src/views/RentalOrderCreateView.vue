@@ -5,46 +5,73 @@
         <span class="back-icon">←</span> 返回账号列表
       </button>
       <h1 class="page-title">创建账号租赁订单</h1>
-      <p class="page-subtitle">当前页面已接入 Mock 下单接口，可直接验证表单提交和订单返回结果。</p>
+      <p class="page-subtitle">当前页面已接入真实后端接口，可直接确认账号信息并提交订单。</p>
     </section>
 
     <section class="panel-card">
-      <!-- 已选账号信息（只读展示，不可修改） -->
-      <div class="account-info-card">
+      <div v-if="selectedAccount" class="account-info-card">
         <div class="account-info-left">
-          <div class="account-name">{{ accountName }}</div>
-          <div class="account-tags">
+          <div class="account-name">{{ selectedAccount.name }}</div>
+          <div v-if="accountTags.length" class="account-tags">
             <span v-for="tag in accountTags" :key="tag" class="tag-chip">{{ tag }}</span>
           </div>
         </div>
         <div class="account-price-block">
           <span class="price-label">单价</span>
-          <span class="price-value">¥{{ accountPrice }}</span>
+          <span class="price-value">¥{{ selectedAccount.hourPrice }}</span>
           <span class="price-unit">/小时</span>
         </div>
       </div>
 
-      <!-- 动态价格提示 -->
-      <div class="discount-tip">
+      <div v-if="selectedAccount" class="discount-tip">
         <span class="discount-icon">💡</span>
         当前选择时长 {{ form.rentHours }} 小时，折扣：<strong>{{ discountLabel }}</strong>，实付：<strong>¥{{ finalPrice }}</strong>
       </div>
 
       <el-form label-position="top" class="order-form">
         <div class="grid-2">
-          <!-- 租赁时长（从详情页预选，不可更改） -->
-      <div class="duration-display-card">
-        <span class="duration-label">租赁时长</span>
-        <span class="duration-value">{{ form.rentHours }} 小时</span>
-        <span class="duration-discount">{{ discountLabel }}</span>
-      </div>
-          <el-form-item label="联系方式">
-            <el-input v-model="form.contactInfo" placeholder="请输入QQ / 微信 / 手机号" />
+          <el-form-item v-if="!accountLocked" label="账号编号">
+            <el-select
+              v-model="form.accountId"
+              placeholder="请选择账号"
+              filterable
+              :loading="accountsLoading"
+            >
+              <el-option
+                v-for="item in accounts"
+                :key="item.id"
+                :label="`${item.name}（￥${item.hourPrice}/小时）`"
+                :value="item.id"
+              />
+            </el-select>
           </el-form-item>
+
+          <el-form-item v-if="!durationLocked" label="租赁时长">
+            <el-select v-model="form.rentHours" placeholder="请选择时长">
+              <el-option
+                v-for="hours in durationOptions"
+                :key="hours"
+                :label="`${hours}小时`"
+                :value="hours"
+              />
+            </el-select>
+          </el-form-item>
+
+          <div v-else class="duration-display-card">
+            <span class="duration-label">租赁时长</span>
+            <span class="duration-value">{{ form.rentHours }} 小时</span>
+            <span class="duration-discount">{{ discountLabel }}</span>
+          </div>
         </div>
+
+        <el-form-item label="联系方式">
+          <el-input v-model="form.contactInfo" placeholder="请输入 QQ / 微信 / 手机号" />
+        </el-form-item>
+
         <el-form-item label="备注">
           <el-input v-model="form.remark" placeholder="可填写交付时间、使用偏好等补充信息" />
         </el-form-item>
+
         <el-button type="primary" :loading="submitting" @click="submitOrder">提交订单</el-button>
       </el-form>
 
@@ -61,52 +88,101 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { createOrder } from '@/api';
-import type { CreateOrderPayload } from '@/types/api';
+import { createOrder, getRentals } from '@/api';
+import type { CreateOrderPayload, RentalProduct } from '@/types/api';
 
 const route = useRoute();
 
-// 从路由参数获取账号ID
-const accountId = Number(route.query.accountId) || 1001;
+function parseQueryNumber(value: unknown) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+}
 
-// Mock账号数据（实际应从API获取）
-const accountMap: Record<number, { name: string; tags: string[]; price: number }> = {
-  1001: { name: '高战账号 A01', tags: ['满配仓库', '稀有外观'], price: 28 },
-  1002: { name: '活动账号 B02', tags: ['稀有外观', '活动道具'], price: 18 },
-  1003: { name: '新手体验号 C03', tags: ['新手试用'], price: 9 }
-};
+function splitTags(tagText?: string) {
+  return (tagText ?? '')
+    .split(',')
+    .map(tag => tag.trim())
+    .filter(Boolean);
+}
 
-const account = computed(() => accountMap[accountId] || accountMap[1001]);
-const accountName = computed(() => account.value.name);
-const accountTags = computed(() => account.value.tags);
-const accountPrice = computed(() => account.value.price);
+const requestedAccountId = parseQueryNumber(route.query.accountId);
+const requestedDuration = parseQueryNumber(route.query.duration);
+const accountLocked = requestedAccountId > 0;
+const durationLocked = requestedDuration > 0;
+const durationOptions = [1, 6, 12, 24];
 
-// 折扣规则
-const discountMap: Record<number, { label: string; factor: number }> = {
-  1:  { label: '无折扣', factor: 1.0 },
-  6:  { label: '9折',   factor: 0.9 },
-  12: { label: '8折',   factor: 0.8 },
-  24: { label: '7折',   factor: 0.7 }
-};
-
-const discountLabel = computed(() => discountMap[form.rentHours]?.label || '无折扣');
-const discountFactor = computed(() => discountMap[form.rentHours]?.factor || 1.0);
-const finalPrice = computed(() => (accountPrice.value * form.rentHours * discountFactor.value).toFixed(2));
+const accounts = ref<RentalProduct[]>([]);
+const accountsLoading = ref(false);
+const submitting = ref(false);
+const resultMessage = ref('');
 
 const form = reactive<CreateOrderPayload>({
-  accountId,
-  rentHours: Number(route.query.duration) || 1,
+  accountId: requestedAccountId,
+  rentHours: requestedDuration || 1,
   contactInfo: '',
   remark: ''
 });
 
-const submitting = ref(false);
-const resultMessage = ref('');
+const selectedAccount = computed(
+  () => accounts.value.find(item => item.id === form.accountId) ?? null
+);
+const accountTags = computed(() => splitTags(selectedAccount.value?.tagText));
+
+const discountMap: Record<number, { label: string; factor: number }> = {
+  1: { label: '无折扣', factor: 1 },
+  6: { label: '9折', factor: 0.9 },
+  12: { label: '8折', factor: 0.8 },
+  24: { label: '7折', factor: 0.7 }
+};
+
+const discountLabel = computed(() => discountMap[form.rentHours]?.label || '无折扣');
+const discountFactor = computed(() => discountMap[form.rentHours]?.factor || 1);
+const finalPrice = computed(() => {
+  if (!selectedAccount.value) return '0.00';
+  return (selectedAccount.value.hourPrice * form.rentHours * discountFactor.value).toFixed(2);
+});
+
+async function loadAccounts() {
+  accountsLoading.value = true;
+  try {
+    const response = await getRentals({ status: 'AVAILABLE', page: 1, pageSize: 1000 });
+    if (response.data.success) {
+      accounts.value = response.data.data.list;
+
+      if (!form.accountId && accounts.value.length > 0) {
+        form.accountId = accounts.value[0].id;
+      }
+
+      if (form.accountId && !selectedAccount.value) {
+        ElMessage.warning(
+          accountLocked ? '所选账号暂不可租赁，请返回列表重新选择' : '默认账号已失效，请重新选择'
+        );
+        if (!accountLocked && accounts.value.length > 0) {
+          form.accountId = accounts.value[0].id;
+        }
+      }
+      return;
+    }
+
+    ElMessage.error(response.data.message || '账号列表加载失败');
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '账号列表加载失败');
+  } finally {
+    accountsLoading.value = false;
+  }
+}
 
 async function submitOrder() {
+  if (!form.accountId || !selectedAccount.value) {
+    ElMessage.warning(
+      accountLocked ? '所选账号暂不可租赁，请返回列表重新选择' : '请先选择账号'
+    );
+    return;
+  }
+
   if (!form.contactInfo.trim()) {
     ElMessage.warning('请先填写联系方式');
     return;
@@ -129,6 +205,8 @@ async function submitOrder() {
     submitting.value = false;
   }
 }
+
+onMounted(loadAccounts);
 </script>
 
 <style scoped>
@@ -192,7 +270,6 @@ async function submitOrder() {
   max-width: 720px;
 }
 
-/* 已选账号卡片 */
 .account-info-card {
   display: flex;
   align-items: center;
@@ -252,7 +329,6 @@ async function submitOrder() {
   color: #6a7d98;
 }
 
-/* 折扣提示 */
 .discount-tip {
   background: rgba(64, 158, 255, 0.08);
   border: 1px solid rgba(64, 158, 255, 0.18);
@@ -271,7 +347,6 @@ async function submitOrder() {
   margin-right: 4px;
 }
 
-/* 租赁时长只读展示卡 */
 .duration-display-card {
   display: flex;
   align-items: center;
@@ -357,17 +432,6 @@ async function submitOrder() {
   background: linear-gradient(135deg, #50b4ff 0%, #409eff 100%);
 }
 
-:deep(.el-alert) {
-  border-radius: 10px;
-  border: 1px solid rgba(64, 158, 255, 0.25);
-}
-
-:deep(.el-alert .el-alert__title) {
-  color: #d0d8e8;
-  font-size: 14px;
-}
-
-/* 订单成功提示卡 */
 .result-card {
   display: flex;
   align-items: flex-start;
@@ -428,17 +492,21 @@ async function submitOrder() {
   .grid-2 {
     grid-template-columns: 1fr;
   }
+
   .hero-card {
     padding: 24px 20px;
   }
+
   .panel-card {
     padding: 24px 20px;
   }
+
   .account-info-card {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
+
   .account-price-block {
     text-align: left;
   }
