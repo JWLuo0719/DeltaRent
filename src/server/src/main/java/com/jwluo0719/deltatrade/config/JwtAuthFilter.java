@@ -41,6 +41,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
         String path = request.getRequestURI();
+        System.out.println("[DEBUG doFilter] method=" + request.getMethod() + " path=" + path + " auth=" + request.getHeader("Authorization"));
+        System.out.println("[DEBUG] isPublic=" + isPublicRequest(request, path));
 
         // 公开接口直接放行，不校验令牌
         if (isPublicRequest(request, path)) {

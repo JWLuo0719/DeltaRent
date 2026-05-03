@@ -35,7 +35,7 @@ public interface RentalOrderMapper {
 
     @Select("""
             select o.order_no as orderNo,
-                   coalesce(u.nickname, u.username) as user,
+                   coalesce(u.nickname, u.username) as buyer,
                    p.name as item,
                    o.status as status
             from rental_order o
@@ -66,7 +66,7 @@ public interface RentalOrderMapper {
                    o.status as status,
                    o.created_at as createdAt,
                    o.updated_at as updatedAt,
-                   coalesce(u.nickname, u.username) as user,
+                   coalesce(u.nickname, u.username) as buyer,
                    p.name as item
             from rental_order o
             left join sys_user u on o.user_id = u.id
@@ -88,7 +88,7 @@ public interface RentalOrderMapper {
                    o.status as status,
                    o.created_at as createdAt,
                    o.updated_at as updatedAt,
-                   coalesce(u.nickname, u.username) as user,
+                   coalesce(u.nickname, u.username) as buyer,
                    p.name as item
             from rental_order o
             left join sys_user u on o.user_id = u.id
@@ -123,7 +123,7 @@ public interface RentalOrderMapper {
                    o.status as status,
                    o.created_at as createdAt,
                    o.updated_at as updatedAt,
-                   coalesce(u.nickname, u.username) as user,
+                   coalesce(u.nickname, u.username) as buyer,
                    p.name as item
             from rental_order o
             left join sys_user u on o.user_id = u.id
