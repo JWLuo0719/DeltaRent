@@ -1,6 +1,8 @@
 package com.jwluo0719.deltatrade.config;
 
 import com.jwluo0719.deltatrade.common.JwtUtil;
+import com.jwluo0719.deltatrade.domain.SysUser;
+import com.jwluo0719.deltatrade.mapper.SysUserMapper;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,6 +23,12 @@ import java.util.Collections;
  */
 public class JwtAuthFilter extends OncePerRequestFilter {
 
+    private final SysUserMapper sysUserMapper;
+
+    public JwtAuthFilter(SysUserMapper sysUserMapper) {
+        this.sysUserMapper = sysUserMapper;
+    }
+
     // 不需要认证即可访问的接口路径前缀（仅 GET 对 rentals/notices 公开）
     private static final String[] PUBLIC_PATH_PREFIXES = {
             "/api/health",
@@ -33,6 +41,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
         String path = request.getRequestURI();
+        System.out.println("[DEBUG doFilter] method=" + request.getMethod() + " path=" + path + " auth=" + request.getHeader("Authorization"));
+        System.out.println("[DEBUG] isPublic=" + isPublicRequest(request, path));
 
         // 公开接口直接放行，不校验令牌
         if (isPublicRequest(request, path)) {
@@ -42,17 +52,24 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         // 从请求头提取 Bearer Token
         String token = extractToken(request);
-        if (token == null || !JwtUtil.isTokenValid(token)) {
-            // 令牌缺失或无效，返回 401
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json; charset=utf-8");
-            response.getWriter().write("{\"success\":false,\"message\":\"Unauthorized — please login first\",\"data\":null}");
+        Claims claims = token == null ? null : JwtUtil.parseToken(token);
+        if (claims == null) {
+            writeUnauthorized(response, "请先登录后再访问");
+            return;
+        }
+
+        Long userId = JwtUtil.getUserId(token);
+        SysUser user = userId == null ? null : sysUserMapper.findById(userId);
+        String tokenPasswordVersion = JwtUtil.getPasswordVersion(token);
+        String currentPasswordVersion = user == null ? null : JwtUtil.formatPasswordVersion(user.getPasswordUpdatedAt());
+        if (user == null || !safeEquals(tokenPasswordVersion, currentPasswordVersion)) {
+            writeUnauthorized(response, "登录状态已失效，请重新登录");
             return;
         }
 
         // 令牌有效，将用户信息设置到安全上下文
-        String role = JwtUtil.getRole(token);
-        String username = JwtUtil.getUsername(token);
+        String role = claims.get("role", String.class);
+        String username = claims.get("username", String.class);
         UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(
                         username, null,
@@ -85,5 +102,17 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             return header.substring(7);
         }
         return null;
+    }
+
+    private void writeUnauthorized(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json; charset=utf-8");
+        response.getWriter().write("{\"success\":false,\"message\":\"" + message + "\",\"data\":null}");
+    }
+
+    private boolean safeEquals(String left, String right) {
+        String normalizedLeft = left == null ? "" : left;
+        String normalizedRight = right == null ? "" : right;
+        return normalizedLeft.equals(normalizedRight);
     }
 }
