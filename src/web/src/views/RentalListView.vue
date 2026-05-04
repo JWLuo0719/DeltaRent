@@ -255,7 +255,7 @@ const auth = useAuthStore();
 const router = useRouter();
 
 // ---- 数据状态 ----
-const loading = ref(false);
+const loading = ref(true);
 const products = ref<RentalProduct[]>([]);
 const keyword = ref('');
 const selectedTags = ref<string[]>([]);

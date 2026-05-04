@@ -1,7 +1,7 @@
 <template>
-  <div class="page-container">
-    <div class="page-header">
-      <h2>我的订单</h2>
+  <div class="page-shell">
+    <div class="page-header-card">
+      <h2 class="page-title">我的订单</h2>
     </div>
 
     <div class="filter-bar">
@@ -15,7 +15,7 @@
       </el-select>
     </div>
 
-    <div v-if="loading" class="loading-wrap">
+    <div v-if="loading" class="order-card">
       <el-skeleton :rows="4" animated />
     </div>
 
@@ -36,14 +36,20 @@
       </div>
     </div>
 
-    <el-empty v-else description="暂无订单，去看看有哪些账号可租吧" />
+    <div v-else class="empty-state">
+      <div class="empty-icon">📭</div>
+      <div class="empty-title">暂无订单</div>
+      <div class="empty-desc">去看看有哪些账号可租吧</div>
+      <el-button class="empty-btn" @click="$router.push('/rentals')">浏览账号</el-button>
+    </div>
 
-    <div v-if="total > pageSize" class="pagination">
+    <div v-if="total > pageSize" class="pagination-bar">
       <el-pagination
         v-model:current-page="page"
         :page-size="pageSize"
         :total="total"
         layout="prev, pager, next"
+        background
       />
     </div>
   </div>
@@ -57,7 +63,7 @@ import { getMyOrders } from '@/api';
 import type { OrderSummary } from '@/types/api';
 
 const router = useRouter();
-const loading = ref(false);
+const loading = ref(true);
 const orders = ref<OrderSummary[]>([]);
 const filterStatus = ref('');
 const page = ref(1);
@@ -110,30 +116,36 @@ onMounted(loadOrders);
 </script>
 
 <style scoped>
-.page-container {
-  max-width: 900px;
-  margin: 0 auto;
+.page-shell {
+  min-height: 100vh;
+  background-color: #0f1c33;
+  background-image: linear-gradient(135deg, #060d1a 0%, #0f1c33 50%, #0a1525 100%);
+  color: #e2e8f0;
   padding: 24px;
 }
 
-.page-header {
-  margin-bottom: 20px;
-}
-
-.page-header h2 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-}
-
-.filter-bar {
+.page-header-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(96, 165, 250, 0.12);
+  border-radius: 16px;
+  padding: 24px 28px;
   margin-bottom: 16px;
 }
 
-.loading-wrap {
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
+.page-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: 1px;
+}
+
+.filter-bar {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(96, 165, 250, 0.1);
+  border-radius: 16px;
+  padding: 14px 20px;
+  margin-bottom: 16px;
 }
 
 .order-list {
@@ -143,15 +155,19 @@ onMounted(loadOrders);
 }
 
 .order-card {
-  background: #fff;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(96, 165, 250, 0.1);
+  border-radius: 16px;
   padding: 16px 20px;
   cursor: pointer;
-  transition: box-shadow 0.2s;
+  transition: all 0.2s;
 }
 
 .order-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: rgba(96, 165, 250, 0.06);
+  border-color: rgba(96, 165, 250, 0.25);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
 }
 
 .order-header {
@@ -162,26 +178,27 @@ onMounted(loadOrders);
 }
 
 .order-no {
-  font-size: 14px;
+  font-size: 13px;
   color: #64748b;
 }
 
 .status-tag {
-  font-size: 12px;
+  font-size: 11px;
   padding: 2px 10px;
   border-radius: 20px;
   font-weight: 500;
 }
 
-.status-WAITING_CONFIRM { background: #fef3c7; color: #d97706; }
-.status-IN_PROGRESS { background: #dbeafe; color: #2563eb; }
-.status-COMPLETED { background: #d1fae5; color: #059669; }
-.status-CANCELLED { background: #f3f4f6; color: #6b7280; }
-.status-AFTER_SALE { background: #fee2e2; color: #dc2626; }
+.status-WAITING_CONFIRM { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+.status-IN_PROGRESS { background: rgba(96, 165, 250, 0.15); color: #60a5fa; }
+.status-COMPLETED { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+.status-CANCELLED { background: rgba(100, 116, 139, 0.15); color: #94a3b8; }
+.status-AFTER_SALE { background: rgba(239, 68, 68, 0.15); color: #f87171; }
 
 .order-item {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
+  color: #f1f5f9;
   margin-bottom: 8px;
 }
 
@@ -195,12 +212,68 @@ onMounted(loadOrders);
 
 .order-time {
   font-size: 12px;
-  color: #94a3b8;
+  color: #475569;
 }
 
-.pagination {
-  margin-top: 20px;
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.empty-icon { font-size: 56px; margin-bottom: 16px; }
+.empty-title { font-size: 18px; font-weight: 600; color: #f1f5f9; margin-bottom: 8px; }
+.empty-desc { font-size: 14px; color: #64748b; margin-bottom: 20px; }
+
+.empty-btn {
+  background: rgba(96, 165, 250, 0.1) !important;
+  border: 1px solid rgba(96, 165, 250, 0.25) !important;
+  color: #60a5fa !important;
+}
+
+.pagination-bar {
+  margin-top: 24px;
   display: flex;
   justify-content: center;
 }
+
+:deep(.el-input__wrapper) {
+  background: #1e293b !important;
+  border-color: rgba(96, 165, 250, 0.2) !important;
+  box-shadow: none !important;
+}
+
+:deep(.el-input__inner) { color: #e2e8f0 !important; }
+:deep(.el-input__inner::placeholder) { color: #475569 !important; }
+
+:deep(.el-select .el-input__wrapper) {
+  background: #1e293b !important;
+  border-color: rgba(96, 165, 250, 0.2) !important;
+}
+
+:deep(.el-select__wrapper) {
+  background: #1e293b !important;
+  border-color: rgba(96, 165, 250, 0.2) !important;
+  box-shadow: none !important;
+}
+
+:deep(.el-select__placeholder) { color: #64748b !important; }
+:deep(.el-select-dropdown) {
+  background: #1e293b !important;
+  border: 1px solid rgba(96, 165, 250, 0.2) !important;
+  border-radius: 12px !important;
+}
+
+:deep(.el-select-dropdown__item) { color: #e2e8f0 !important; }
+:deep(.el-select-dropdown__item:hover) { background: rgba(96, 165, 250, 0.1) !important; }
+:deep(.el-select-dropdown__item.is-selected) { color: #60a5fa !important; }
+
+:deep(.el-pagination button) { background: rgba(255,255,255,0.05) !important; border-color: rgba(96,165,250,0.15) !important; color: #94a3b8 !important; }
+:deep(.el-pagination button:hover) { background: rgba(96,165,250,0.15) !important; color: #60a5fa !important; }
+:deep(.el-pager li) { background: rgba(255,255,255,0.05) !important; border-color: rgba(96,165,250,0.15) !important; color: #94a3b8 !important; }
+:deep(.el-pager li:hover) { color: #60a5fa !important; }
+:deep(.el-pager li.is-active) { background: #1e40af !important; border-color: #1e40af !important; color: #fff !important; }
 </style>

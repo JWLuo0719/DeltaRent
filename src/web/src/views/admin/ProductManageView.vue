@@ -1,5 +1,5 @@
 <template>
-  <div class="panel-card">
+  <div class="admin-card">
     <div class="panel-header">
       <h2 class="section-title">账号管理</h2>
       <div class="toolbar">
@@ -9,7 +9,7 @@
       </div>
     </div>
 
-    <el-table v-loading="loading" :data="products" stripe>
+    <el-table v-loading="loading" :data="products">
       <el-table-column prop="id" label="ID" width="80" />
       <el-table-column prop="name" label="账号名称" min-width="180" />
       <el-table-column prop="tagText" label="标签" min-width="160" />
@@ -90,7 +90,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { createRental, deleteRental, getRentals, updateRental, updateRentalStatus } from '@/api';
 import type { RentalProduct } from '@/types/api';
 
-const loading = ref(false);
+const loading = ref(true);
 const saving = ref(false);
 const dialogVisible = ref(false);
 const keyword = ref('');
@@ -216,6 +216,13 @@ onMounted(loadProducts);
 </script>
 
 <style scoped>
+.admin-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(96, 165, 250, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+}
+
 .panel-header {
   display: flex;
   align-items: center;
@@ -242,5 +249,109 @@ onMounted(loadProducts);
 
 .full-width {
   width: 100%;
+}
+
+:deep(.el-input__wrapper) {
+  background: #1e293b !important;
+  border: 1px solid rgba(96, 165, 250, 0.3) !important;
+  box-shadow: none !important;
+}
+:deep(.el-input__inner) { color: #e2e8f0 !important; }
+:deep(.el-input__inner::placeholder) { color: #475569 !important; }
+:deep(.el-select .el-input__wrapper) {
+  background: #1e293b !important;
+  border: 1px solid rgba(96, 165, 250, 0.3) !important;
+}
+:deep(.el-select__wrapper) {
+  background: #1e293b !important;
+  border: 1px solid rgba(96, 165, 250, 0.3) !important;
+  box-shadow: none !important;
+}
+:deep(.el-select-dropdown) {
+  background: #1e293b !important;
+  border: 1px solid rgba(96, 165, 250, 0.2) !important;
+  border-radius: 12px !important;
+}
+:deep(.el-select-dropdown__item) { color: #e2e8f0 !important; }
+:deep(.el-select-dropdown__item:hover) { background: rgba(96, 165, 250, 0.1) !important; }
+:deep(.el-table) {
+  background: transparent !important;
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: rgba(96, 165, 250, 0.08);
+  --el-table-row-hover-bg-color: rgba(96, 165, 250, 0.1);
+  --el-table-border-color: rgba(96, 165, 250, 0.15);
+  --el-table-text-color: #e2e8f0;
+  --el-table-header-text-color: #94a3b8;
+}
+:deep(.el-table__header th) {
+  background: rgba(96, 165, 250, 0.08) !important;
+}
+:deep(.el-table__body tr) {
+  background: transparent !important;
+}
+:deep(.el-table__body tr:hover > td) {
+  background: rgba(96, 165, 250, 0.1) !important;
+}
+:deep(.el-table td.el-table__cell) {
+  border-bottom-color: rgba(96, 165, 250, 0.1) !important;
+}
+:deep(.el-dialog) {
+  background: #1e293b !important;
+  border: 1px solid rgba(96, 165, 250, 0.5) !important;
+  border-radius: 16px !important;
+}
+:deep(.el-dialog__header) { color: #f1f5f9 !important; }
+:deep(.el-dialog__title) { color: #f1f5f9 !important; }
+:deep(.el-form-item__label) { color: #94a3b8 !important; }
+:deep(.el-form-item) { margin-bottom: 18px !important; }
+:deep(.el-form-item__content) { color: #e2e8f0 !important; }
+:deep(.el-input-number) {
+  background: #1e293b !important;
+  border: 1px solid rgba(96, 165, 250, 0.3) !important;
+  border-radius: 8px !important;
+}
+:deep(.el-input-number .el-input__wrapper) {
+  background: #1e293b !important;
+}
+:deep(.el-input-number__decrease, .el-input-number__increase) {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(96, 165, 250, 0.3) !important;
+  color: #94a3b8 !important;
+}
+:deep(.el-input-number__decrease:hover, .el-input-number__increase:hover) {
+  color: #60a5fa !important;
+}
+:deep(.el-textarea__inner) {
+  background: #1e293b !important;
+  border: 1px solid rgba(96, 165, 250, 0.3) !important;
+  color: #e2e8f0 !important;
+  resize: none !important;
+}
+:deep(.el-textarea__inner:focus) {
+  border-color: rgba(96, 165, 250, 0.5) !important;
+}
+:deep(.el-dialog__footer) {
+  background: #1e293b !important;
+  border-top: 1px solid rgba(96, 165, 250, 0.15) !important;
+  padding: 16px 24px !important;
+}
+:deep(.el-button--primary) {
+  background: #1e40af !important;
+  border-color: #1e40af !important;
+  color: #fff !important;
+}
+:deep(.el-button--primary:hover) {
+  background: #1e3a8a !important;
+  border-color: #1e3a8a !important;
+}
+:deep(.el-button) {
+  background: rgba(255,255,255,0.05) !important;
+  border-color: rgba(96, 165, 250, 0.2) !important;
+  color: #94a3b8 !important;
+}
+:deep(.el-button:hover) {
+  color: #60a5fa !important;
+  border-color: rgba(96, 165, 250, 0.4) !important;
 }
 </style>

@@ -41,7 +41,8 @@ loadStats();
 }
 
 .metric-card {
-  background: linear-gradient(135deg, #1e40af, #1e3a8a);
+  background: linear-gradient(135deg, #1e3a5f 0%, #1e40af 100%);
+  border: 1px solid rgba(96, 165, 250, 0.2);
   border-radius: 12px;
   padding: 20px;
   color: #fff;
@@ -49,7 +50,7 @@ loadStats();
 
 .metric-label {
   font-size: 13px;
-  color: rgba(255,255,255,0.8);
+  color: rgba(255,255,255,0.7);
   margin-bottom: 8px;
 }
 
