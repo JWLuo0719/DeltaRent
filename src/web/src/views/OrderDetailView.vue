@@ -104,7 +104,9 @@ function handleCancel() {
       }
       ElMessage.error(response.data.message || '取消失败');
     })
-    .catch(() => {});
+    .catch(() => {
+      ElMessage.error('取消失败，请重试');
+    });
 }
 
 function handleAppeal() {

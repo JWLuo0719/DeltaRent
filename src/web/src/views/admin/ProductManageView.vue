@@ -54,7 +54,7 @@
         </div>
         <div class="grid-2">
           <el-form-item label="金币数量">
-            <el-input v-model="form.coinAmountText" />
+            <el-input-number v-model="form.coinAmount" :min="0" class="full-width" />
           </el-form-item>
           <el-form-item label="装备等级">
             <el-input v-model="form.equipmentLevelText" />
@@ -102,7 +102,7 @@ const emptyForm = (): RentalProduct => ({
   category: '',
   tagText: '',
   hourPrice: 0,
-  coinAmountText: '',
+  coinAmount: 0,
   equipmentLevelText: '',
   warehouseValueText: '',
   status: 'AVAILABLE',
@@ -162,7 +162,7 @@ async function submitProduct() {
       category: form.category?.trim(),
       tagText: form.tagText?.trim(),
       hourPrice: form.hourPrice,
-      coinAmountText: form.coinAmountText?.trim(),
+      coinAmount: form.coinAmount,
       equipmentLevelText: form.equipmentLevelText?.trim(),
       warehouseValueText: form.warehouseValueText?.trim(),
       status: form.status,

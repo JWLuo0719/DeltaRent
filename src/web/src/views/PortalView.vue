@@ -351,10 +351,10 @@ async function loadHotProducts() {
       const available = all.filter(p => p.status === 'AVAILABLE');
       hotProducts.value = (available.length ? available : all).slice(0, 3);
     } else {
-      console.warn('[Portal] 热卖账号加载失败:', res.data.message);
+      ElMessage.error('热卖账号加载失败');
     }
   } catch (error) {
-    console.warn('[Portal] 热卖账号加载异常:', error);
+    ElMessage.error('热卖账号加载失败');
   } finally {
     hotLoading.value = false;
   }

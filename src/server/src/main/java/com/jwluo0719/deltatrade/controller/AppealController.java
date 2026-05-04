@@ -60,10 +60,14 @@ public class AppealController {
 
     /** 管理员 — 处理申诉（通过/驳回） */
     @PutMapping("/{id}/handle")
-    public ApiResponse<?> handle(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+    public ApiResponse<?> handle(@PathVariable Long id, @RequestBody Map<String, String> payload,
+                                @RequestHeader(value = "Authorization", required = false) String auth) {
+        if (!isAdmin(auth)) return ApiResponse.fail("无权操作");
         try {
+            Long handlerId = extractUserId(auth);
             String status = payload.getOrDefault("status", "RESOLVED");
-            appealService.handle(id, status);
+            String handlerRemark = payload.getOrDefault("handlerRemark", "");
+            appealService.handle(id, status, handlerId, handlerRemark);
             return ApiResponse.success("处理完成", null);
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
@@ -77,6 +81,14 @@ public class AppealController {
             if (uid != null) return uid;
         }
         return 1L; // 兼容 Mock
+    }
+
+    private boolean isAdmin(String auth) {
+        if (auth != null && auth.startsWith("Bearer ")) {
+            String role = JwtUtil.getRole(auth.substring(7));
+            return "ADMIN".equals(role) || "CS".equals(role);
+        }
+        return false;
     }
 
     private Long toLong(Object value, Long defaultVal) {
@@ -93,6 +105,10 @@ public class AppealController {
         item.put("userId", r.getUserId());
         item.put("content", r.getContent());
         item.put("status", r.getStatus());
+        item.put("handlerId", r.getHandlerId());
+        item.put("handlerRemark", r.getHandlerRemark());
+        item.put("handledAt", r.getHandledAt());
+        item.put("updatedAt", r.getUpdatedAt());
         return item;
     }
 }

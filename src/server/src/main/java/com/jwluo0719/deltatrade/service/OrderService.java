@@ -43,6 +43,7 @@ public class OrderService {
         order.setOrderNo("DR" + System.currentTimeMillis());
         order.setUserId(userId);
         order.setProductId(productId);
+        order.setUnitPrice(product.getHourPrice());
         order.setRentHours(rentHours);
         order.setOrderAmount(amount);
         order.setContactInfo(contactInfo != null ? contactInfo : "");

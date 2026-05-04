@@ -107,7 +107,7 @@
             </div>
             <div class="attr-row">
               <span class="attr-k">哈夫币</span>
-              <span class="attr-v">{{ p.coinAmountText }}</span>
+              <span class="attr-v">{{ p.coinAmount?.toLocaleString() }}</span>
             </div>
           </div>
 
@@ -184,7 +184,7 @@
               </div>
               <div class="res-row">
                 <span class="res-k">哈夫币</span>
-                <span class="res-v">{{ selectedProduct.coinAmountText }}</span>
+                <span class="res-v">{{ selectedProduct.coinAmount?.toLocaleString() }}</span>
               </div>
               <div class="res-row">
                 <span class="res-k">分类</span>

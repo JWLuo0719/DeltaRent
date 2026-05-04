@@ -1,5 +1,7 @@
 package com.jwluo0719.deltatrade.domain;
 
+import java.time.LocalDateTime;
+
 /**
  * 申诉记录实体 — 对应 appeal_record 表，用户可对订单提出售后申诉，管理员可处理。
  */
@@ -11,6 +13,10 @@ public class AppealRecord {
     private Long userId;        // 申诉人 ID
     private String content;     // 申诉内容
     private String status;      // PENDING=待处理, RESOLVED=已处理, REJECTED=已驳回
+    private Long handlerId;
+    private String handlerRemark;
+    private LocalDateTime handledAt;
+    private LocalDateTime updatedAt;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -29,4 +35,16 @@ public class AppealRecord {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+
+    public Long getHandlerId() { return handlerId; }
+    public void setHandlerId(Long handlerId) { this.handlerId = handlerId; }
+
+    public String getHandlerRemark() { return handlerRemark; }
+    public void setHandlerRemark(String handlerRemark) { this.handlerRemark = handlerRemark; }
+
+    public LocalDateTime getHandledAt() { return handledAt; }
+    public void setHandledAt(LocalDateTime handledAt) { this.handledAt = handledAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

@@ -1,13 +1,21 @@
-# DeltaTrade 数据库初始化脚本
+# DeltaRent 数据库初始化脚本
 
 ## 文件说明
 
-- `schema_v1.sql` - 完整数据库建表脚本（包含初始数据）
+- `schema_v1.sql` - 完整数据库建表脚本（包含初始数据、外键约束、软删除、价格快照等）
+- `init.bat` - 一键初始化脚本（自动重建数据库）
+- `_start_backend.bat` - 后端一键启动脚本
 
 ## 使用方法
 
+### 方式一：一键初始化（推荐）
+
+双击运行 `init.bat`，会自动删除旧数据库并重建。
+
+### 方式二：手动执行
+
 ```bash
-mysql -u root -p < schema_v1.sql
+mysql -u root -p123456 < schema_v1.sql
 ```
 
 或直接在 MySQL 客户端中执行：
@@ -20,16 +28,17 @@ source schema_v1.sql
 
 配置位于 `src/server/src/main/resources/application.yml`：
 
-- 数据库名：`delta_trade`
+- 数据库名：`deltarent`
 - 用户名：`root`
 - 密码：`123456`
 - 地址：`localhost:3306`
 
 ## 测试账号
 
-| 用户名 | 密码 | 角色 |
+| 手机号 | 密码 | 角色 |
 |--------|------|------|
-| admin | 123456 | 管理员 |
-| demo_user | 123456 | 普通用户 |
+| 13000000000 | 123456 | 管理员 |
+| 13000000001 | 123456 | 普通用户 |
+| 13000000002 | 123456 | 客服 |
 
 注意：密码已哈希存储，以上为明文密码仅用于演示环境。

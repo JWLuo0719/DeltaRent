@@ -1,6 +1,7 @@
 package com.jwluo0719.deltatrade.domain;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 public class RentalProduct {
 
@@ -9,7 +10,7 @@ public class RentalProduct {
     private String category;
     private String tagText;
     private BigDecimal hourPrice;
-    private String coinAmountText;
+    private Long coinAmount;
     private String equipmentLevelText;
     private String warehouseValueText;
     private String status;
@@ -55,12 +56,12 @@ public class RentalProduct {
         this.hourPrice = hourPrice;
     }
 
-    public String getCoinAmountText() {
-        return coinAmountText;
+    public Long getCoinAmount() {
+        return coinAmount;
     }
 
-    public void setCoinAmountText(String coinAmountText) {
-        this.coinAmountText = coinAmountText;
+    public void setCoinAmount(Long coinAmount) {
+        this.coinAmount = coinAmount;
     }
 
     public String getEquipmentLevelText() {
@@ -93,5 +94,15 @@ public class RentalProduct {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    private LocalDateTime deletedAt;
+
+    public LocalDateTime getDeletedAt() {
+        return deletedAt;
+    }
+
+    public void setDeletedAt(LocalDateTime deletedAt) {
+        this.deletedAt = deletedAt;
     }
 }
