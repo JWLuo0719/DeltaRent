@@ -9,11 +9,14 @@ public class RentalOrder {
     private String orderNo;
     private Long userId;
     private Long productId;
+    private BigDecimal unitPrice;
     private Integer rentHours;
     private BigDecimal orderAmount;
     private String contactInfo;
     private String deliveryNote;
     private String status;
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -47,6 +50,14 @@ public class RentalOrder {
 
     public void setProductId(Long productId) {
         this.productId = productId;
+    }
+
+    public BigDecimal getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(BigDecimal unitPrice) {
+        this.unitPrice = unitPrice;
     }
 
     public Integer getRentHours() {
@@ -87,6 +98,22 @@ public class RentalOrder {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
     public LocalDateTime getCreatedAt() {

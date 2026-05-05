@@ -1,39 +1,65 @@
 <template>
-  <div class="page-container">
-    <el-button text @click="$router.back()">← 返回</el-button>
+  <div class="page-shell">
+    <div class="back-bar">
+      <button class="back-btn" @click="$router.back()">← 返回</button>
+    </div>
 
-    <div v-if="loading" class="loading-wrap">
+    <div v-if="loading" class="detail-card">
       <el-skeleton :rows="6" animated />
     </div>
 
-    <div v-else-if="order" class="order-detail">
-      <div class="detail-header">
-        <h2>{{ order.item }}</h2>
-        <span :class="['status-tag', `status-${order.status}`]">{{ statusText(order.status) }}</span>
+    <div v-else-if="order" class="detail-content">
+      <div class="detail-card detail-header-card">
+        <div class="detail-title-row">
+          <h2 class="detail-title">{{ order.item }}</h2>
+          <span :class="['status-tag', `status-${order.status}`]">{{ statusText(order.status) }}</span>
+        </div>
       </div>
 
-      <el-descriptions :column="2" border class="detail-table">
-        <el-descriptions-item label="订单号">{{ order.orderNo }}</el-descriptions-item>
-        <el-descriptions-item label="下单时间">{{ order.createdAt }}</el-descriptions-item>
-        <el-descriptions-item label="租赁时长">{{ order.rentHours }} 小时</el-descriptions-item>
-        <el-descriptions-item label="订单金额">￥{{ formatAmount(order.amount) }}</el-descriptions-item>
-        <el-descriptions-item label="账号" :span="2">{{ order.item }}</el-descriptions-item>
-        <el-descriptions-item label="联系方式">{{ order.contactInfo || '未填写' }}</el-descriptions-item>
-        <el-descriptions-item label="备注">{{ order.remark || '无' }}</el-descriptions-item>
-      </el-descriptions>
+      <div class="detail-card">
+        <div class="info-grid">
+          <div class="info-row">
+            <span class="info-k">订单号</span>
+            <span class="info-v">{{ order.orderNo }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-k">下单时间</span>
+            <span class="info-v">{{ order.createdAt }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-k">租赁时长</span>
+            <span class="info-v">{{ order.rentHours }} 小时</span>
+          </div>
+          <div class="info-row">
+            <span class="info-k">订单金额</span>
+            <span class="info-v price">￥{{ formatAmount(order.amount) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-k">联系方式</span>
+            <span class="info-v">{{ order.contactInfo || '未填写' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-k">备注</span>
+            <span class="info-v">{{ order.remark || '无' }}</span>
+          </div>
+        </div>
+      </div>
 
-      <div class="timeline-section">
-        <h3>订单进度</h3>
-        <el-timeline>
-          <el-timeline-item
+      <div class="detail-card">
+        <h3 class="section-title">订单进度</h3>
+        <div class="timeline">
+          <div
             v-for="(event, index) in order.events ?? []"
             :key="index"
-            :timestamp="event.time"
-            :type="index === 0 ? 'primary' : ''"
+            class="timeline-item"
           >
-            {{ event.content }}
-          </el-timeline-item>
-        </el-timeline>
+            <div class="timeline-dot" :class="{ latest: index === 0 }" />
+            <div class="timeline-body">
+              <div class="timeline-time">{{ event.time }}</div>
+              <div class="timeline-content">{{ event.content }}</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="actions">
@@ -43,7 +69,10 @@
       </div>
     </div>
 
-    <el-empty v-else description="订单不存在" />
+    <div v-else class="empty-state">
+      <div class="empty-icon">📭</div>
+      <div class="empty-title">订单不存在</div>
+    </div>
   </div>
 </template>
 
@@ -56,7 +85,7 @@ import type { OrderDetail } from '@/types/api';
 
 const route = useRoute();
 const router = useRouter();
-const loading = ref(false);
+const loading = ref(true);
 const order = ref<OrderDetail | null>(null);
 
 const statusMap: Record<string, string> = {
@@ -135,63 +164,216 @@ onMounted(loadOrder);
 </script>
 
 <style scoped>
-.page-container {
-  max-width: 800px;
-  margin: 0 auto;
+.page-shell {
+  min-height: 100vh;
+  background-color: #0f1c33;
+  background-image: linear-gradient(135deg, #060d1a 0%, #0f1c33 50%, #0a1525 100%);
+  color: #e2e8f0;
   padding: 24px;
 }
 
-.loading-wrap {
-  margin-top: 16px;
-  background: #fff;
-  border-radius: 12px;
-  padding: 20px;
+.back-bar {
+  margin-bottom: 16px;
 }
 
-.order-detail {
-  margin-top: 16px;
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  border-radius: 8px;
+  color: #93c5fd;
+  font-size: 13px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.detail-header {
+.back-btn:hover {
+  background: rgba(96, 165, 250, 0.12);
+  border-color: rgba(96, 165, 250, 0.35);
+  color: #bfdbfe;
+}
+
+.detail-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(96, 165, 250, 0.1);
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+}
+
+.detail-header-card {
+  padding: 20px 24px;
+}
+
+.detail-title-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 20px;
 }
 
-.detail-header h2 {
+.detail-title {
   margin: 0;
-  font-size: 20px;
+  font-size: 18px;
+  font-weight: 700;
+  color: #f1f5f9;
 }
 
 .status-tag {
-  font-size: 12px;
+  font-size: 11px;
   padding: 2px 10px;
   border-radius: 20px;
   font-weight: 500;
 }
 
-.status-WAITING_CONFIRM { background: #fef3c7; color: #d97706; }
-.status-IN_PROGRESS { background: #dbeafe; color: #2563eb; }
-.status-COMPLETED { background: #d1fae5; color: #059669; }
-.status-CANCELLED { background: #f3f4f6; color: #6b7280; }
-.status-AFTER_SALE { background: #fee2e2; color: #dc2626; }
+.status-WAITING_CONFIRM { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+.status-IN_PROGRESS { background: rgba(96, 165, 250, 0.15); color: #60a5fa; }
+.status-COMPLETED { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+.status-CANCELLED { background: rgba(100, 116, 139, 0.15); color: #94a3b8; }
+.status-AFTER_SALE { background: rgba(239, 68, 68, 0.15); color: #f87171; }
 
-.detail-table {
-  margin-bottom: 24px;
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 24px;
 }
 
-.timeline-section {
-  margin-bottom: 24px;
+.info-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.timeline-section h3 {
-  margin: 0 0 12px;
-  font-size: 16px;
+.info-k {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.info-v {
+  font-size: 14px;
+  font-weight: 500;
+  color: #e2e8f0;
+}
+
+.info-v.price {
+  color: #fbbf24;
+  font-size: 15px;
+}
+
+.section-title {
+  margin: 0 0 16px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  position: relative;
+  padding-bottom: 16px;
+}
+
+.timeline-item:last-child {
+  padding-bottom: 0;
+}
+
+.timeline-item:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 16px;
+  bottom: 0;
+  width: 1px;
+  background: rgba(96, 165, 250, 0.15);
+}
+
+.timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(96, 165, 250, 0.3);
+  border: 2px solid rgba(96, 165, 250, 0.4);
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.timeline-dot.latest {
+  background: #60a5fa;
+  border-color: #60a5fa;
+  box-shadow: 0 0 8px rgba(96, 165, 250, 0.5);
+}
+
+.timeline-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.timeline-time {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.timeline-content {
+  font-size: 14px;
+  color: #e2e8f0;
 }
 
 .actions {
   display: flex;
   gap: 12px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  text-align: center;
+}
+
+.empty-icon { font-size: 56px; margin-bottom: 16px; }
+.empty-title { font-size: 18px; font-weight: 600; color: #f1f5f9; }
+
+:deep(.el-button--primary) {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%) !important;
+  border: none !important;
+}
+
+:deep(.el-button--primary:hover) {
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+}
+
+:deep(.el-button--danger) {
+  background: rgba(239, 68, 68, 0.1) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  color: #f87171 !important;
+}
+
+:deep(.el-button--danger:hover) {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #fca5a5 !important;
+}
+
+:deep(.el-button--warning) {
+  background: rgba(251, 191, 36, 0.1) !important;
+  border-color: rgba(251, 191, 36, 0.3) !important;
+  color: #fbbf24 !important;
+}
+
+:deep(.el-button--warning:hover) {
+  background: rgba(251, 191, 36, 0.2) !important;
+  color: #fde68a !important;
 }
 </style>

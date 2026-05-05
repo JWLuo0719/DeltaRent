@@ -28,7 +28,6 @@
         <div class="topbar-right">
           <el-tag :type="roleTagType" size="small">{{ roleText }}</el-tag>
           <span class="user-name">{{ auth.user?.displayName }}</span>
-          <el-button size="small" @click="handleLogout">退出</el-button>
         </div>
       </header>
 
@@ -42,8 +41,6 @@
 
 <script setup lang="ts">
 import { computed, ref, watchEffect } from 'vue';
-import { useRouter } from 'vue-router';
-import { ElMessage } from 'element-plus';
 import { useAuthStore } from '@/stores/auth';
 import StatsView from './admin/StatsView.vue';
 import UserManageView from './admin/UserManageView.vue';
@@ -52,7 +49,6 @@ import ProductManageView from './admin/ProductManageView.vue';
 import OrderManageView from './admin/OrderManageView.vue';
 import NoticeManageView from './admin/NoticeManageView.vue';
 
-const router = useRouter();
 const auth = useAuthStore();
 const activeMenu = ref('stats');
 
@@ -109,24 +105,18 @@ const roleTagType = computed(() => {
 function handleMenuSelect(key: string) {
   activeMenu.value = key;
 }
-
-function handleLogout() {
-  auth.logout();
-  router.push('/home');
-  ElMessage.success('已退出登录');
-}
 </script>
 
 <style scoped>
 .admin-shell {
   display: flex;
   min-height: 100vh;
-  background: #f5f7fa;
+  background: #0f1c33;
 }
 
 .admin-sidebar {
   width: 220px;
-  background: #1a1a2e;
+  background: #0a1525;
   display: flex;
   flex-direction: column;
 }
@@ -184,8 +174,8 @@ function handleLogout() {
 
 .admin-topbar {
   height: 60px;
-  background: #fff;
-  border-bottom: 1px solid #e4e7ed;
+  background: #0a1525;
+  border-bottom: 1px solid rgba(96, 165, 250, 0.2);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -195,7 +185,7 @@ function handleLogout() {
 .topbar-left h2 {
   margin: 0;
   font-size: 18px;
-  color: #303133;
+  color: #e2e8f0;
 }
 
 .topbar-right {
@@ -206,12 +196,31 @@ function handleLogout() {
 
 .user-name {
   font-size: 14px;
-  color: #606266;
+  color: #94a3b8;
 }
 
 .admin-content {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
+  background: #0f1c33;
+  min-height: 0;
+}
+
+:deep(.el-tag) {
+  background: rgba(96, 165, 250, 0.1) !important;
+  border-color: rgba(96, 165, 250, 0.2) !important;
+  color: #60a5fa !important;
+}
+
+:deep(.el-button--small) {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(96, 165, 250, 0.2) !important;
+  color: #94a3b8 !important;
+}
+
+:deep(.el-button--small:hover) {
+  background: rgba(96, 165, 250, 0.15) !important;
+  color: #60a5fa !important;
 }
 </style>

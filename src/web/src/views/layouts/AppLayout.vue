@@ -28,7 +28,11 @@
 
     <!-- 页面内容 -->
     <main class="layout-main">
-      <router-view />
+      <router-view v-slot="{ Component }">
+        <Transition name="page-fade" mode="out-in">
+          <component :is="Component" />
+        </Transition>
+      </router-view>
     </main>
   </div>
 </template>
@@ -64,7 +68,19 @@ function handleLogout() {
 <style scoped>
 .app-layout {
   min-height: 100vh;
-  background: #060d1a;
+  background-color: #0f1c33;
+  background-image: linear-gradient(135deg, #060d1a 0%, #0f1c33 50%, #0a1525 100%);
+}
+
+.page-fade-enter-active {
+  transition: opacity 0.15s ease;
+}
+.page-fade-leave-active {
+  transition: opacity 0.08s ease;
+}
+.page-fade-enter-from,
+.page-fade-leave-to {
+  opacity: 0;
 }
 
 .top-nav {

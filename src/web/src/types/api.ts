@@ -29,7 +29,7 @@ export interface RentalProduct {
   category: string;
   tagText: string;
   hourPrice: number;
-  coinAmountText: string;
+  coinAmount: number;
   equipmentLevelText: string;
   warehouseValueText: string;
   status: 'AVAILABLE' | 'RENTED' | 'MAINTENANCE' | string;
@@ -37,7 +37,6 @@ export interface RentalProduct {
   isHot?: boolean;
   tag?: string;
   price?: string;
-  coinAmount?: string;
   equipmentLevel?: string;
   warehouseValue?: string;
 }
@@ -119,11 +118,14 @@ export interface OrderSummary {
   item: string;
   user?: string;
   productId?: number;
+  unitPrice?: number;
   rentHours: number;
   amount: number;
   status: string;
   contactInfo: string;
   remark: string;
+  startTime?: string;
+  endTime?: string;
   createdAt: string;
   updatedAt?: string;
 }

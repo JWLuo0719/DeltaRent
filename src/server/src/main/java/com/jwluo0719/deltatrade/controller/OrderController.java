@@ -96,7 +96,9 @@ public class OrderController {
     }
 
     @PutMapping("/{id}/status")
-    public ApiResponse<?> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+    public ApiResponse<?> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> payload,
+                                      @RequestHeader(value = "Authorization", required = false) String auth) {
+        if (!isAdmin(auth)) return ApiResponse.fail("无权操作");
         try {
             String status = payload.getOrDefault("status", "");
             orderService.transitionStatus(id, status);

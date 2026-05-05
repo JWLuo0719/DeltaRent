@@ -14,7 +14,7 @@ import java.util.Map;
 @Mapper
 public interface RentalOrderMapper {
 
-    @Insert("insert into rental_order(order_no, user_id, product_id, rent_hours, order_amount, contact_info, delivery_note, status) values(#{orderNo}, #{userId}, #{productId}, #{rentHours}, #{orderAmount}, #{contactInfo}, #{deliveryNote}, #{status})")
+    @Insert("insert into rental_order(order_no, user_id, product_id, unit_price, rent_hours, order_amount, contact_info, delivery_note, status) values(#{orderNo}, #{userId}, #{productId}, #{unitPrice}, #{rentHours}, #{orderAmount}, #{contactInfo}, #{deliveryNote}, #{status})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(RentalOrder order);
 
@@ -47,7 +47,7 @@ public interface RentalOrderMapper {
     List<Map<String, Object>> findRecent();
 
     @Select("""
-            select id, order_no, user_id, product_id, rent_hours, order_amount, contact_info, delivery_note, status, created_at, updated_at
+            select id, order_no, user_id, product_id, unit_price, rent_hours, order_amount, contact_info, delivery_note, status, start_time, end_time, created_at, updated_at
             from rental_order
             where user_id = #{userId}
             order by id desc
@@ -59,11 +59,14 @@ public interface RentalOrderMapper {
                    o.order_no as orderNo,
                    o.user_id as userId,
                    o.product_id as productId,
+                   o.unit_price as unitPrice,
                    o.rent_hours as rentHours,
                    o.order_amount as amount,
                    o.contact_info as contactInfo,
                    o.delivery_note as remark,
                    o.status as status,
+                   o.start_time as startTime,
+                   o.end_time as endTime,
                    o.created_at as createdAt,
                    o.updated_at as updatedAt,
                    coalesce(u.nickname, u.username) as buyer,
@@ -81,11 +84,14 @@ public interface RentalOrderMapper {
                    o.order_no as orderNo,
                    o.user_id as userId,
                    o.product_id as productId,
+                   o.unit_price as unitPrice,
                    o.rent_hours as rentHours,
                    o.order_amount as amount,
                    o.contact_info as contactInfo,
                    o.delivery_note as remark,
                    o.status as status,
+                   o.start_time as startTime,
+                   o.end_time as endTime,
                    o.created_at as createdAt,
                    o.updated_at as updatedAt,
                    coalesce(u.nickname, u.username) as buyer,
@@ -98,14 +104,14 @@ public interface RentalOrderMapper {
     List<Map<String, Object>> findAllWithDetails();
 
     @Select("""
-            select id, order_no, user_id, product_id, rent_hours, order_amount, contact_info, delivery_note, status, created_at, updated_at
+            select id, order_no, user_id, product_id, unit_price, rent_hours, order_amount, contact_info, delivery_note, status, start_time, end_time, created_at, updated_at
             from rental_order
             where order_no = #{orderNo}
             """)
     RentalOrder findByOrderNo(String orderNo);
 
     @Select("""
-            select id, order_no, user_id, product_id, rent_hours, order_amount, contact_info, delivery_note, status, created_at, updated_at
+            select id, order_no, user_id, product_id, unit_price, rent_hours, order_amount, contact_info, delivery_note, status, start_time, end_time, created_at, updated_at
             from rental_order
             where id = #{id}
             """)
@@ -116,11 +122,14 @@ public interface RentalOrderMapper {
                    o.order_no as orderNo,
                    o.user_id as userId,
                    o.product_id as productId,
+                   o.unit_price as unitPrice,
                    o.rent_hours as rentHours,
                    o.order_amount as amount,
                    o.contact_info as contactInfo,
                    o.delivery_note as remark,
                    o.status as status,
+                   o.start_time as startTime,
+                   o.end_time as endTime,
                    o.created_at as createdAt,
                    o.updated_at as updatedAt,
                    coalesce(u.nickname, u.username) as buyer,

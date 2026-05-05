@@ -13,11 +13,11 @@ import java.util.List;
 public interface RentalProductMapper {
 
     /** 查询全部商品，按 ID 倒序 */
-    @Select("select id, name, category, tag_text, hour_price, coin_amount_text, equipment_level_text, warehouse_value_text, status, description from rental_product order by id desc")
+    @Select("select id, name, category, tag_text, hour_price, coin_amount, equipment_level_text, warehouse_value_text, status, description from rental_product order by id desc")
     List<RentalProduct> findAll();
 
     /** 按 ID 查询单个商品 */
-    @Select("select id, name, category, tag_text, hour_price, coin_amount_text, equipment_level_text, warehouse_value_text, status, description from rental_product where id = #{id}")
+    @Select("select id, name, category, tag_text, hour_price, coin_amount, equipment_level_text, warehouse_value_text, status, description from rental_product where id = #{id}")
     RentalProduct findById(Long id);
 
     /** 统计可租商品数量 */
@@ -25,12 +25,12 @@ public interface RentalProductMapper {
     long countAvailable();
 
     /** 新增商品（管理员） */
-    @Insert("insert into rental_product(name, category, tag_text, hour_price, coin_amount_text, equipment_level_text, warehouse_value_text, status, description) values(#{name}, #{category}, #{tagText}, #{hourPrice}, #{coinAmountText}, #{equipmentLevelText}, #{warehouseValueText}, #{status}, #{description})")
+    @Insert("insert into rental_product(name, category, tag_text, hour_price, coin_amount, equipment_level_text, warehouse_value_text, status, description) values(#{name}, #{category}, #{tagText}, #{hourPrice}, #{coinAmount}, #{equipmentLevelText}, #{warehouseValueText}, #{status}, #{description})")
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(RentalProduct product);
 
     /** 更新商品信息（管理员） */
-    @Update("update rental_product set name = #{name}, category = #{category}, tag_text = #{tagText}, hour_price = #{hourPrice}, coin_amount_text = #{coinAmountText}, equipment_level_text = #{equipmentLevelText}, warehouse_value_text = #{warehouseValueText}, status = #{status}, description = #{description} where id = #{id}")
+    @Update("update rental_product set name = #{name}, category = #{category}, tag_text = #{tagText}, hour_price = #{hourPrice}, coin_amount = #{coinAmount}, equipment_level_text = #{equipmentLevelText}, warehouse_value_text = #{warehouseValueText}, status = #{status}, description = #{description} where id = #{id}")
     int update(RentalProduct product);
 
     /** 删除商品（管理员） */
