@@ -41,7 +41,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
         String path = request.getRequestURI();
-        System.out.println("[DEBUG doFilter] method=" + request.getMethod() + " path=" + path);
+        System.out.println("[DEBUG doFilter] method=" + request.getMethod() + " path=" + path + " auth=" + request.getHeader("Authorization"));
         System.out.println("[DEBUG] isPublic=" + isPublicRequest(request, path));
 
         // 公开接口直接放行，不校验令牌
@@ -86,12 +86,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 return true;
             }
         }
-        // GET 方式的商品和公告读接口公开，但 /api/notices/all 是管理员接口除外
+        // GET 方式的商品和公告读接口公开
         if ("GET".equalsIgnoreCase(request.getMethod())) {
-            if (path.startsWith("/api/rentals")) {
-                return true;
-            }
-            if (path.startsWith("/api/notices") && !path.equals("/api/notices/all")) {
+            if (path.startsWith("/api/rentals") || path.startsWith("/api/notices")) {
                 return true;
             }
         }

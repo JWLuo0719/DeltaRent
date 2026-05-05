@@ -127,10 +127,7 @@ public class ProductService {
     }
 
     public void delete(Long id) {
-        int affected = productMapper.deleteById(id);
-        if (affected == 0) {
-            throw new IllegalArgumentException("账号不存在");
-        }
+        productMapper.deleteById(id);
     }
 
     public void updateStatus(Long id, String status) {

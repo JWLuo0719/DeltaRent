@@ -1,5 +1,5 @@
 <template>
-  <div class="admin-card">
+  <div class="panel-card">
     <div class="panel-header">
       <h2 class="section-title">用户管理</h2>
       <div class="toolbar">
@@ -17,7 +17,7 @@
       </div>
     </div>
 
-    <el-table v-loading="loading" :data="users">
+    <el-table v-loading="loading" :data="users" stripe>
       <el-table-column prop="id" label="ID" width="80" />
       <el-table-column prop="phone" label="手机号" min-width="140" />
       <el-table-column prop="nickname" label="昵称" min-width="140" />
@@ -78,7 +78,7 @@ import { ElMessage } from 'element-plus';
 import { getAdminUsers, updateAdminUserRole, updateAdminUserStatus } from '@/api';
 import type { AdminUser } from '@/types/api';
 
-const loading = ref(true);
+const loading = ref(false);
 const users = ref<AdminUser[]>([]);
 const page = ref(1);
 const pageSize = ref(10);
@@ -147,13 +147,6 @@ onMounted(loadUsers);
 </script>
 
 <style scoped>
-.admin-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(96, 165, 250, 0.1);
-  border-radius: 16px;
-  padding: 24px;
-}
-
 .panel-header {
   display: flex;
   align-items: center;
@@ -181,58 +174,5 @@ onMounted(loadUsers);
   margin-top: 16px;
   display: flex;
   justify-content: flex-end;
-}
-
-:deep(.el-input__wrapper) {
-  background: #1e293b !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
-  box-shadow: none !important;
-}
-:deep(.el-input__inner) { color: #e2e8f0 !important; }
-:deep(.el-input__inner::placeholder) { color: #475569 !important; }
-:deep(.el-select .el-input__wrapper) {
-  background: #1e293b !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
-}
-:deep(.el-select__wrapper) {
-  background: #1e293b !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
-  box-shadow: none !important;
-}
-:deep(.el-select__placeholder) { color: #64748b !important; }
-:deep(.el-select-dropdown) {
-  background: #1e293b !important;
-  border: 1px solid rgba(96, 165, 250, 0.2) !important;
-  border-radius: 12px !important;
-}
-:deep(.el-select-dropdown__item) { color: #e2e8f0 !important; }
-:deep(.el-select-dropdown__item:hover) { background: rgba(96, 165, 250, 0.1) !important; }
-:deep(.el-pagination) { --el-pagination-bg-color: transparent !important; }
-:deep(.el-pagination button) { background: rgba(255,255,255,0.05) !important; border-color: rgba(96,165,250,0.15) !important; color: #94a3b8 !important; }
-:deep(.el-pagination button:hover) { background: rgba(96,165,250,0.15) !important; color: #60a5fa !important; }
-:deep(.el-pager li) { background: rgba(255,255,255,0.05) !important; border-color: rgba(96,165,250,0.15) !important; color: #94a3b8 !important; }
-:deep(.el-pager li:hover) { color: #60a5fa !important; }
-:deep(.el-pager li.is-active) { background: #1e40af !important; border-color: #1e40af !important; color: #fff !important; }
-:deep(.el-table) {
-  background: transparent !important;
-  --el-table-bg-color: transparent;
-  --el-table-tr-bg-color: transparent;
-  --el-table-header-bg-color: rgba(96, 165, 250, 0.08);
-  --el-table-row-hover-bg-color: rgba(96, 165, 250, 0.1);
-  --el-table-border-color: rgba(96, 165, 250, 0.15);
-  --el-table-text-color: #e2e8f0;
-  --el-table-header-text-color: #94a3b8;
-}
-:deep(.el-table__header th) {
-  background: rgba(96, 165, 250, 0.08) !important;
-}
-:deep(.el-table__body tr) {
-  background: transparent !important;
-}
-:deep(.el-table__body tr:hover > td) {
-  background: rgba(96, 165, 250, 0.1) !important;
-}
-:deep(.el-table td.el-table__cell) {
-  border-bottom-color: rgba(96, 165, 250, 0.1) !important;
 }
 </style>

@@ -4,7 +4,6 @@ import com.jwluo0719.deltatrade.domain.AppealRecord;
 import com.jwluo0719.deltatrade.mapper.AppealRecordMapper;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -43,12 +42,12 @@ public class AppealService {
     }
 
     /** 管理员 — 处理申诉（通过/驳回） */
-    public void handle(Long id, String status, Long handlerId, String handlerRemark) {
+    public void handle(Long id, String status) {
         if (!"RESOLVED".equals(status) && !"REJECTED".equals(status)) {
             throw new IllegalArgumentException("处理状态只能为 RESOLVED 或 REJECTED");
         }
         AppealRecord exist = appealMapper.findById(id);
         if (exist == null) throw new IllegalArgumentException("申诉不存在");
-        appealMapper.updateStatus(id, status, handlerId, handlerRemark, LocalDateTime.now());
+        appealMapper.updateStatus(id, status);
     }
 }

@@ -212,27 +212,26 @@ onMounted(loadAccounts);
 <style scoped>
 .page-shell {
   min-height: 100vh;
-  background: linear-gradient(135deg, #060d1a 0%, #0f1c33 50%, #0a1525 100%);
-  color: #e2e8f0;
+  background: #070b14;
   padding: 40px 20px;
 }
 
 .hero-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(96, 165, 250, 0.12);
-  border-radius: 20px;
+  background: linear-gradient(135deg, #0f1c33 0%, #1a2744 100%);
+  border: 1px solid rgba(64, 158, 255, 0.15);
+  border-radius: 16px;
   padding: 36px 40px;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .back-btn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(96, 165, 250, 0.2);
+  background: none;
+  border: 1px solid rgba(64, 158, 255, 0.25);
   border-radius: 8px;
-  color: #93c5fd;
+  color: #7a9cc8;
   font-size: 13px;
   padding: 6px 14px;
   cursor: pointer;
@@ -241,9 +240,9 @@ onMounted(loadAccounts);
 }
 
 .back-btn:hover {
-  background: rgba(96, 165, 250, 0.12);
-  border-color: rgba(96, 165, 250, 0.35);
-  color: #bfdbfe;
+  background: rgba(64, 158, 255, 0.1);
+  color: #a8c5e8;
+  border-color: rgba(64, 158, 255, 0.4);
 }
 
 .back-icon {
@@ -253,19 +252,19 @@ onMounted(loadAccounts);
 .page-title {
   font-size: 26px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #e8edf5;
   margin: 0 0 10px;
 }
 
 .page-subtitle {
   font-size: 14px;
-  color: #64748b;
+  color: #7a8ba8;
   margin: 0;
 }
 
 .panel-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(96, 165, 250, 0.1);
+  background: #0f1c33;
+  border: 1px solid rgba(64, 158, 255, 0.1);
   border-radius: 16px;
   padding: 32px 36px;
   max-width: 720px;
@@ -275,8 +274,8 @@ onMounted(loadAccounts);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(96, 165, 250, 0.15);
+  background: linear-gradient(135deg, #0a1628 0%, #0f2040 100%);
+  border: 1px solid rgba(64, 158, 255, 0.2);
   border-radius: 12px;
   padding: 18px 22px;
   margin-bottom: 18px;
@@ -301,12 +300,12 @@ onMounted(loadAccounts);
 }
 
 .tag-chip {
-  background: rgba(96, 165, 250, 0.1);
-  border: 1px solid rgba(96, 165, 250, 0.18);
+  background: rgba(64, 158, 255, 0.12);
+  border: 1px solid rgba(64, 158, 255, 0.2);
   border-radius: 6px;
   padding: 2px 8px;
   font-size: 12px;
-  color: #93c5fd;
+  color: #7aacc8;
 }
 
 .account-price-block {
@@ -315,33 +314,33 @@ onMounted(loadAccounts);
 
 .price-label {
   font-size: 12px;
-  color: #64748b;
+  color: #6a7d98;
   display: block;
 }
 
 .price-value {
   font-size: 22px;
   font-weight: 700;
-  color: #60a5fa;
+  color: #409eff;
 }
 
 .price-unit {
   font-size: 13px;
-  color: #64748b;
+  color: #6a7d98;
 }
 
 .discount-tip {
-  background: rgba(96, 165, 250, 0.06);
-  border: 1px solid rgba(96, 165, 250, 0.15);
+  background: rgba(64, 158, 255, 0.08);
+  border: 1px solid rgba(64, 158, 255, 0.18);
   border-radius: 10px;
   padding: 10px 16px;
   font-size: 13px;
-  color: #94a3b8;
+  color: #8aaac8;
   margin-bottom: 24px;
 }
 
 .discount-tip strong {
-  color: #60a5fa;
+  color: #409eff;
 }
 
 .discount-icon {
@@ -352,8 +351,8 @@ onMounted(loadAccounts);
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(96, 165, 250, 0.15);
+  background: linear-gradient(135deg, #0a1628 0%, #0f2040 100%);
+  border: 1px solid rgba(64, 158, 255, 0.2);
   border-radius: 10px;
   padding: 14px 20px;
   margin-bottom: 18px;
@@ -361,7 +360,7 @@ onMounted(loadAccounts);
 
 .duration-label {
   font-size: 13px;
-  color: #64748b;
+  color: #6a7d98;
   min-width: 60px;
 }
 
@@ -372,12 +371,12 @@ onMounted(loadAccounts);
 }
 
 .duration-discount {
-  background: rgba(96, 165, 250, 0.12);
-  border: 1px solid rgba(96, 165, 250, 0.2);
+  background: rgba(64, 158, 255, 0.15);
+  border: 1px solid rgba(64, 158, 255, 0.25);
   border-radius: 6px;
   padding: 2px 10px;
   font-size: 12px;
-  color: #60a5fa;
+  color: #409eff;
 }
 
 .grid-2 {
@@ -387,7 +386,7 @@ onMounted(loadAccounts);
 }
 
 :deep(.el-form-item__label) {
-  color: #94a3b8;
+  color: #8a9cba;
   font-size: 13px;
   font-weight: 500;
   padding-bottom: 6px;
@@ -395,24 +394,24 @@ onMounted(loadAccounts);
 
 :deep(.el-input__wrapper),
 :deep(.el-select .el-input__wrapper) {
-  background: #1e293b !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
+  background: #0a1120;
+  border-color: rgba(64, 158, 255, 0.2);
   border-radius: 10px;
-  box-shadow: none !important;
+  box-shadow: none;
   padding: 0 14px;
 }
 
 :deep(.el-input__inner) {
-  color: #e2e8f0;
+  color: #d0d8e8;
   font-size: 14px;
 }
 
 :deep(.el-input__inner::placeholder) {
-  color: #475569;
+  color: #4a5a78;
 }
 
 :deep(.el-select .el-input__inner) {
-  color: #e2e8f0;
+  color: #d0d8e8;
 }
 
 :deep(.el-form-item) {
@@ -420,7 +419,7 @@ onMounted(loadAccounts);
 }
 
 :deep(.el-button--primary) {
-  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  background: linear-gradient(135deg, #409eff 0%, #3078d0 100%);
   border: none;
   border-radius: 10px;
   font-size: 15px;
@@ -430,15 +429,15 @@ onMounted(loadAccounts);
 }
 
 :deep(.el-button--primary:hover) {
-  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  background: linear-gradient(135deg, #50b4ff 0%, #409eff 100%);
 }
 
 .result-card {
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  background: rgba(34, 197, 94, 0.08);
-  border: 1px solid rgba(34, 197, 94, 0.2);
+  background: linear-gradient(135deg, #0a2016 0%, #0f2e1e 100%);
+  border: 1px solid rgba(64, 255, 160, 0.25);
   border-radius: 12px;
   padding: 18px 20px;
   margin-top: 20px;
@@ -448,8 +447,8 @@ onMounted(loadAccounts);
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(34, 197, 94, 0.12);
-  color: #4ade80;
+  background: rgba(64, 255, 160, 0.15);
+  color: #40ff9a;
   font-size: 20px;
   font-weight: 700;
   display: flex;
@@ -465,20 +464,20 @@ onMounted(loadAccounts);
 .result-title {
   font-size: 15px;
   font-weight: 600;
-  color: #4ade80;
+  color: #60ffb0;
   margin-bottom: 4px;
 }
 
 .result-message {
   font-size: 13px;
-  color: #86efac;
+  color: #7acc9a;
   line-height: 1.5;
 }
 
 .result-close {
   background: none;
   border: none;
-  color: #64748b;
+  color: #4a8a6a;
   font-size: 22px;
   cursor: pointer;
   padding: 0 4px;
@@ -486,7 +485,7 @@ onMounted(loadAccounts);
 }
 
 .result-close:hover {
-  color: #4ade80;
+  color: #60ffb0;
 }
 
 @media (max-width: 640px) {

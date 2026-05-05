@@ -20,6 +20,7 @@ public interface SysUserMapper {
             left join sys_user_role ur on ur.user_id = u.id
             left join sys_role r on r.id = ur.role_id
             where u.username = #{username}
+            order by ur.id asc
             limit 1
             """)
     SysUser findByUsername(String username);
@@ -31,6 +32,7 @@ public interface SysUserMapper {
             left join sys_user_role ur on ur.user_id = u.id
             left join sys_role r on r.id = ur.role_id
             where u.username = #{loginKey} or u.phone = #{loginKey}
+            order by ur.id asc
             limit 1
             """)
     SysUser findByLoginKey(String loginKey);
@@ -42,6 +44,7 @@ public interface SysUserMapper {
             left join sys_user_role ur on ur.user_id = u.id
             left join sys_role r on r.id = ur.role_id
             where u.phone = #{phone}
+            order by ur.id asc
             limit 1
             """)
     SysUser findByPhone(String phone);
@@ -66,6 +69,7 @@ public interface SysUserMapper {
             left join sys_user_role ur on ur.user_id = u.id
             left join sys_role r on r.id = ur.role_id
             where u.id = #{id}
+            order by ur.id asc
             limit 1
             """)
     SysUser findById(Long id);

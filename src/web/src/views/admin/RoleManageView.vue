@@ -1,11 +1,11 @@
 <template>
-  <div class="admin-card">
+  <div class="panel-card">
     <div class="panel-header">
       <h2 class="section-title">角色管理</h2>
       <el-button type="primary" @click="openCreate">新增角色</el-button>
     </div>
 
-    <el-table v-loading="loading" :data="roles">
+    <el-table v-loading="loading" :data="roles" stripe>
       <el-table-column prop="roleCode" label="角色代码" width="140" />
       <el-table-column prop="roleName" label="角色名称" width="140" />
       <el-table-column prop="description" label="说明" min-width="260" />
@@ -43,7 +43,7 @@ import { ElMessage } from 'element-plus';
 import { createAdminRole, getAdminRoles, updateAdminRole } from '@/api';
 import type { AdminRole } from '@/types/api';
 
-const loading = ref(true);
+const loading = ref(false);
 const saving = ref(false);
 const dialogVisible = ref(false);
 const editingRoleCode = ref('');
@@ -124,55 +124,10 @@ onMounted(loadRoles);
 </script>
 
 <style scoped>
-.admin-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(96, 165, 250, 0.1);
-  border-radius: 16px;
-  padding: 24px;
-}
-
 .panel-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 16px;
-}
-
-:deep(.el-input__wrapper) {
-  background: #1e293b !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
-  box-shadow: none !important;
-}
-:deep(.el-input__inner) { color: #e2e8f0 !important; }
-:deep(.el-input__inner::placeholder) { color: #475569 !important; }
-:deep(.el-dialog) {
-  background: #1e293b !important;
-  border: 1px solid rgba(96, 165, 250, 0.2) !important;
-  border-radius: 16px !important;
-}
-:deep(.el-dialog__header) { color: #f1f5f9 !important; }
-:deep(.el-dialog__title) { color: #f1f5f9 !important; }
-:deep(.el-form-item__label) { color: #94a3b8 !important; }
-:deep(.el-table) {
-  background: transparent !important;
-  --el-table-bg-color: transparent;
-  --el-table-tr-bg-color: transparent;
-  --el-table-header-bg-color: rgba(96, 165, 250, 0.08);
-  --el-table-row-hover-bg-color: rgba(96, 165, 250, 0.1);
-  --el-table-border-color: rgba(96, 165, 250, 0.15);
-  --el-table-text-color: #e2e8f0;
-  --el-table-header-text-color: #94a3b8;
-}
-:deep(.el-table__header th) {
-  background: rgba(96, 165, 250, 0.08) !important;
-}
-:deep(.el-table__body tr) {
-  background: transparent !important;
-}
-:deep(.el-table__body tr:hover > td) {
-  background: rgba(96, 165, 250, 0.1) !important;
-}
-:deep(.el-table td.el-table__cell) {
-  border-bottom-color: rgba(96, 165, 250, 0.1) !important;
 }
 </style>

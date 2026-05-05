@@ -1,13 +1,11 @@
 package com.jwluo0719.deltatrade.controller;
 
 import com.jwluo0719.deltatrade.common.ApiResponse;
-import com.jwluo0719.deltatrade.common.JwtUtil;
 import com.jwluo0719.deltatrade.service.UserService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,9 +32,7 @@ public class AdminUserController {
     }
 
     @PutMapping("/{id}/role")
-    public ApiResponse<Void> updateRole(@PathVariable Long id, @RequestBody Map<String, Object> payload,
-                                       @RequestHeader(value = "Authorization", required = false) String auth) {
-        if (!isAdmin(auth)) return ApiResponse.fail("无权操作");
+    public ApiResponse<Void> updateRole(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
         try {
             String role = String.valueOf(payload.getOrDefault("role", ""));
             userService.updateRole(id, role);
@@ -47,9 +43,7 @@ public class AdminUserController {
     }
 
     @PutMapping("/{id}/status")
-    public ApiResponse<Void> updateStatus(@PathVariable Long id, @RequestBody Map<String, Object> payload,
-                                         @RequestHeader(value = "Authorization", required = false) String auth) {
-        if (!isAdmin(auth)) return ApiResponse.fail("无权操作");
+    public ApiResponse<Void> updateStatus(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
         try {
             Integer status = payload.get("status") instanceof Number number ? number.intValue() : Integer.parseInt(String.valueOf(payload.getOrDefault("status", "1")));
             userService.updateStatus(id, status);
@@ -57,13 +51,5 @@ public class AdminUserController {
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
         }
-    }
-
-    private boolean isAdmin(String auth) {
-        if (auth != null && auth.startsWith("Bearer ")) {
-            String role = JwtUtil.getRole(auth.substring(7));
-            return "ADMIN".equals(role);
-        }
-        return false;
     }
 }

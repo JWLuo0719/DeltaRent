@@ -20,8 +20,6 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   // 启动校验：若 token 无效，清除残留状态
-  validateAuth();
-
   function validateAuth() {
     if (token.value && (!user.value || !user.value.id)) {
       logout();

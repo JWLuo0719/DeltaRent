@@ -68,8 +68,7 @@ public class RentalController {
             product.setCategory(String.valueOf(payload.getOrDefault("category", "")));
             product.setTagText(String.valueOf(payload.getOrDefault("tagText", "")));
             product.setHourPrice(new BigDecimal(String.valueOf(payload.getOrDefault("hourPrice", "0"))));
-            Object coinAmountVal = payload.getOrDefault("coinAmount", payload.getOrDefault("coinAmountText", 0));
-            product.setCoinAmount(Long.parseLong(String.valueOf(coinAmountVal)));
+            product.setCoinAmountText(String.valueOf(payload.getOrDefault("coinAmountText", "")));
             product.setEquipmentLevelText(String.valueOf(payload.getOrDefault("equipmentLevelText", "")));
             product.setWarehouseValueText(String.valueOf(payload.getOrDefault("warehouseValueText", "")));
             product.setStatus(String.valueOf(payload.getOrDefault("status", "AVAILABLE")));
@@ -90,8 +89,7 @@ public class RentalController {
             product.setCategory(String.valueOf(payload.getOrDefault("category", "")));
             product.setTagText(String.valueOf(payload.getOrDefault("tagText", "")));
             product.setHourPrice(new BigDecimal(String.valueOf(payload.getOrDefault("hourPrice", "0"))));
-            Object coinAmountVal2 = payload.getOrDefault("coinAmount", payload.getOrDefault("coinAmountText", 0));
-            product.setCoinAmount(Long.parseLong(String.valueOf(coinAmountVal2)));
+            product.setCoinAmountText(String.valueOf(payload.getOrDefault("coinAmountText", "")));
             product.setEquipmentLevelText(String.valueOf(payload.getOrDefault("equipmentLevelText", "")));
             product.setWarehouseValueText(String.valueOf(payload.getOrDefault("warehouseValueText", "")));
             product.setStatus(String.valueOf(payload.getOrDefault("status", "AVAILABLE")));
@@ -123,13 +121,13 @@ public class RentalController {
         item.put("category", product.getCategory());
         item.put("tagText", product.getTagText());
         item.put("hourPrice", product.getHourPrice());
-        item.put("coinAmount", product.getCoinAmount());
+        item.put("coinAmountText", product.getCoinAmountText());
         item.put("equipmentLevelText", product.getEquipmentLevelText());
         item.put("warehouseValueText", product.getWarehouseValueText());
         item.put("tag", product.getTagText());
         item.put("price", product.getHourPrice() + " / 小时");
         item.put("status", product.getStatus());
-        item.put("coinAmount", product.getCoinAmount());
+        item.put("coinAmount", product.getCoinAmountText());
         item.put("equipmentLevel", product.getEquipmentLevelText());
         item.put("warehouseValue", product.getWarehouseValueText());
         item.put("description", product.getDescription());

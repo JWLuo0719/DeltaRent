@@ -126,7 +126,7 @@ public class UserService {
         verifyCode.setExpireTime(now.plusMinutes(VERIFY_CODE_EXPIRE_MINUTES));
         smsVerifyCodeMapper.insert(verifyCode);
 
-        log.info("模拟发送验证码成功：phone={}, type={}", normalizedPhone, normalizedType);
+        log.info("模拟发送验证码成功：phone={}, type={}, code={}", normalizedPhone, normalizedType, verifyCode.getCode());
     }
 
     @Transactional

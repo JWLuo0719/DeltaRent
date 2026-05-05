@@ -16,27 +16,6 @@ CREATE TABLE IF NOT EXISTS `sys_user` (
   KEY `idx_sys_user_phone` (`phone`)
 );
 
-CREATE DATABASE IF NOT EXISTS `deltarent` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE `deltarent`;
-
--- 用户表
-CREATE TABLE IF NOT EXISTS `sys_user` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `username` VARCHAR(50) NOT NULL,
-  `phone` VARCHAR(20) NOT NULL,
-  `password_hash` VARCHAR(255) NOT NULL,
-  `nickname` VARCHAR(50) DEFAULT NULL,
-  `status` TINYINT NOT NULL DEFAULT 1,
-  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `password_updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `deleted_at` DATETIME DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_sys_user_username` (`username`),
-  UNIQUE KEY `uk_sys_user_phone` (`phone`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- 角色表
 CREATE TABLE IF NOT EXISTS `sys_role` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `role_code` VARCHAR(50) NOT NULL,
