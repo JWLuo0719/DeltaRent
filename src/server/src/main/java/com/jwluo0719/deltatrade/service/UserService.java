@@ -153,7 +153,10 @@ public class UserService {
         if (user == null) throw new IllegalArgumentException("用户不存在");
 
         LocalDateTime passwordUpdatedAt = LocalDateTime.now();
-        sysUserMapper.updatePassword(user.getId(), passwordEncoder.encode(newPassword), passwordUpdatedAt);
+        int rows = sysUserMapper.updatePassword(user.getId(), passwordEncoder.encode(newPassword), passwordUpdatedAt);
+        if (rows == 0) {
+            throw new IllegalArgumentException("密码更新失败，请重试");
+        }
         smsVerifyCodeMapper.markUsed(latest.getId(), now);
     }
 
@@ -246,7 +249,16 @@ public class UserService {
             throw new IllegalArgumentException("原密码不正确");
         }
 
-        sysUserMapper.updatePassword(id, passwordEncoder.encode(newPassword), LocalDateTime.now());
+        boolean samePwd = saved != null
+                && (saved.equals(newPassword) || (saved.startsWith("$2") && passwordEncoder.matches(newPassword, saved)));
+        if (samePwd) {
+            throw new IllegalArgumentException("新密码不能与原密码相同");
+        }
+
+        int rows = sysUserMapper.updatePassword(id, passwordEncoder.encode(newPassword), LocalDateTime.now());
+        if (rows == 0) {
+            throw new IllegalArgumentException("密码更新失败，请重试");
+        }
     }
 
     public void updateStatus(Long id, Integer status) {

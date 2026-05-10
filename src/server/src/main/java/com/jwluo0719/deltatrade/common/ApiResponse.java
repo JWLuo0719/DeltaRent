@@ -1,5 +1,7 @@
 package com.jwluo0719.deltatrade.common;
 
+
+//通用接口返回结果封装
 public class ApiResponse<T> {
 
     private final boolean success;
@@ -36,3 +38,9 @@ public class ApiResponse<T> {
         return data;
     }
 }
+//返回必要数据
+// {
+//   "success": true/false,
+//   "message": "提示信息",
+//   "data": 业务数据
+// }

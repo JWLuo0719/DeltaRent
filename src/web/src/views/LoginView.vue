@@ -295,14 +295,19 @@ async function handleResetPassword() {
     return;
   }
   try {
-    await resetPasswordApi({
+    const response = await resetPasswordApi({
       phone: forgetForm.phone,
       verifyCode: forgetForm.verifyCode,
       newPassword: forgetForm.newPassword
     });
-    clearCountdown();
-    ElMessage.success('密码重置成功，请使用新密码登录');
-    showForgetModal.value = false;
+    if (response.data.success) {
+      clearCountdown();
+      ElMessage.success('密码重置成功，请使用新密码登录');
+      showForgetModal.value = false;
+    } else {
+      clearCountdown();
+      ElMessage.error(response.data.message || '重置失败，请重试');
+    }
   } catch (error) {
     clearCountdown();
     ElMessage.error('重置失败，请重试');
