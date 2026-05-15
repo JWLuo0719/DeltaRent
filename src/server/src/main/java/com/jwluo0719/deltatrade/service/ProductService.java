@@ -144,10 +144,10 @@ public class ProductService {
     private boolean matchesLevel(String equipmentLevelText, String level) {
         String normalizedLevel = level == null ? "" : level.trim();
         return switch (normalizedLevel) {
-            case "Basic" -> containsAny(equipmentLevelText, "新手", "基础");
-            case "Mid" -> containsAny(equipmentLevelText, "进阶", "中阶");
-            case "Advanced" -> containsAny(equipmentLevelText, "高阶", "毕业");
-            case "Full" -> containsAny(equipmentLevelText, "满配", "顶级", "毕业装", "六套");
+            case "Basic" -> containsAny(equipmentLevelText, "新手", "基础", "basic", "beginner");
+            case "Mid" -> containsAny(equipmentLevelText, "进阶", "中阶", "mid", "medium");
+            case "Advanced" -> containsAny(equipmentLevelText, "高阶", "毕业", "advanced");
+            case "Full" -> containsAny(equipmentLevelText, "满配", "顶级", "毕业装", "六套", "full", "top");
             default -> true;
         };
     }
@@ -156,7 +156,11 @@ public class ProductService {
         if (raw == null || raw.isBlank()) {
             return false;
         }
-        return Arrays.stream(parts).filter(Objects::nonNull).anyMatch(raw::contains);
+        String normalizedRaw = raw.toLowerCase(Locale.ROOT);
+        return Arrays.stream(parts)
+                .filter(Objects::nonNull)
+                .map(part -> part.toLowerCase(Locale.ROOT))
+                .anyMatch(normalizedRaw::contains);
     }
 
     private List<String> collectAllTags(List<RentalProduct> products) {

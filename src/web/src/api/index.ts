@@ -91,6 +91,10 @@ export function getAdminOrders(params?: { status?: string }) {
   return http.get<ApiResponse<OrderSummary[]>>('/orders', { params });
 }
 
+export function updateOrderStatus(id: number, status: string) {
+  return http.put<ApiResponse<void>>(`/orders/${id}/status`, { status });
+}
+
 export function getAdminUsers(params?: {
   page?: number;
   pageSize?: number;
