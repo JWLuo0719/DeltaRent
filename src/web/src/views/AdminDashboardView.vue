@@ -111,14 +111,15 @@ function handleMenuSelect(key: string) {
 .admin-shell {
   display: flex;
   min-height: 100vh;
-  background: #0f1c33;
+  background: #f8fafc;
 }
 
 .admin-sidebar {
   width: 220px;
-  background: #0a1525;
+  background: linear-gradient(180deg, #fff8df 0%, #fffdf4 100%);
   display: flex;
   flex-direction: column;
+  border-right: 1px solid #e2e8f0;
 }
 
 .sidebar-logo {
@@ -126,16 +127,16 @@ function handleMenuSelect(key: string) {
   display: flex;
   align-items: center;
   gap: 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .logo-icon {
-  color: #60a5fa;
+  color: #c57a00;
   font-size: 20px;
 }
 
 .logo-text {
-  color: #fff;
+  color: #1f2937;
   font-size: 18px;
   font-weight: 600;
 }
@@ -147,19 +148,19 @@ function handleMenuSelect(key: string) {
 }
 
 :deep(.el-menu-item) {
-  color: rgba(255,255,255,0.7);
+  color: #64748b;
   height: 48px;
   line-height: 48px;
 }
 
 :deep(.el-menu-item.is-active) {
-  background: rgba(96, 165, 250, 0.15);
-  color: #60a5fa;
+  background: #fff0d0;
+  color: #9b5d00;
 }
 
 :deep(.el-menu-item:hover) {
-  background: rgba(255,255,255,0.05);
-  color: #fff;
+  background: #fff7e6;
+  color: #9b5d00;
 }
 
 .menu-icon {
@@ -174,8 +175,8 @@ function handleMenuSelect(key: string) {
 
 .admin-topbar {
   height: 60px;
-  background: #0a1525;
-  border-bottom: 1px solid rgba(96, 165, 250, 0.2);
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -185,7 +186,7 @@ function handleMenuSelect(key: string) {
 .topbar-left h2 {
   margin: 0;
   font-size: 18px;
-  color: #e2e8f0;
+  color: #1f2937;
 }
 
 .topbar-right {
@@ -196,31 +197,31 @@ function handleMenuSelect(key: string) {
 
 .user-name {
   font-size: 14px;
-  color: #94a3b8;
+  color: #64748b;
 }
 
 .admin-content {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
-  background: #0f1c33;
+  background: #f8fafc;
   min-height: 0;
 }
 
 :deep(.el-tag) {
-  background: rgba(96, 165, 250, 0.1) !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
-  color: #60a5fa !important;
+  background: #fff3d9 !important;
+  border-color: #ffd46b !important;
+  color: #9b5d00 !important;
 }
 
 :deep(.el-button--small) {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
-  color: #94a3b8 !important;
+  background: #fff !important;
+  border-color: #dbe3ef !important;
+  color: #64748b !important;
 }
 
 :deep(.el-button--small:hover) {
-  background: rgba(96, 165, 250, 0.15) !important;
-  color: #60a5fa !important;
+  background: #fff7e6 !important;
+  color: #9b5d00 !important;
 }
 </style>

@@ -1,345 +1,985 @@
 <template>
-  <div class="page-shell stack">
+  <div class="rental-page">
+    <div class="page-inner">
+      <section class="hero-board">
+        <aside class="hero-side">
+          <article
+            v-for="promo in sidePromos"
+            :key="promo.title"
+            class="promo-card"
+            :class="promo.theme"
+          >
+            <div class="promo-badge">{{ promo.badge }}</div>
+            <h3>{{ promo.title }}</h3>
+            <p>{{ promo.desc }}</p>
+            <button class="promo-action" type="button" @click="handlePromoAction(promo.action)">
+              {{ promo.actionText }}
+            </button>
+          </article>
+        </aside>
 
-    <!-- Hero 顶栏 -->
-    <section class="hero-card">
-      <div class="hero-left">
-        <h1 class="page-title">账号租赁大厅</h1>
-        <p class="page-subtitle">按段位、仓库、哈夫币和价格快速筛选，适合短租体验、活动冲分和高配作战场景。</p>
-      </div>
-      <div class="hero-stat">
-        <span class="stat-num">{{ total }}</span>
-        <span class="stat-label">个账号可供筛选</span>
-      </div>
-    </section>
+        <section class="hero-banner">
+          <div class="banner-mark">DeltaRent</div>
+          <div class="banner-content">
+            <div class="banner-eyebrow">{{ currentBanner.eyebrow }}</div>
+            <h1>{{ currentBanner.title }}</h1>
+            <p>{{ currentBanner.desc }}</p>
+            <div class="banner-actions">
+              <button class="banner-primary" type="button" @click="handleBannerAction(currentBanner.action)">
+                {{ currentBanner.actionText }}
+              </button>
+              <button class="banner-secondary" type="button" @click="advancedVisible = true">
+                高级筛选
+              </button>
+            </div>
+          </div>
+          <div class="banner-stats">
+            <div class="banner-stat">
+              <span class="banner-stat-value">{{ availableCount }}</span>
+              <span class="banner-stat-label">可租账号</span>
+            </div>
+            <div class="banner-stat">
+              <span class="banner-stat-value">{{ totalLoaded }}</span>
+              <span class="banner-stat-label">当前资源</span>
+            </div>
+            <div class="banner-stat">
+              <span class="banner-stat-value">{{ hotCount }}</span>
+              <span class="banner-stat-label">热门推荐</span>
+            </div>
+          </div>
+          <div class="banner-dots">
+            <button
+              v-for="(_, index) in bannerSlides"
+              :key="index"
+              class="banner-dot"
+              :class="{ active: currentBannerIndex === index }"
+              type="button"
+              @click="currentBannerIndex = index"
+            />
+          </div>
+        </section>
 
-    <!-- 筛选工具栏 -->
-    <section class="filter-bar">
-      <div class="quick-filter-row">
+        <aside class="notice-panel">
+          <div class="notice-head">
+            <span class="notice-icon">公告</span>
+            <strong>租号大厅说明</strong>
+          </div>
+          <button
+            v-for="notice in noticeItems"
+            :key="notice.id"
+            class="notice-item"
+            type="button"
+            @click="openNotice(notice)"
+          >
+            <span class="notice-title">{{ notice.title }}</span>
+            <span class="notice-arrow">›</span>
+          </button>
+        </aside>
+      </section>
+
+      <section class="zone-strip">
         <button
-          v-for="preset in quickFilters"
-          :key="preset.key"
-          class="quick-chip"
-          :class="{ active: activeQuickFilter === preset.key }"
-          @click="applyQuickFilter(preset.key)"
+          v-for="zone in zoneCards"
+          :key="zone.key"
+          class="zone-card"
+          :class="[zone.theme, { active: activeZone === zone.key }]"
+          type="button"
+          @click="applyZone(zone.key)"
         >
-          {{ preset.label }}
+          <div class="zone-copy">
+            <strong>{{ zone.title }}</strong>
+            <span>{{ zone.desc }}</span>
+          </div>
+          <div class="zone-meta">
+            <span class="zone-count">{{ zone.count }}</span>
+            <span class="zone-go">GO</span>
+          </div>
         </button>
-      </div>
-      <div class="filter-row">
-        <el-input
-          v-model="keyword"
-          placeholder="搜索账号名称、标签或配置"
-          class="filter-input"
-          clearable
-          @input="onKeywordChange"
-        />
-        <el-select v-model="selectedCategory" placeholder="账号分类" clearable class="filter-select">
-          <el-option v-for="category in allCategories" :key="category" :label="categoryText(category)" :value="category" />
-        </el-select>
-        <el-select v-model="selectedTags" multiple collapse-tags collapse-tags-tooltip placeholder="资源标签" class="filter-select wide-select">
-          <el-option v-for="tag in allTags" :key="tag" :label="tag" :value="tag" />
-        </el-select>
-        <el-select v-model="selectedLevel" placeholder="装备等级" clearable class="filter-select">
-          <el-option label="入门" value="Basic" />
-          <el-option label="中级" value="Mid" />
-          <el-option label="高级" value="Advanced" />
-          <el-option label="满配" value="Full" />
-        </el-select>
-        <el-select v-model="selectedStatus" placeholder="可租状态" clearable class="filter-select">
-          <el-option label="仅看可租" value="AVAILABLE" />
-          <el-option label="维护中" value="MAINTENANCE" />
-          <el-option label="已租出" value="RENTED" />
-          <el-option label="全部" value="" />
-        </el-select>
-        <el-select v-model="selectedPriceRange" placeholder="价格区间" clearable class="filter-select">
-          <el-option label="10元以下" value="low" />
-          <el-option label="10-20元" value="mid" />
-          <el-option label="20元以上" value="high" />
-        </el-select>
-        <el-select v-model="sortBy" class="filter-select sort-select">
-          <el-option label="默认排序" value="default" />
-          <el-option label="价格 ↑ 低到高" value="price_asc" />
-          <el-option label="价格 ↓ 高到低" value="price_desc" />
-        </el-select>
-        <el-button class="refresh-btn" @click="loadRentals">刷新</el-button>
-      </div>
-    </section>
+      </section>
 
-    <!-- 账号卡片网格 -->
-    <section class="cards-section">
-      <!-- 骨架屏 -->
-      <div v-if="loading" class="product-grid">
-        <div v-for="i in 6" :key="i" class="product-card skeleton-card">
-          <div class="sk-pulse sk-line" style="height:14px; width:40%; margin-bottom:10px;" />
-          <div class="sk-pulse sk-line" style="height:18px; width:75%; margin-bottom:6px;" />
-          <div class="sk-pulse sk-line" style="height:12px; width:90%; margin-bottom:5px;" />
-          <div class="sk-pulse sk-line" style="height:12px; width:85%; margin-bottom:5px;" />
-          <div class="sk-pulse sk-line" style="height:12px; width:70%; margin-bottom:16px;" />
-          <div class="sk-pulse sk-block" style="height:32px; width:100%;" />
-        </div>
-      </div>
-
-      <!-- 空状态 -->
-      <div v-else-if="filteredProducts.length === 0" class="empty-state">
-        <div class="empty-icon">📭</div>
-        <div class="empty-title">暂无可租账号</div>
-        <div class="empty-desc">当前没有符合条件的账号</div>
-        <el-button class="empty-btn" @click="clearFilters">清除筛选条件</el-button>
-      </div>
-
-      <!-- 账号卡片列表 -->
-      <div v-else class="product-grid">
-        <div
-          v-for="p in filteredProducts"
-          :key="p.id"
-          class="product-card"
-          @click="openDrawer(p)"
-        >
-          <!-- 卡片头部：状态标签 -->
-          <div class="card-header">
-            <div class="card-tags">
-              <span class="card-status-tag" :class="getStatusClass(p.status)">
-                {{ getStatusText(p.status) }}
-              </span>
-              <span v-if="p.isHot" class="card-hot-tag">热门</span>
-            </div>
-          </div>
-
-          <!-- 账号名称 -->
-          <div class="card-name">{{ p.name }}</div>
-          <div class="card-subtitle">{{ categoryText(p.category) }} · {{ p.description || '客服确认后交付，适合课程演示租赁流程' }}</div>
-
-          <!-- 标签行 -->
-          <div class="card-tag-row">
-            <span v-for="(tag, i) in splitTags(p.tagText)" :key="i" class="card-tag-pill">
-              {{ tag }}
-            </span>
-          </div>
-
-          <!-- 资源属性 -->
-          <div class="card-attrs">
-            <div class="attr-row">
-              <span class="attr-k">装备等级</span>
-              <span class="attr-v">{{ p.equipmentLevelText }}</span>
-            </div>
-            <div class="attr-row">
-              <span class="attr-k">仓库价值</span>
-              <span class="attr-v">{{ p.warehouseValueText }}</span>
-            </div>
-            <div class="attr-row">
-              <span class="attr-k">哈夫币</span>
-              <span class="attr-v">{{ formatCoinAmount(p.coinAmount) }}</span>
-            </div>
-          </div>
-
-          <!-- 价格 + 操作 -->
-          <div class="card-footer">
-            <div class="card-price">
-              <span class="price-num">¥{{ p.hourPrice }}</span>
-              <span class="price-unit">/小时</span>
-            </div>
-            <span class="card-action">查看详情 →</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- 分页 -->
-    <div v-if="!loading && filteredProducts.length > 0" class="pagination-bar">
-      <el-pagination
-        v-model:current-page="currentPage"
-        :page-size="pageSize"
-        :total="total"
-        layout="prev, pager, next"
-        background
-      />
-    </div>
-
-    <!-- 账号详情弹窗 -->
-    <el-dialog
-      v-model="drawerVisible"
-      title=""
-      width="580px"
-      class="account-modal"
-      :show-close="false"
-      align-center
-    >
-      <template v-if="selectedProduct">
-        <div class="modal-inner">
-          <!-- 关闭按钮 -->
-          <button class="modal-close" @click="drawerVisible = false">✕</button>
-
-          <!-- 图片区（预留） -->
-          <div class="modal-image-placeholder">
-            <div class="img-placeholder-icon">🎮</div>
-            <div class="img-placeholder-text">账号截图示意</div>
-          </div>
-
-          <!-- 账号基本信息 -->
-          <div class="modal-header">
-            <div class="modal-name">{{ selectedProduct.name }}</div>
-            <div class="modal-tags">
-              <span v-for="(tag, i) in splitTags(selectedProduct.tagText)" :key="i" class="card-tag-pill">
-                {{ tag }}
-              </span>
-              <span class="card-status-tag" :class="getStatusClass(selectedProduct.status)">
-                {{ getStatusText(selectedProduct.status) }}
-              </span>
-            </div>
-          </div>
-
-          <!-- 分隔线 -->
-          <div class="modal-divider" />
-
-          <!-- 账号资源 -->
-          <div class="modal-section">
-            <div class="modal-section-title">账号资源</div>
-            <div class="modal-resource-table">
-              <div class="res-row">
-                <span class="res-k">装备等级</span>
-                <span class="res-v">{{ selectedProduct.equipmentLevelText }}</span>
-              </div>
-              <div class="res-row">
-                <span class="res-k">仓库价值</span>
-                <span class="res-v">{{ selectedProduct.warehouseValueText }}</span>
-              </div>
-              <div class="res-row">
-                <span class="res-k">哈夫币</span>
-                <span class="res-v">{{ formatCoinAmount(selectedProduct.coinAmount) }}</span>
-              </div>
-              <div class="res-row">
-                <span class="res-k">分类</span>
-                <span class="res-v">{{ categoryText(selectedProduct.category) }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 租赁说明 -->
-          <div v-if="selectedProduct.description" class="modal-section">
-            <div class="modal-section-title">租赁说明</div>
-            <p class="modal-desc">{{ selectedProduct.description }}</p>
-          </div>
-
-          <!-- 选择时长 -->
-          <div class="modal-section">
-            <div class="modal-section-title">选择租赁时长</div>
-            <div class="duration-grid">
-              <div
-                v-for="d in durations"
-                :key="d.hours"
-                class="duration-card"
-                :class="{ active: selectedDuration === d.hours, disabled: selectedProduct.status !== 'AVAILABLE' }"
-                @click="selectDuration(d.hours)"
-              >
-                <div class="d-hours">{{ d.hours }}h</div>
-                <div class="d-price">¥{{ calcPrice(d.hours) }}</div>
-                <div v-if="d.discount < 1" class="d-tag">{{ Math.round(d.discount * 10) }}折</div>
-              </div>
-            </div>
-            <div v-if="selectedDuration" class="price-summary">
-              应付金额：<span class="summary-price">¥{{ calcPrice(selectedDuration) }}</span>
-              <span class="summary-info">（{{ selectedDuration }}小时{{ getDiscount(selectedDuration) < 1 ? '，' + Math.round(getDiscount(selectedDuration) * 10) + '折' : '' }}）</span>
-            </div>
-          </div>
-
-          <!-- 下单按钮 -->
-          <div class="modal-footer">
-            <el-button
-              v-if="auth.isLoggedIn"
-              type="primary"
-              class="order-btn"
-              :disabled="selectedProduct.status !== 'AVAILABLE' || !selectedDuration"
-              @click="goToOrder"
+      <section class="toolbar-panel">
+        <div class="toolbar-top">
+          <div class="sort-tabs">
+            <button
+              v-for="option in sortOptions"
+              :key="option.value"
+              class="sort-tab"
+              :class="{ active: sortBy === option.value }"
+              type="button"
+              @click="sortBy = option.value"
             >
-              立即下单
-            </el-button>
-            <el-button v-else type="primary" class="order-btn" @click="goToLogin">
-              登录后下单
-            </el-button>
+              {{ option.label }}
+            </button>
+          </div>
+          <div class="toolbar-ops">
+            <button class="ghost-op" type="button" @click="toggleAvailableOnly">
+              {{ selectedStatus === 'AVAILABLE' ? '取消秒上号' : '秒上号' }}
+            </button>
+            <button class="ghost-op danger" type="button" @click="clearFilters">
+              重置筛选
+            </button>
+            <button class="ghost-op" type="button" @click="toggleDisplayMode">
+              切换{{ displayMode === 'list' ? '卡片' : '列表' }}
+            </button>
+            <button class="primary-op" type="button" @click="advancedVisible = true">
+              高级筛选
+            </button>
           </div>
         </div>
-      </template>
-    </el-dialog>
 
+        <div class="filter-grid">
+          <el-input
+            v-model="keyword"
+            placeholder="搜索账号名称、分类、标签"
+            clearable
+            class="filter-item keyword-item"
+          />
+          <el-select v-model="selectedCategory" clearable placeholder="账号分类" class="filter-item">
+            <el-option label="全部分类" value="" />
+            <el-option
+              v-for="category in allCategories"
+              :key="category"
+              :label="categoryText(category)"
+              :value="category"
+            />
+          </el-select>
+          <el-select v-model="selectedLevel" clearable placeholder="装备等级" class="filter-item">
+            <el-option label="入门" value="Basic" />
+            <el-option label="进阶" value="Mid" />
+            <el-option label="高配" value="Advanced" />
+            <el-option label="满配" value="Full" />
+          </el-select>
+          <el-select v-model="selectedStatus" clearable placeholder="上号状态" class="filter-item">
+            <el-option label="可租" value="AVAILABLE" />
+            <el-option label="维护中" value="MAINTENANCE" />
+            <el-option label="已租出" value="RENTED" />
+          </el-select>
+          <el-select
+            v-model="selectedTags"
+            multiple
+            collapse-tags
+            collapse-tags-tooltip
+            clearable
+            placeholder="资源标签"
+            class="filter-item wide-item"
+          >
+            <el-option v-for="tag in allTags" :key="tag" :label="tag" :value="tag" />
+          </el-select>
+          <el-select v-model="selectedPriceRange" clearable placeholder="价格区间" class="filter-item">
+            <el-option label="10 元以下" value="low" />
+            <el-option label="10 - 20 元" value="mid" />
+            <el-option label="20 元以上" value="high" />
+          </el-select>
+        </div>
+
+        <div class="filter-summary">
+          <div class="summary-left">
+            <span class="summary-text">共筛出 {{ total }} 个账号</span>
+            <span v-if="activeZone !== 'all'" class="summary-chip highlighted">{{ currentZoneLabel }}</span>
+            <span v-if="selectedCategory" class="summary-chip">{{ categoryText(selectedCategory) }}</span>
+            <span v-if="selectedStatus" class="summary-chip">{{ getStatusText(selectedStatus) }}</span>
+            <span v-if="selectedPriceRange" class="summary-chip">{{ priceRangeLabel(selectedPriceRange) }}</span>
+            <span v-if="hasAdvancedFilters" class="summary-chip">高级筛选已启用</span>
+          </div>
+          <div class="summary-right">
+            <span class="summary-view">{{ displayMode === 'list' ? '列表视图' : '卡片视图' }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="list-panel">
+        <template v-if="loading">
+          <div v-if="displayMode === 'list'" class="row-list">
+            <article v-for="i in 4" :key="i" class="row-card skeleton-row">
+              <div class="skeleton-cover sk-pulse" />
+              <div class="skeleton-body">
+                <div class="sk-pulse sk-line w-40" />
+                <div class="sk-pulse sk-line w-90" />
+                <div class="skeleton-metrics">
+                  <span v-for="n in 6" :key="n" class="sk-pulse sk-box" />
+                </div>
+              </div>
+              <div class="skeleton-side">
+                <div class="sk-pulse sk-line w-60" />
+                <div class="sk-pulse sk-button" />
+              </div>
+            </article>
+          </div>
+          <div v-else class="card-grid">
+            <article v-for="i in 8" :key="i" class="grid-card skeleton-grid">
+              <div class="sk-pulse grid-cover-skeleton" />
+              <div class="grid-body">
+                <div class="sk-pulse sk-line w-50" />
+                <div class="sk-pulse sk-line w-85" />
+                <div class="sk-pulse sk-line w-70" />
+              </div>
+            </article>
+          </div>
+        </template>
+
+        <div v-else-if="total === 0" class="empty-state">
+          <div class="empty-icon">∅</div>
+          <h3>当前没有符合条件的账号</h3>
+          <p>可以先清空筛选，或者切换专区后重新查看。</p>
+          <el-button type="warning" @click="clearFilters">清空筛选</el-button>
+        </div>
+
+        <div v-else-if="displayMode === 'list'" class="row-list">
+          <article
+            v-for="product in paginatedProducts"
+            :key="product.id"
+            class="row-card"
+            @click="openDrawer(product)"
+          >
+            <div class="row-cover" :class="coverTheme(product)">
+              <div class="cover-status" :class="statusTheme(product.status)">
+                {{ getStatusText(product.status) }}
+              </div>
+              <div class="cover-category">{{ categoryText(product.category) }}</div>
+              <div class="cover-name">{{ shortProductName(product.name) }}</div>
+              <div class="cover-tags">
+                <span v-for="tag in splitTags(product.tagText).slice(0, 3)" :key="tag">{{ tag }}</span>
+              </div>
+            </div>
+
+            <div class="row-main">
+              <h3 class="row-title">{{ product.name }}</h3>
+              <p class="row-meta">
+                {{ categoryText(product.category) }} ｜ {{ product.equipmentLevelText || '未填写装备等级' }} ｜ {{ product.description || '客服确认后交付，适合课堂演示完整租赁流程。' }}
+              </p>
+
+              <div class="metric-grid">
+                <div class="metric-box emphasis">
+                  <strong>{{ formatCoinAmount(product.coinAmount) }}</strong>
+                  <span>哈夫币数量</span>
+                </div>
+                <div class="metric-box emphasis">
+                  <strong>¥{{ formatPrice(product.hourPrice) }}</strong>
+                  <span>小时单价</span>
+                </div>
+                <div class="metric-box">
+                  <strong>{{ product.ratioText || '待补充' }}</strong>
+                  <span>比例</span>
+                </div>
+                <div class="metric-box">
+                  <strong>{{ product.insuranceBoxText || '待补充' }}</strong>
+                  <span>保险箱</span>
+                </div>
+                <div class="metric-box">
+                  <strong>{{ product.rankText || product.equipmentLevelText || '待补充' }}</strong>
+                  <span>段位</span>
+                </div>
+                <div class="metric-box">
+                  <strong>{{ product.staminaText || product.weightText || recommendText(product) }}</strong>
+                  <span>体力 / 负重</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="row-side">
+              <div class="side-top">
+                <span class="side-price-label">参考租金</span>
+                <strong class="side-price">¥{{ formatPrice(product.hourPrice) }}</strong>
+                <span class="side-price-unit">/ 小时</span>
+              </div>
+              <div class="side-tags">
+                <span class="side-pill">{{ getStatusText(product.status) }}</span>
+                <span v-if="product.isHot" class="side-pill hot">热门</span>
+              </div>
+              <div class="side-actions">
+                <button class="time-chip" type="button">{{ durations.length }} 档时长</button>
+                <button class="rent-btn" type="button" @click.stop="openDrawer(product)">立即查看</button>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div v-else class="card-grid">
+          <article
+            v-for="product in paginatedProducts"
+            :key="product.id"
+            class="grid-card"
+            @click="openDrawer(product)"
+          >
+            <div class="grid-cover" :class="coverTheme(product)">
+              <div class="grid-cover-top">
+                <span class="grid-badge">{{ categoryText(product.category) }}</span>
+                <span class="grid-status" :class="statusTheme(product.status)">{{ getStatusText(product.status) }}</span>
+              </div>
+              <div class="grid-cover-bottom">
+                <strong>{{ formatCoinAmount(product.coinAmount) }}</strong>
+                <span>资源概览</span>
+              </div>
+            </div>
+            <div class="grid-body">
+              <h3>{{ product.name }}</h3>
+              <p>{{ product.description || '客服确认后交付，适合短租体验和课堂演示。' }}</p>
+              <div class="grid-tags">
+                <span v-for="tag in splitTags(product.tagText).slice(0, 4)" :key="tag">{{ tag }}</span>
+              </div>
+              <div class="grid-footer">
+                <div class="grid-price">
+                  <strong>¥{{ formatPrice(product.hourPrice) }}</strong>
+                  <span>/ 小时</span>
+                </div>
+                <button class="grid-action" type="button">立即查看</button>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <div v-if="!loading && total > 0" class="pagination-wrap">
+        <el-pagination
+          v-model:current-page="currentPage"
+          :page-size="pageSize"
+          :total="total"
+          layout="prev, pager, next"
+          background
+        />
+      </div>
+
+      <el-dialog
+        v-model="advancedVisible"
+        width="760px"
+        align-center
+        class="advanced-dialog"
+        :show-close="false"
+      >
+        <div class="advanced-panel">
+          <div class="advanced-head">
+            <div>
+              <h3>高级筛选</h3>
+              <p>基于现有账号字段做组合过滤，适合快速收敛结果。</p>
+            </div>
+            <button class="dialog-close" type="button" @click="advancedVisible = false">×</button>
+          </div>
+
+          <div class="advanced-grid">
+            <div class="advanced-field">
+              <label>哈夫币区间</label>
+              <div class="range-row">
+                <el-input-number v-model="advancedForm.minCoin" :min="0" :controls="false" placeholder="最低值" />
+                <span>至</span>
+                <el-input-number v-model="advancedForm.maxCoin" :min="0" :controls="false" placeholder="最高值" />
+              </div>
+            </div>
+
+            <div class="advanced-field">
+              <label>价格区间</label>
+              <div class="range-row">
+                <el-input-number v-model="advancedForm.minPrice" :min="0" :controls="false" placeholder="最低值" />
+                <span>至</span>
+                <el-input-number v-model="advancedForm.maxPrice" :min="0" :controls="false" placeholder="最高值" />
+              </div>
+            </div>
+
+            <div class="advanced-field">
+              <label>仓库关键字</label>
+              <el-input v-model="advancedForm.warehouseKeyword" placeholder="例如：高价值、满配、金装" clearable />
+            </div>
+
+            <div class="advanced-field">
+              <label>段位关键字</label>
+              <el-input v-model="advancedForm.rankKeyword" placeholder="例如：黑鹰、北极星、赛伊德" clearable />
+            </div>
+
+            <div class="advanced-field">
+              <label>保险箱</label>
+              <el-input v-model="advancedForm.insuranceBoxKeyword" placeholder="例如：4格、9格" clearable />
+            </div>
+
+            <div class="advanced-field">
+              <label>常用地区</label>
+              <el-input v-model="advancedForm.loginRegionKeyword" placeholder="例如：四川、福建、江西" clearable />
+            </div>
+
+            <div class="advanced-field">
+              <label>附加标签</label>
+              <el-select
+                v-model="advancedForm.includeTags"
+                multiple
+                collapse-tags
+                collapse-tags-tooltip
+                clearable
+                placeholder="按标签进一步收敛"
+              >
+                <el-option v-for="tag in allTags" :key="tag" :label="tag" :value="tag" />
+              </el-select>
+            </div>
+          </div>
+
+          <div class="advanced-foot">
+            <button class="advanced-reset" type="button" @click="resetAdvancedFilters">重置筛选</button>
+            <button class="advanced-confirm" type="button" @click="applyAdvancedFilters">确认</button>
+          </div>
+        </div>
+      </el-dialog>
+
+      <el-dialog
+        v-model="drawerVisible"
+        width="760px"
+        align-center
+        class="detail-dialog"
+        :show-close="false"
+      >
+        <template v-if="selectedProduct">
+          <div class="detail-panel">
+            <button class="dialog-close detail-close" type="button" @click="drawerVisible = false">×</button>
+
+            <div class="detail-top">
+              <div class="detail-cover" :class="coverTheme(selectedProduct)">
+                <div class="detail-cover-status" :class="statusTheme(selectedProduct.status)">
+                  {{ getStatusText(selectedProduct.status) }}
+                </div>
+                <div class="detail-cover-category">{{ categoryText(selectedProduct.category) }}</div>
+                <h3>{{ shortProductName(selectedProduct.name) }}</h3>
+                <p>{{ selectedProduct.equipmentLevelText || '装备等级待补充' }}</p>
+                <div class="detail-cover-tags">
+                  <span v-for="tag in splitTags(selectedProduct.tagText).slice(0, 4)" :key="tag">{{ tag }}</span>
+                </div>
+              </div>
+
+              <div class="detail-summary">
+                <div class="detail-title-row">
+                  <div>
+                    <h2>{{ selectedProduct.name }}</h2>
+                    <p>{{ selectedProduct.description || '客服确认后交付，适合课堂演示和短租体验。' }}</p>
+                  </div>
+                  <div class="detail-price-box">
+                    <span>小时价</span>
+                    <strong>¥{{ formatPrice(selectedProduct.hourPrice) }}</strong>
+                  </div>
+                </div>
+
+                <div class="detail-metrics">
+                  <div class="detail-metric">
+                    <strong>{{ formatCoinAmount(selectedProduct.coinAmount) }}</strong>
+                    <span>哈夫币</span>
+                  </div>
+                  <div class="detail-metric">
+                    <strong>{{ selectedProduct.rankText || '待补充' }}</strong>
+                    <span>段位</span>
+                  </div>
+                  <div class="detail-metric">
+                    <strong>{{ selectedProduct.insuranceBoxText || '待补充' }}</strong>
+                    <span>保险箱</span>
+                  </div>
+                  <div class="detail-metric">
+                    <strong>{{ selectedProduct.staminaText || selectedProduct.weightText || '待补充' }}</strong>
+                    <span>体力 / 负重</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="detail-block">
+              <div class="block-title">账号资源</div>
+              <div class="resource-grid">
+                <div class="resource-item">
+                  <span>分类</span>
+                  <strong>{{ categoryText(selectedProduct.category) }}</strong>
+                </div>
+                <div class="resource-item">
+                  <span>状态</span>
+                  <strong>{{ getStatusText(selectedProduct.status) }}</strong>
+                </div>
+                <div class="resource-item">
+                  <span>装备等级</span>
+                  <strong>{{ selectedProduct.equipmentLevelText || '待补充' }}</strong>
+                </div>
+                <div class="resource-item">
+                  <span>仓库估值</span>
+                  <strong>{{ selectedProduct.warehouseValueText || '待补充' }}</strong>
+                </div>
+                <div class="resource-item">
+                  <span>比例 / 保险箱</span>
+                  <strong>{{ `${selectedProduct.ratioText || '待补充'} / ${selectedProduct.insuranceBoxText || '待补充'}` }}</strong>
+                </div>
+                <div class="resource-item">
+                  <span>常用地区</span>
+                  <strong>{{ selectedProduct.loginRegion || '待补充' }}</strong>
+                </div>
+                <div class="resource-item">
+                  <span>武器皮肤</span>
+                  <strong>{{ selectedProduct.weaponSkinText || '待补充' }}</strong>
+                </div>
+                <div class="resource-item">
+                  <span>干员皮肤</span>
+                  <strong>{{ selectedProduct.characterSkinText || recommendText(selectedProduct) }}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="detail-block">
+              <div class="block-title">选择租赁时长</div>
+              <div class="duration-grid">
+                <button
+                  v-for="duration in durations"
+                  :key="duration.hours"
+                  class="duration-card"
+                  :class="{ active: selectedDuration === duration.hours, disabled: selectedProduct.status !== 'AVAILABLE' }"
+                  type="button"
+                  @click="selectDuration(duration.hours)"
+                >
+                  <strong>{{ duration.hours }} 小时</strong>
+                  <span>¥{{ calcPrice(duration.hours) }}</span>
+                  <em v-if="duration.discount < 1">{{ Math.round(duration.discount * 10) }} 折</em>
+                </button>
+              </div>
+
+              <div v-if="selectedDuration" class="detail-total">
+                应付金额：<strong>¥{{ calcPrice(selectedDuration) }}</strong>
+                <span>已选 {{ selectedDuration }} 小时</span>
+              </div>
+            </div>
+
+            <div class="detail-actions">
+              <el-button
+                v-if="auth.isLoggedIn"
+                type="warning"
+                class="detail-order-btn"
+                :disabled="selectedProduct.status !== 'AVAILABLE' || !selectedDuration"
+                @click="goToOrder"
+              >
+                立即下单
+              </el-button>
+              <el-button v-else type="warning" class="detail-order-btn" @click="goToLogin">
+                登录后下单
+              </el-button>
+            </div>
+          </div>
+        </template>
+      </el-dialog>
+
+      <el-dialog
+        v-model="noticeVisible"
+        width="520px"
+        align-center
+        class="notice-dialog"
+        :show-close="false"
+      >
+        <template v-if="selectedNotice">
+          <div class="notice-detail">
+            <button class="dialog-close" type="button" @click="noticeVisible = false">×</button>
+            <div class="notice-detail-badge">平台公告</div>
+            <h3>{{ selectedNotice.title }}</h3>
+            <p>{{ selectedNotice.content }}</p>
+          </div>
+        </template>
+      </el-dialog>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import { getRentals } from '@/api';
+import { getPortalSummary, getRentals } from '@/api';
 import { useAuthStore } from '@/stores/auth';
-import type { RentalProduct } from '@/types/api';
+import type { PortalNotice, RentalProduct } from '@/types/api';
+
+type SortValue = 'default' | 'price_asc' | 'price_desc';
+type DisplayMode = 'list' | 'grid';
+
+interface BannerSlide {
+  eyebrow: string;
+  title: string;
+  desc: string;
+  action: string;
+  actionText: string;
+}
+
+interface PromoCard {
+  badge: string;
+  title: string;
+  desc: string;
+  actionText: string;
+  action: string;
+  theme: string;
+}
+
+interface ZoneCard {
+  key: string;
+  title: string;
+  desc: string;
+  count: number;
+  theme: string;
+}
 
 const auth = useAuthStore();
 const router = useRouter();
 
-// ---- 数据状态 ----
 const loading = ref(true);
-const products = ref<RentalProduct[]>([]);
+const rawProducts = ref<RentalProduct[]>([]);
 const keyword = ref('');
 const selectedTags = ref<string[]>([]);
 const selectedCategory = ref('');
 const selectedLevel = ref('');
 const selectedStatus = ref('');
 const selectedPriceRange = ref('');
-const sortBy = ref('default');
+const sortBy = ref<SortValue>('default');
+const displayMode = ref<DisplayMode>('list');
+const activeZone = ref('all');
 const currentPage = ref(1);
-const pageSize = ref(12);
-const total = ref(0);
+const pageSize = 8;
 const allTags = ref<string[]>([]);
 const allCategories = ref<string[]>([]);
+const currentBannerIndex = ref(0);
+const bannerTimer = ref<number | null>(null);
 
-// ---- 详情 Drawer ----
 const drawerVisible = ref(false);
 const selectedProduct = ref<RentalProduct | null>(null);
 const selectedDuration = ref<number | null>(null);
 
-// ---- 时长选项 ----
+const advancedVisible = ref(false);
+const advancedForm = reactive({
+  minCoin: undefined as number | undefined,
+  maxCoin: undefined as number | undefined,
+  minPrice: undefined as number | undefined,
+  maxPrice: undefined as number | undefined,
+  warehouseKeyword: '',
+  rankKeyword: '',
+  insuranceBoxKeyword: '',
+  loginRegionKeyword: '',
+  includeTags: [] as string[]
+});
+
+const noticeVisible = ref(false);
+const selectedNotice = ref<PortalNotice | null>(null);
+const notices = ref<PortalNotice[]>([]);
+
 const durations = [
   { hours: 1, discount: 1 },
-  { hours: 6, discount: 0.9 },
-  { hours: 12, discount: 0.8 },
-  { hours: 24, discount: 0.7 }
+  { hours: 6, discount: 0.92 },
+  { hours: 12, discount: 0.86 },
+  { hours: 24, discount: 0.78 }
 ];
 
-const quickFilters = [
-  { key: 'available', label: '可租现货' },
-  { key: 'premium', label: '高配冲分' },
-  { key: 'event', label: '活动收藏' },
-  { key: 'budget', label: '低价体验' }
+const sidePromos: PromoCard[] = [
+  {
+    badge: '平台交易',
+    title: '按分类快速找号',
+    desc: '适合课堂演示和账号展示，先筛分类再看资源细节。',
+    actionText: '查看全部',
+    action: 'zone:all',
+    theme: 'mint'
+  },
+  {
+    badge: '优先推荐',
+    title: '高配账号优先看',
+    desc: '高等级资源、较高哈夫币和热门标签会优先露出。',
+    actionText: '高配专区',
+    action: 'zone:premium',
+    theme: 'sky'
+  }
 ];
-const activeQuickFilter = ref('');
+
+const sortOptions = [
+  { value: 'default' as SortValue, label: '默认排序' },
+  { value: 'price_asc' as SortValue, label: '价格升序' },
+  { value: 'price_desc' as SortValue, label: '价格降序' }
+];
+
+const bannerSlides = computed<BannerSlide[]>(() => [
+  {
+    eyebrow: '新版租号大厅',
+    title: '按专区、价格和标签快速筛选账号',
+    desc: '默认采用案例 2 的信息密集型列表布局，同时保留案例 1 的卡片视图切换。',
+    action: 'zone:all',
+    actionText: '浏览全部'
+  },
+  {
+    eyebrow: '高价值资源',
+    title: '优先展示高配与高哈夫币账号',
+    desc: `当前可租 ${availableCount.value} 个账号，适合快速演示筛选、查看和下单流程。`,
+    action: 'zone:premium',
+    actionText: '进入高配专区'
+  },
+  {
+    eyebrow: '一键收敛结果',
+    title: '高级筛选支持价格、哈夫币和标签组合',
+    desc: '现有后端字段不足以完全复刻参考站的复杂筛选，所以这里做了前端兼容增强版。',
+    action: 'advanced',
+    actionText: '打开高级筛选'
+  }
+]);
+
+const currentBanner = computed(() => bannerSlides.value[currentBannerIndex.value] ?? bannerSlides.value[0]);
+
+const availableCount = computed(() => rawProducts.value.filter(item => item.status === 'AVAILABLE').length);
+const totalLoaded = computed(() => rawProducts.value.length);
+const hotCount = computed(() => rawProducts.value.filter(item => item.isHot).length);
+
+const noticeItems = computed<PortalNotice[]>(() => {
+  if (notices.value.length > 0) {
+    return notices.value.slice(0, 4);
+  }
+  return [
+    {
+      id: 1,
+      title: '发布与下单流程说明',
+      content: '当前页面已支持按分类、标签、价格和状态组合筛选，详情弹窗中可直接选择租赁时长。'
+    },
+    {
+      id: 2,
+      title: '账号资源字段说明',
+      content: '现阶段演示数据以分类、标签、哈夫币、装备等级、仓库价值为主，复杂展示数据将逐步补齐。'
+    },
+    {
+      id: 3,
+      title: '订单交付提示',
+      content: '账号下单后由客服确认并交付，适合课程演示完整业务闭环。'
+    },
+    {
+      id: 4,
+      title: '筛选逻辑升级说明',
+      content: '新版租号大厅默认使用横向列表布局，并保留卡片视图切换。'
+    }
+  ];
+});
+
+const zoneCards = computed<ZoneCard[]>(() => {
+  const products = rawProducts.value;
+  return [
+    {
+      key: 'all',
+      title: '全部账号',
+      desc: '综合浏览区',
+      count: products.length,
+      theme: 'peach'
+    },
+    {
+      key: 'premium',
+      title: '高配专区',
+      desc: '高等级资源',
+      count: products.filter(isPremiumProduct).length,
+      theme: 'gold'
+    },
+    {
+      key: 'high_coin',
+      title: '高哈夫币',
+      desc: '资源型账号',
+      count: products.filter(item => Number(item.coinAmount || 0) >= 100000).length,
+      theme: 'green'
+    },
+    {
+      key: 'budget',
+      title: '低价体验',
+      desc: '适合流程演示',
+      count: products.filter(item => Number(item.hourPrice || 0) < 10).length,
+      theme: 'violet'
+    },
+    {
+      key: 'hot',
+      title: '热门可租',
+      desc: '优先推荐区',
+      count: products.filter(item => item.status === 'AVAILABLE' && item.isHot).length,
+      theme: 'cyan'
+    }
+  ];
+});
+
+const currentZoneLabel = computed(() => zoneCards.value.find(item => item.key === activeZone.value)?.title ?? '全部账号');
+
+const hasAdvancedFilters = computed(() =>
+  advancedForm.minCoin !== undefined ||
+  advancedForm.maxCoin !== undefined ||
+  advancedForm.minPrice !== undefined ||
+  advancedForm.maxPrice !== undefined ||
+  advancedForm.warehouseKeyword.trim().length > 0 ||
+  advancedForm.rankKeyword.trim().length > 0 ||
+  advancedForm.insuranceBoxKeyword.trim().length > 0 ||
+  advancedForm.loginRegionKeyword.trim().length > 0 ||
+  advancedForm.includeTags.length > 0
+);
+
+const filteredProducts = computed(() => {
+  let list = rawProducts.value.slice();
+
+  list = list.filter(matchesZone);
+
+  if (selectedPriceRange.value) {
+    list = list.filter(product => {
+      const price = Number(product.hourPrice || 0);
+      if (selectedPriceRange.value === 'low') return price < 10;
+      if (selectedPriceRange.value === 'mid') return price >= 10 && price <= 20;
+      if (selectedPriceRange.value === 'high') return price > 20;
+      return true;
+    });
+  }
+
+  if (advancedForm.minCoin !== undefined) {
+    list = list.filter(product => Number(product.coinAmount || 0) >= advancedForm.minCoin!);
+  }
+  if (advancedForm.maxCoin !== undefined) {
+    list = list.filter(product => Number(product.coinAmount || 0) <= advancedForm.maxCoin!);
+  }
+  if (advancedForm.minPrice !== undefined) {
+    list = list.filter(product => Number(product.hourPrice || 0) >= advancedForm.minPrice!);
+  }
+  if (advancedForm.maxPrice !== undefined) {
+    list = list.filter(product => Number(product.hourPrice || 0) <= advancedForm.maxPrice!);
+  }
+  if (advancedForm.warehouseKeyword.trim()) {
+    const text = advancedForm.warehouseKeyword.trim().toLowerCase();
+    list = list.filter(product =>
+      containsText(product.warehouseValueText, text) ||
+      containsText(product.description, text) ||
+      containsText(product.name, text)
+    );
+  }
+  if (advancedForm.rankKeyword.trim()) {
+    const text = advancedForm.rankKeyword.trim().toLowerCase();
+    list = list.filter(product =>
+      containsText(product.rankText, text) ||
+      containsText(product.equipmentLevelText, text)
+    );
+  }
+  if (advancedForm.insuranceBoxKeyword.trim()) {
+    const text = advancedForm.insuranceBoxKeyword.trim().toLowerCase();
+    list = list.filter(product => containsText(product.insuranceBoxText, text));
+  }
+  if (advancedForm.loginRegionKeyword.trim()) {
+    const text = advancedForm.loginRegionKeyword.trim().toLowerCase();
+    list = list.filter(product => containsText(product.loginRegion, text));
+  }
+  if (advancedForm.includeTags.length > 0) {
+    list = list.filter(product => {
+      const tags = splitTags(product.tagText).map(tag => tag.toLowerCase());
+      return advancedForm.includeTags.every(tag => tags.includes(tag.toLowerCase()));
+    });
+  }
+
+  return list;
+});
+
+const total = computed(() => filteredProducts.value.length);
+const paginatedProducts = computed(() => {
+  const start = (currentPage.value - 1) * pageSize;
+  return filteredProducts.value.slice(start, start + pageSize);
+});
+
+function containsText(raw: string | undefined, expected: string) {
+  return (raw ?? '').toLowerCase().includes(expected);
+}
+
+function splitTags(tagText: string | undefined): string[] {
+  return (tagText ?? '')
+    .split(',')
+    .map(item => item.trim())
+    .filter(Boolean);
+}
+
+function categoryText(category: string | undefined) {
+  return category || '综合账号';
+}
+
+function formatCoinAmount(value: number | undefined) {
+  const amount = Number(value || 0);
+  if (!amount) return '未录入';
+  if (amount >= 100000000) return `${(amount / 100000000).toFixed(2)}亿`;
+  if (amount >= 10000) return `${(amount / 10000).toFixed(amount >= 1000000 ? 0 : 1)}万`;
+  return amount.toLocaleString();
+}
+
+function formatPrice(value: number | string | undefined) {
+  const amount = Number(value || 0);
+  return amount.toFixed(2);
+}
+
+function getStatusText(status: string) {
+  return {
+    AVAILABLE: '可租',
+    RENTED: '已租出',
+    MAINTENANCE: '维护中'
+  }[status] ?? status;
+}
+
+function statusTheme(status: string) {
+  return {
+    AVAILABLE: 'available',
+    RENTED: 'rented',
+    MAINTENANCE: 'maintenance'
+  }[status] ?? '';
+}
+
+function shortProductName(name: string) {
+  return name.length > 16 ? `${name.slice(0, 16)}...` : name;
+}
+
+function recommendText(product: RentalProduct) {
+  const price = Number(product.hourPrice || 0);
+  if (isPremiumProduct(product)) return '高配冲分';
+  if (price < 10) return '低价体验';
+  if (splitTags(product.tagText).length >= 4) return '资源展示';
+  return '综合租用';
+}
+
+function isPremiumProduct(product: RentalProduct) {
+  const levelText = product.equipmentLevelText?.toLowerCase() ?? '';
+  const price = Number(product.hourPrice || 0);
+  return levelText.includes('高') || levelText.includes('满') || price >= 20;
+}
+
+function matchesZone(product: RentalProduct) {
+  if (activeZone.value === 'all') return true;
+  if (activeZone.value === 'premium') return isPremiumProduct(product);
+  if (activeZone.value === 'high_coin') return Number(product.coinAmount || 0) >= 100000;
+  if (activeZone.value === 'budget') return Number(product.hourPrice || 0) < 10;
+  if (activeZone.value === 'hot') return product.status === 'AVAILABLE' && !!product.isHot;
+  return true;
+}
+
+function priceRangeLabel(range: string) {
+  return {
+    low: '10 元以下',
+    mid: '10 - 20 元',
+    high: '20 元以上'
+  }[range] ?? range;
+}
+
+function coverTheme(product: RentalProduct) {
+  if (product.status === 'AVAILABLE' && isPremiumProduct(product)) return 'theme-gold';
+  if (product.status === 'AVAILABLE') return 'theme-green';
+  if (product.status === 'MAINTENANCE') return 'theme-slate';
+  return 'theme-blue';
+}
 
 function calcPrice(hours: number) {
-  if (!selectedProduct.value) return 0;
-  const d = durations.find(x => x.hours === hours);
-  const discount = d ? d.discount : 1;
-  return (selectedProduct.value.hourPrice * hours * discount).toFixed(2);
+  if (!selectedProduct.value) return '0.00';
+  const discount = durations.find(item => item.hours === hours)?.discount ?? 1;
+  return (Number(selectedProduct.value.hourPrice || 0) * hours * discount).toFixed(2);
 }
 
-function getDiscount(hours: number) {
-  return durations.find(x => x.hours === hours)?.discount ?? 1;
-}
-
-function selectDuration(h: number) {
+function selectDuration(hours: number) {
   if (selectedProduct.value?.status !== 'AVAILABLE') return;
-  selectedDuration.value = selectedDuration.value === h ? null : h;
+  selectedDuration.value = selectedDuration.value === hours ? null : hours;
 }
 
-// ---- 筛选 + 排序（主要由后端处理，价格档位在当前页内补充过滤） ----
-const filteredProducts = computed(() => {
-  if (!selectedPriceRange.value) return products.value;
-  return products.value.filter(product => {
-    const price = Number(product.hourPrice || 0);
-    if (selectedPriceRange.value === 'low') return price < 10;
-    if (selectedPriceRange.value === 'mid') return price >= 10 && price <= 20;
-    if (selectedPriceRange.value === 'high') return price > 20;
-    return true;
-  });
-});
+function openDrawer(product: RentalProduct) {
+  selectedProduct.value = product;
+  selectedDuration.value = null;
+  drawerVisible.value = true;
+}
+
+function openNotice(notice: PortalNotice) {
+  selectedNotice.value = notice;
+  noticeVisible.value = true;
+}
+
+function applyZone(zone: string) {
+  activeZone.value = zone;
+}
+
+function toggleAvailableOnly() {
+  selectedStatus.value = selectedStatus.value === 'AVAILABLE' ? '' : 'AVAILABLE';
+}
+
+function toggleDisplayMode() {
+  displayMode.value = displayMode.value === 'list' ? 'grid' : 'list';
+}
 
 function clearFilters() {
   keyword.value = '';
@@ -349,69 +989,43 @@ function clearFilters() {
   selectedStatus.value = '';
   selectedPriceRange.value = '';
   sortBy.value = 'default';
-  activeQuickFilter.value = '';
+  activeZone.value = 'all';
+  resetAdvancedFilters();
+  currentPage.value = 1;
+  loadRentals();
 }
 
-function applyQuickFilter(key: string) {
-  activeQuickFilter.value = activeQuickFilter.value === key ? '' : key;
-  selectedTags.value = [];
-  selectedCategory.value = '';
-  selectedLevel.value = '';
-  selectedStatus.value = '';
-  selectedPriceRange.value = '';
-  sortBy.value = 'default';
+function resetAdvancedFilters() {
+  advancedForm.minCoin = undefined;
+  advancedForm.maxCoin = undefined;
+  advancedForm.minPrice = undefined;
+  advancedForm.maxPrice = undefined;
+  advancedForm.warehouseKeyword = '';
+  advancedForm.rankKeyword = '';
+  advancedForm.insuranceBoxKeyword = '';
+  advancedForm.loginRegionKeyword = '';
+  advancedForm.includeTags = [];
+}
 
-  if (activeQuickFilter.value === 'available') {
-    selectedStatus.value = 'AVAILABLE';
-  } else if (activeQuickFilter.value === 'premium') {
-    selectedCategory.value = '高配冲分';
-    selectedLevel.value = 'Advanced';
-    sortBy.value = 'price_desc';
-  } else if (activeQuickFilter.value === 'event') {
-    selectedCategory.value = '活动收藏';
-  } else if (activeQuickFilter.value === 'budget') {
-    selectedPriceRange.value = 'low';
-    sortBy.value = 'price_asc';
+function applyAdvancedFilters() {
+  advancedVisible.value = false;
+  currentPage.value = 1;
+}
+
+function handleBannerAction(action: string) {
+  if (action === 'advanced') {
+    advancedVisible.value = true;
+    return;
+  }
+  if (action.startsWith('zone:')) {
+    applyZone(action.replace('zone:', ''));
   }
 }
 
-// ---- 加载数据（后端筛选） ----
-async function loadRentals() {
-  loading.value = true;
-  try {
-    const res = await getRentals({
-      keyword: keyword.value || undefined,
-      tags: selectedTags.value.length ? selectedTags.value.join(',') : undefined,
-      category: selectedCategory.value || undefined,
-      page: currentPage.value,
-      pageSize: pageSize.value,
-      level: selectedLevel.value || undefined,
-      status: selectedStatus.value || undefined,
-      sortBy: sortBy.value !== 'default' ? sortBy.value : undefined
-    });
-    if (res.data.success) {
-      products.value = res.data.data.list;
-      total.value = res.data.data.total;
-      allTags.value = res.data.data.allTags;
-      allCategories.value = res.data.data.allCategories ?? [];
-    } else {
-      ElMessage.error(res.data.message || '账号列表加载失败');
-    }
-  } catch (error) {
-    ElMessage.error(error instanceof Error ? error.message : '账号列表加载失败');
-  } finally {
-    loading.value = false;
-  }
+function handlePromoAction(action: string) {
+  handleBannerAction(action);
 }
 
-// ---- 详情 Drawer ----
-function openDrawer(p: RentalProduct) {
-  selectedProduct.value = p;
-  selectedDuration.value = null;
-  drawerVisible.value = true;
-}
-
-// ---- 跳转下单 ----
 function goToOrder() {
   if (!selectedProduct.value || !selectedDuration.value) return;
   sessionStorage.setItem('detailProduct', JSON.stringify(selectedProduct.value));
@@ -427,77 +1041,138 @@ function goToOrder() {
 }
 
 function goToLogin() {
-  sessionStorage.setItem('detailProduct', JSON.stringify(selectedProduct.value ?? '{}'));
+  sessionStorage.setItem('detailProduct', JSON.stringify(selectedProduct.value ?? {}));
   sessionStorage.setItem('detailDuration', String(selectedDuration.value ?? ''));
   router.push({
     path: '/login',
     query: {
-      redirect: '/orders/create?accountId=' + selectedProduct.value?.id + '&duration=' + (selectedDuration.value ?? '')
+      redirect: `/orders/create?accountId=${selectedProduct.value?.id ?? ''}&duration=${selectedDuration.value ?? ''}`
     }
   });
   drawerVisible.value = false;
 }
 
-// ---- 工具函数 ----
-function splitTags(tagText: string | undefined): string[] {
-  return (tagText ?? '').split(',').map(t => t.trim()).filter(Boolean);
+async function loadRentals() {
+  loading.value = true;
+  try {
+    const response = await getRentals({
+      keyword: keyword.value || undefined,
+      tags: selectedTags.value.length ? selectedTags.value.join(',') : undefined,
+      category: selectedCategory.value || undefined,
+      level: selectedLevel.value || undefined,
+      status: selectedStatus.value || undefined,
+      sortBy: sortBy.value !== 'default' ? sortBy.value : undefined,
+      page: 1,
+      pageSize: 1000
+    });
+
+    if (!response.data.success) {
+      ElMessage.error(response.data.message || '租号列表加载失败');
+      return;
+    }
+
+    rawProducts.value = response.data.data.list;
+    allTags.value = response.data.data.allTags ?? [];
+    allCategories.value = response.data.data.allCategories ?? [];
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '租号列表加载失败');
+  } finally {
+    loading.value = false;
+  }
 }
 
-function categoryText(category: string | undefined) {
-  return category || '综合账号';
+async function loadNotices() {
+  try {
+    const response = await getPortalSummary();
+    if (response.data.success) {
+      notices.value = response.data.data.notices ?? [];
+    }
+  } catch {
+    notices.value = [];
+  }
 }
 
-function formatCoinAmount(value: number | undefined) {
-  if (!value) return '未录入';
-  if (value >= 10000) return `${(value / 10000).toFixed(value >= 1000000 ? 0 : 1)}万`;
-  return value.toLocaleString();
+function startBannerRotation() {
+  stopBannerRotation();
+  bannerTimer.value = window.setInterval(() => {
+    currentBannerIndex.value = (currentBannerIndex.value + 1) % bannerSlides.value.length;
+  }, 4500);
 }
 
-function getStatusText(status: string) {
-  return { AVAILABLE: '可租', RENTED: '已租出', MAINTENANCE: '维护中' }[status] ?? status;
+function stopBannerRotation() {
+  if (bannerTimer.value !== null) {
+    window.clearInterval(bannerTimer.value);
+    bannerTimer.value = null;
+  }
 }
 
-function getStatusClass(status: string) {
-  return { AVAILABLE: 'status-available', RENTED: 'status-rented', MAINTENANCE: 'status-maintenance' }[status] ?? '';
-}
+let keywordTimer: ReturnType<typeof setTimeout> | null = null;
 
-// ---- 防抖搜索 ----
-let debounceTimer: ReturnType<typeof setTimeout> | null = null;
-function onKeywordChange() {
-  if (debounceTimer) clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => {
+watch(keyword, () => {
+  if (keywordTimer) clearTimeout(keywordTimer);
+  keywordTimer = setTimeout(() => {
     currentPage.value = 1;
     loadRentals();
-  }, 400);
-}
-
-// ---- 重置分页 ----
-watch(currentPage, () => {
-  loadRentals();
+  }, 350);
 });
 
-watch([selectedTags, selectedCategory, selectedLevel, selectedStatus, selectedPriceRange, sortBy], () => {
-  if (currentPage.value !== 1) {
-    currentPage.value = 1;
-    return;
-  }
+watch([selectedTags, selectedCategory, selectedLevel, selectedStatus, sortBy], () => {
+  currentPage.value = 1;
   loadRentals();
 }, { deep: true });
 
+watch(
+  [
+    activeZone,
+    selectedPriceRange,
+    () => advancedForm.minCoin,
+    () => advancedForm.maxCoin,
+    () => advancedForm.minPrice,
+    () => advancedForm.maxPrice,
+    () => advancedForm.warehouseKeyword,
+    () => advancedForm.rankKeyword,
+    () => advancedForm.insuranceBoxKeyword,
+    () => advancedForm.loginRegionKeyword,
+    () => advancedForm.includeTags.join(','),
+    displayMode
+  ],
+  () => {
+    currentPage.value = 1;
+  }
+);
+
+watch(total, value => {
+  const maxPage = Math.max(1, Math.ceil(value / pageSize));
+  if (currentPage.value > maxPage) {
+    currentPage.value = maxPage;
+  }
+});
+
 onMounted(() => {
   loadRentals();
+  loadNotices();
+  startBannerRotation();
+
   const saved = sessionStorage.getItem('detailProduct');
   if (saved) {
     try {
-      const product = JSON.parse(saved);
+      selectedProduct.value = JSON.parse(saved);
       const savedDuration = sessionStorage.getItem('detailDuration');
-      selectedProduct.value = product;
       selectedDuration.value = savedDuration ? Number(savedDuration) : null;
-      setTimeout(() => { drawerVisible.value = true; }, 50);
-    } catch { /* ignore */ }
+      drawerVisible.value = true;
+    } catch {
+      // ignore session parse errors
+    }
     sessionStorage.removeItem('detailProduct');
     sessionStorage.removeItem('detailDuration');
   }
+});
+
+onUnmounted(() => {
+  if (keywordTimer) {
+    clearTimeout(keywordTimer);
+  }
+  stopBannerRotation();
 });
 </script>
 
@@ -506,563 +1181,1420 @@ export default { name: 'RentalListView' };
 </script>
 
 <style scoped>
-/* ==================== 页面整体 ==================== */
-.page-shell {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #060d1a 0%, #0f1c33 50%, #0a1525 100%);
-  color: #e2e8f0;
-  padding: 24px;
-}
-
-/* ==================== Hero 顶栏 ==================== */
-.hero-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(96, 165, 250, 0.12);
-  border-radius: 20px;
-  padding: 32px 36px;
-  margin-bottom: 20px;
-}
-
-.hero-left { display: flex; flex-direction: column; gap: 8px; }
-
-.page-title {
+.rental-page {
   margin: 0;
-  font-size: 28px;
-  font-weight: 800;
-  color: #f1f5f9;
-  letter-spacing: 2px;
+  min-height: calc(100vh - 64px);
+  background:
+    radial-gradient(circle at top left, rgba(255, 221, 111, 0.35), transparent 24%),
+    radial-gradient(circle at top right, rgba(119, 221, 255, 0.2), transparent 20%),
+    linear-gradient(180deg, #fff7d8 0%, #fffdf4 26%, #fff9ec 100%);
+  color: #1d232f;
 }
 
-.page-subtitle {
-  margin: 0;
-  font-size: 14px;
-  color: #64748b;
+.page-inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 28px 24px 40px;
 }
 
-.hero-stat {
+.hero-board {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr) 320px;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.hero-side {
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-}
-
-.stat-num {
-  font-size: 36px;
-  font-weight: 800;
-  color: #60a5fa;
-  line-height: 1;
-}
-
-.stat-label {
-  font-size: 12px;
-  color: #64748b;
-  margin-top: 4px;
-}
-
-/* ==================== 筛选工具栏 ==================== */
-.filter-bar {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(96, 165, 250, 0.1);
-  border-radius: 16px;
-  padding: 16px 20px;
-  margin-bottom: 20px;
-}
-
-.quick-filter-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-.quick-chip {
-  border: 1px solid rgba(96, 165, 250, 0.22);
-  background: rgba(96, 165, 250, 0.06);
-  color: #93c5fd;
-  border-radius: 999px;
-  padding: 6px 14px;
-  font-size: 13px;
-  cursor: pointer;
-}
-
-.quick-chip.active,
-.quick-chip:hover {
-  background: rgba(96, 165, 250, 0.2);
-  border-color: rgba(96, 165, 250, 0.48);
-  color: #dbeafe;
-}
-
-.filter-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.filter-input { width: 200px; }
-.filter-select { width: 150px; }
-.wide-select { width: 190px; }
-.sort-select { width: 160px; }
-
-.refresh-btn {
-  background: rgba(96, 165, 250, 0.1) !important;
-  border: 1px solid rgba(96, 165, 250, 0.25) !important;
-  color: #60a5fa !important;
-  margin-left: auto;
-}
-
-.refresh-btn:hover {
-  background: rgba(96, 165, 250, 0.2) !important;
-}
-
-/* ==================== 账号卡片网格 ==================== */
-.cards-section { min-height: 200px; }
-
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
 }
 
-.product-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(96, 165, 250, 0.1);
-  border-radius: 16px;
-  padding: 20px;
-  cursor: pointer;
-  transition: all 0.25s;
+.promo-card,
+.notice-panel,
+.toolbar-panel,
+.list-panel,
+.advanced-panel,
+.detail-panel,
+.notice-detail {
+  border-radius: 22px;
+  border: 1px solid rgba(243, 194, 76, 0.16);
+  box-shadow: 0 18px 40px rgba(181, 145, 41, 0.08);
+}
+
+.promo-card {
+  min-height: 170px;
+  padding: 18px 18px 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  text-align: left;
 }
 
-.product-card:hover {
-  transform: translateY(-4px);
-  background: rgba(96, 165, 250, 0.08);
-  border-color: rgba(96, 165, 250, 0.3);
-  box-shadow: 0 8px 24px rgba(96, 165, 250, 0.12);
+.promo-card.mint {
+  background: linear-gradient(145deg, #d8fff5 0%, #eefef8 100%);
 }
 
-.product-card.skeleton-card { cursor: default; }
-.product-card.skeleton-card:hover { transform: none; box-shadow: none; }
-
-/* 卡片头部 */
-.card-header { display: flex; align-items: center; }
-.card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-
-.card-status-tag {
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 8px;
+.promo-card.sky {
+  background: linear-gradient(145deg, #e2f4ff 0%, #f5fbff 100%);
 }
 
-.status-available {
-  background: rgba(34, 197, 94, 0.12);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  color: #4ade80;
+.promo-card h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.2;
 }
 
-.status-rented {
-  background: rgba(251, 191, 36, 0.12);
-  border: 1px solid rgba(251, 191, 36, 0.3);
-  color: #fbbf24;
+.promo-card p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.7;
+  color: #586171;
 }
 
-.status-maintenance {
-  background: rgba(100, 116, 139, 0.12);
-  border: 1px solid rgba(100, 116, 139, 0.3);
-  color: #94a3b8;
-}
-
-.card-hot-tag {
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 8px;
-  background: rgba(239, 68, 68, 0.12);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #f87171;
-}
-
-/* 账号名称 */
-.card-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: #f1f5f9;
-  line-height: 1.4;
-}
-
-.card-subtitle {
-  min-height: 36px;
-  color: #64748b;
+.promo-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #ff7b21;
   font-size: 12px;
-  line-height: 1.5;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  font-weight: 700;
+}
+
+.promo-action {
+  margin-top: auto;
+  height: 38px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ffb626 0%, #ff8b11 100%);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.hero-banner {
+  position: relative;
   overflow: hidden;
+  min-height: 356px;
+  padding: 34px 34px 26px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 20% 25%, rgba(255, 255, 255, 0.28), transparent 14%),
+    radial-gradient(circle at 82% 24%, rgba(255, 226, 144, 0.34), transparent 16%),
+    linear-gradient(135deg, #ff9617 0%, #ff7f11 38%, #ff9c3c 100%);
+  color: #fffdf7;
+  box-shadow: 0 22px 50px rgba(255, 141, 29, 0.26);
 }
 
-/* 标签行 */
-.card-tag-row { display: flex; gap: 6px; flex-wrap: wrap; }
-
-.card-tag-pill {
-  font-size: 11px;
-  padding: 2px 10px;
-  border-radius: 12px;
-  background: rgba(96, 165, 250, 0.1);
-  border: 1px solid rgba(96, 165, 250, 0.18);
-  color: #93c5fd;
+.banner-mark {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  font-size: 52px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.12);
+  letter-spacing: 2px;
+  pointer-events: none;
 }
 
-/* 资源属性 */
-.card-attrs { display: flex; flex-direction: column; gap: 5px; }
-
-.attr-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
+.banner-content {
+  position: relative;
+  z-index: 1;
+  max-width: 620px;
 }
 
-.attr-k { color: #64748b; }
-.attr-v { color: #94a3b8; }
-
-/* 价格行 */
-.card-footer {
-  display: flex;
+.banner-eyebrow {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  padding-top: 10px;
-  border-top: 1px solid rgba(96, 165, 250, 0.08);
-}
-
-.card-price { display: flex; align-items: baseline; gap: 2px; }
-.price-num { font-size: 18px; font-weight: 700; color: #fbbf24; }
-.price-unit { font-size: 12px; color: #64748b; }
-
-.card-action {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
   font-size: 12px;
-  color: #60a5fa;
-  transition: opacity 0.2s;
+  font-weight: 700;
+  letter-spacing: 1px;
 }
 
-.product-card:hover .card-action { opacity: 0.75; }
-
-/* 骨架屏 */
-.sk-pulse {
-  background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 100%);
-  background-size: 200% 100%;
-  border-radius: 6px;
-  animation: sk-shimmer 1.6s infinite;
+.hero-banner h1 {
+  margin: 20px 0 16px;
+  font-size: 42px;
+  line-height: 1.14;
+  font-weight: 900;
 }
 
-@keyframes sk-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+.hero-banner p {
+  margin: 0;
+  max-width: 560px;
+  font-size: 16px;
+  line-height: 1.9;
+  color: rgba(255, 250, 241, 0.92);
 }
 
-.sk-line { display: block; }
-.sk-block { display: block; }
-
-/* 空状态 */
-.empty-state {
+.banner-actions {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 80px 20px;
-  text-align: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 22px;
 }
 
-.empty-icon { font-size: 56px; margin-bottom: 16px; }
-.empty-title { font-size: 18px; font-weight: 600; color: #f1f5f9; margin-bottom: 8px; }
-.empty-desc { font-size: 14px; color: #64748b; margin-bottom: 20px; }
-
-.empty-btn {
-  background: rgba(96, 165, 250, 0.1) !important;
-  border: 1px solid rgba(96, 165, 250, 0.25) !important;
-  color: #60a5fa !important;
+.banner-primary,
+.banner-secondary {
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 14px;
+  border: 0;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
 }
 
-/* 分页 */
-.pagination-bar {
+.banner-primary {
+  background: #fffef9;
+  color: #ff831b;
+}
+
+.banner-secondary {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+}
+
+.banner-stats {
   display: flex;
-  justify-content: center;
-  margin-top: 24px;
+  gap: 12px;
+  margin-top: 28px;
 }
 
-/* ==================== 详情弹窗 Modal ==================== */
-:deep(.el-overlay) {
-  background: rgba(6, 13, 26, 0.75) !important;
+.banner-stat {
+  min-width: 110px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(4px);
 }
 
-:deep(.el-dialog) {
-  position: fixed !important;
-  left: 50% !important;
-  top: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  background: #0f1c33 !important;
-  border: 1px solid rgba(96, 165, 250, 0.2) !important;
-  border-radius: 20px !important;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7) !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  max-width: 580px !important;
-  width: 580px !important;
+.banner-stat-value {
+  display: block;
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
 }
 
-:deep(.el-dialog__header) { display: none !important; }
-:deep(.el-dialog__body) { padding: 0 !important; }
-:deep(.el-dialog__footer) { display: none !important; }
-
-.modal-inner {
-  padding: 28px 28px 24px;
-  max-height: 85vh;
-  overflow-y: auto;
-  box-sizing: border-box;
-  position: relative;
+.banner-stat-label {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: rgba(255, 251, 244, 0.84);
 }
 
-.modal-close {
+.banner-dots {
   position: absolute;
-  top: 16px;
-  right: 16px;
+  left: 34px;
+  bottom: 22px;
+  display: flex;
+  gap: 8px;
+}
+
+.banner-dot {
   width: 30px;
-  height: 30px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(96, 165, 250, 0.15);
-  color: #64748b;
-  font-size: 14px;
+  height: 4px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.34);
   cursor: pointer;
+}
+
+.banner-dot.active {
+  background: #fff9ef;
+}
+
+.notice-panel {
+  background: rgba(255, 255, 255, 0.9);
+  padding: 18px;
+}
+
+.notice-head {
   display: flex;
   align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  z-index: 1;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 15px;
 }
 
-.modal-close:hover { background: rgba(255, 255, 255, 0.12); color: #f1f5f9; }
+.notice-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fff0ad 0%, #ffd15b 100%);
+  color: #5b4100;
+  font-size: 12px;
+  font-weight: 800;
+}
 
-/* 图片占位 */
-.modal-image-placeholder {
+.notice-item {
   width: 100%;
-  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 4px;
+  border: 0;
+  border-bottom: 1px solid #f0f1f4;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.notice-item:last-child {
+  border-bottom: 0;
+}
+
+.notice-title {
+  font-size: 16px;
+  line-height: 1.4;
+  color: #1f2430;
+}
+
+.notice-arrow {
+  font-size: 24px;
+  color: #a4aab5;
+}
+
+.zone-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.zone-card {
+  min-height: 98px;
+  padding: 16px 18px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.zone-card:hover,
+.zone-card.active {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 30px rgba(181, 145, 41, 0.14);
+  border-color: rgba(255, 179, 46, 0.45);
+}
+
+.zone-card.peach {
+  background: linear-gradient(145deg, #ffe9da 0%, #fff7f0 100%);
+}
+
+.zone-card.gold {
+  background: linear-gradient(145deg, #fff3c9 0%, #fffdf1 100%);
+}
+
+.zone-card.green {
+  background: linear-gradient(145deg, #defae7 0%, #f5fff8 100%);
+}
+
+.zone-card.violet {
+  background: linear-gradient(145deg, #f1e8ff 0%, #fbf7ff 100%);
+}
+
+.zone-card.cyan {
+  background: linear-gradient(145deg, #ddf7ff 0%, #f4fdff 100%);
+}
+
+.zone-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.zone-copy strong {
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.zone-copy span {
+  font-size: 13px;
+  color: #687180;
+}
+
+.zone-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.zone-count {
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.zone-go {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  background: #fff;
+  color: #ff8b11;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.toolbar-panel {
+  margin-bottom: 18px;
+  background: rgba(255, 255, 255, 0.84);
+  padding: 18px;
+}
+
+.toolbar-top,
+.filter-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.sort-tabs,
+.toolbar-ops,
+.summary-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.sort-tab,
+.ghost-op,
+.primary-op {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid #eceef3;
+  background: #fff;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.sort-tab.active {
+  background: #fff1d9;
+  border-color: #ffc04c;
+  color: #cf7700;
+}
+
+.ghost-op.danger {
+  color: #e85151;
+}
+
+.primary-op {
+  background: linear-gradient(135deg, #fff0af 0%, #ffd339 100%);
+  border-color: rgba(255, 183, 0, 0.34);
+  color: #5f4300;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: 2fr repeat(4, minmax(0, 1fr)) 1.15fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.keyword-item {
+  min-width: 0;
+}
+
+.wide-item {
+  min-width: 0;
+}
+
+.summary-text,
+.summary-view {
+  font-size: 13px;
+  color: #70798a;
+}
+
+.summary-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #f4f6fb;
+  color: #536071;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.summary-chip.highlighted {
+  background: #fff1d9;
+  color: #cf7700;
+}
+
+.list-panel {
+  background: rgba(255, 255, 255, 0.72);
+  padding: 18px;
+}
+
+.row-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.row-card {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 210px;
+  gap: 16px;
+  border-radius: 22px;
+  border: 1px solid #f0e7c8;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 255, 253, 0.92) 100%);
+  padding: 18px;
+  cursor: pointer;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.row-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 36px rgba(173, 140, 44, 0.12);
+}
+
+.row-cover,
+.detail-cover,
+.grid-cover {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  color: #fffefb;
+}
+
+.row-cover {
+  min-height: 180px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.theme-gold {
+  background:
+    radial-gradient(circle at 76% 18%, rgba(255, 255, 255, 0.26), transparent 18%),
+    linear-gradient(145deg, #121824 0%, #735412 42%, #f0b53c 100%);
+}
+
+.theme-green {
+  background:
+    radial-gradient(circle at 76% 18%, rgba(255, 255, 255, 0.26), transparent 18%),
+    linear-gradient(145deg, #0f1d1c 0%, #0f6c60 46%, #6ce0c3 100%);
+}
+
+.theme-slate {
+  background:
+    radial-gradient(circle at 76% 18%, rgba(255, 255, 255, 0.18), transparent 18%),
+    linear-gradient(145deg, #1e2430 0%, #445161 52%, #8fa1ba 100%);
+}
+
+.theme-blue {
+  background:
+    radial-gradient(circle at 76% 18%, rgba(255, 255, 255, 0.2), transparent 18%),
+    linear-gradient(145deg, #111c31 0%, #294d8b 48%, #70a7ff 100%);
+}
+
+.cover-status,
+.grid-status,
+.detail-cover-status {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  backdrop-filter: blur(4px);
+}
+
+.available {
+  background: rgba(22, 163, 74, 0.24);
+  color: #dfffea;
+}
+
+.rented {
+  background: rgba(255, 190, 11, 0.22);
+  color: #fff7d2;
+}
+
+.maintenance {
+  background: rgba(148, 163, 184, 0.24);
+  color: #f3f6fa;
+}
+
+.cover-category,
+.detail-cover-category {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.cover-name {
+  margin-top: 14px;
+  font-size: 28px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.cover-tags,
+.detail-cover-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.cover-tags span,
+.detail-cover-tags span {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.row-main {
+  min-width: 0;
+}
+
+.row-title {
+  margin: 4px 0 10px;
+  font-size: 28px;
+  line-height: 1.15;
+  font-weight: 900;
+  color: #1f2430;
+}
+
+.row-meta {
+  margin: 0 0 16px;
+  color: #616b7a;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.metric-box,
+.detail-metric,
+.resource-item {
+  min-width: 0;
+  border-radius: 16px;
+  background: #f4f7fb;
+  padding: 14px 16px;
+}
+
+.metric-box.emphasis {
+  background: linear-gradient(180deg, #fff7dc 0%, #fffbee 100%);
+}
+
+.metric-box strong,
+.detail-metric strong,
+.resource-item strong {
+  display: block;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.15;
+  color: #1f2430;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metric-box span,
+.detail-metric span,
+.resource-item span {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6c7686;
+}
+
+.row-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 14px;
+  padding-left: 6px;
+  border-left: 1px solid #f0f1f4;
+}
+
+.side-top {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.side-price-label {
+  font-size: 13px;
+  color: #7c8495;
+}
+
+.side-price {
+  font-size: 38px;
+  line-height: 1;
+  font-weight: 900;
+  color: #f05b2c;
+}
+
+.side-price-unit {
+  font-size: 13px;
+  color: #7c8495;
+}
+
+.side-tags,
+.side-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.side-pill,
+.time-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: #fff7dc;
+  color: #af6700;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.side-pill.hot {
+  background: #ffe4db;
+  color: #f05b2c;
+}
+
+.time-chip {
+  border: 0;
+}
+
+.rent-btn,
+.grid-action {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 12px;
+  border: 0;
+  background: linear-gradient(135deg, #ffe057 0%, #ffc420 100%);
+  color: #533b00;
+  font-size: 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.grid-card {
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid #f0e7c8;
+  background: rgba(255, 255, 255, 0.95);
+  cursor: pointer;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.grid-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 36px rgba(173, 140, 44, 0.12);
+}
+
+.grid-cover {
+  min-height: 170px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.grid-cover-top,
+.grid-cover-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.grid-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.grid-cover-bottom {
+  align-items: flex-end;
+}
+
+.grid-cover-bottom strong {
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.grid-cover-bottom span {
+  font-size: 12px;
+}
+
+.grid-body {
+  padding: 16px 16px 18px;
+}
+
+.grid-body h3 {
+  margin: 0 0 10px;
+  font-size: 18px;
+  line-height: 1.35;
+  font-weight: 800;
+  color: #1f2430;
+}
+
+.grid-body p {
+  margin: 0;
+  min-height: 42px;
+  color: #646d7d;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.grid-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 16px;
+}
+
+.grid-tags span {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #f5f7fb;
+  color: #516071;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.grid-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.grid-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.grid-price strong {
+  font-size: 26px;
+  line-height: 1;
+  color: #f05b2c;
+}
+
+.grid-price span {
+  color: #7c8495;
+  font-size: 12px;
+}
+
+.pagination-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 22px;
+}
+
+.empty-state {
+  min-height: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.empty-icon {
+  font-size: 58px;
+  line-height: 1;
+  color: #ffb020;
+}
+
+.empty-state h3 {
+  margin: 18px 0 10px;
+  font-size: 24px;
+}
+
+.empty-state p {
+  margin: 0 0 18px;
+  color: #677181;
+}
+
+.sk-pulse {
+  background: linear-gradient(90deg, #f2f4f8 0%, #f8fafc 50%, #f2f4f8 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite linear;
+  border-radius: 12px;
+}
+
+.skeleton-row,
+.skeleton-grid {
+  cursor: default;
+}
+
+.skeleton-row:hover,
+.skeleton-grid:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.skeleton-cover,
+.grid-cover-skeleton {
+  min-height: 180px;
+  border-radius: 18px;
+}
+
+.skeleton-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.skeleton-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.skeleton-side {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+}
+
+.sk-line {
+  height: 16px;
+}
+
+.sk-box {
+  height: 72px;
+}
+
+.sk-button {
+  height: 42px;
+}
+
+.w-40 {
+  width: 40%;
+}
+
+.w-50 {
+  width: 50%;
+}
+
+.w-60 {
+  width: 60%;
+}
+
+.w-70 {
+  width: 70%;
+}
+
+.w-85 {
+  width: 85%;
+}
+
+.w-90 {
+  width: 90%;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.advanced-panel,
+.detail-panel,
+.notice-detail {
+  position: relative;
+  background: #fffdf7;
+  padding: 24px;
+}
+
+.advanced-head,
+.detail-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.advanced-head h3,
+.notice-detail h3 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.advanced-head p {
+  margin: 8px 0 0;
+  color: #6c7686;
+  font-size: 13px;
+}
+
+.dialog-close {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 0;
+  background: #f5f7fb;
+  color: #7b8494;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.advanced-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px 24px;
+  margin-top: 22px;
+}
+
+.advanced-field label,
+.block-title {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #1f2430;
+}
+
+.range-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 30px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.range-row span {
+  text-align: center;
+  color: #7d8595;
+}
+
+.advanced-foot,
+.detail-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.advanced-reset,
+.advanced-confirm {
+  min-width: 120px;
+  height: 42px;
   border-radius: 14px;
-  background: rgba(96, 165, 250, 0.06);
-  border: 1px solid rgba(96, 165, 250, 0.12);
+  border: 0;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.advanced-reset {
+  background: #f5f7fb;
+  color: #596577;
+}
+
+.advanced-confirm {
+  background: linear-gradient(135deg, #ffe057 0%, #ffc420 100%);
+  color: #533b00;
+}
+
+.detail-top {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 18px;
+}
+
+.detail-cover {
+  min-height: 260px;
+  padding: 18px;
+}
+
+.detail-cover h3 {
+  margin: 18px 0 8px;
+  font-size: 34px;
+  line-height: 1.1;
+  font-weight: 900;
+}
+
+.detail-cover p {
+  margin: 0;
+  color: rgba(255, 253, 247, 0.86);
+}
+
+.detail-summary h2 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.detail-summary p {
+  margin: 10px 0 0;
+  color: #667180;
+  line-height: 1.8;
+}
+
+.detail-price-box {
+  flex-shrink: 0;
+  min-width: 140px;
+  padding: 16px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #fff2cd 0%, #fffdf0 100%);
+  text-align: center;
+}
+
+.detail-price-box span {
+  display: block;
+  font-size: 12px;
+  color: #8d7426;
+}
+
+.detail-price-box strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 34px;
+  line-height: 1;
+  color: #f05b2c;
+}
+
+.detail-metrics,
+.resource-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.detail-block {
+  margin-top: 22px;
+  border-radius: 20px;
+  background: #fff;
+  border: 1px solid #f2ecd8;
+  padding: 18px;
+}
+
+.duration-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.duration-card {
+  position: relative;
+  min-height: 92px;
+  border-radius: 18px;
+  border: 1px solid #eceef3;
+  background: #f8fafc;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 20px;
-}
-
-.img-placeholder-icon { font-size: 40px; }
-.img-placeholder-text { font-size: 12px; color: #475569; }
-
-/* 账号信息头部 */
-.modal-header { margin-bottom: 16px; }
-
-.modal-name {
-  font-size: 20px;
-  font-weight: 700;
-  color: #f1f5f9;
-  margin-bottom: 10px;
-  letter-spacing: 1px;
-}
-
-.modal-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-
-/* 分隔线 */
-.modal-divider {
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.15), transparent);
-  margin-bottom: 20px;
-}
-
-/* 区块 */
-.modal-section { margin-bottom: 20px; }
-
-.modal-section-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #60a5fa;
-  letter-spacing: 1px;
-  margin-bottom: 12px;
-}
-
-/* 资源表格 */
-.modal-resource-table { display: flex; flex-direction: column; gap: 8px; }
-
-.res-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 10px;
-  border: 1px solid rgba(96, 165, 250, 0.08);
-}
-
-.res-k { font-size: 12px; color: #64748b; }
-.res-v { font-size: 13px; font-weight: 500; color: #e2e8f0; }
-
-/* 说明 */
-.modal-desc {
-  font-size: 13px;
-  color: #94a3b8;
-  line-height: 1.7;
-  margin: 0;
-  padding: 12px 14px;
-  background: rgba(96, 165, 250, 0.04);
-  border-radius: 10px;
-  border: 1px solid rgba(96, 165, 250, 0.08);
-}
-
-/* 时长选择 */
-.duration-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-.duration-card {
-  padding: 12px 8px;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(96, 165, 250, 0.12);
-  text-align: center;
   cursor: pointer;
-  transition: all 0.2s;
-  position: relative;
 }
 
-.duration-card:hover { background: rgba(96, 165, 250, 0.08); border-color: rgba(96, 165, 250, 0.3); }
+.duration-card strong {
+  font-size: 16px;
+  color: #1f2430;
+}
+
+.duration-card span {
+  font-size: 15px;
+  font-weight: 800;
+  color: #f05b2c;
+}
+
+.duration-card em {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-style: normal;
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: #ffe4db;
+  color: #f05b2c;
+  font-size: 11px;
+  font-weight: 800;
+}
 
 .duration-card.active {
-  background: rgba(30, 64, 175, 0.2) !important;
-  border-color: #1e40af !important;
-  box-shadow: 0 0 12px rgba(30, 64, 175, 0.3);
+  background: #fff2cd;
+  border-color: #ffc64c;
 }
 
-.duration-card.disabled { opacity: 0.4; cursor: not-allowed; }
-.duration-card.disabled:hover { background: rgba(255,255,255,0.03); border-color: rgba(96,165,250,0.12); }
-
-.d-hours { font-size: 14px; font-weight: 700; color: #f1f5f9; margin-bottom: 4px; }
-.d-price { font-size: 13px; font-weight: 600; color: #fbbf24; }
-.d-tag {
-  position: absolute;
-  top: -6px;
-  right: -4px;
-  font-size: 9px;
-  padding: 1px 5px;
-  border-radius: 6px;
-  background: rgba(239, 68, 68, 0.8);
-  color: #fff;
+.duration-card.disabled {
+  cursor: not-allowed;
+  opacity: 0.56;
 }
 
-.price-summary {
-  text-align: center;
+.detail-total {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   font-size: 14px;
-  color: #94a3b8;
-  padding: 10px;
-  background: rgba(96, 165, 250, 0.05);
-  border-radius: 10px;
-  border: 1px solid rgba(96, 165, 250, 0.1);
+  color: #616b7a;
 }
 
-.summary-price { font-size: 18px; font-weight: 700; color: #fbbf24; }
-.summary-info { font-size: 12px; color: #64748b; }
+.detail-total strong {
+  font-size: 26px;
+  color: #f05b2c;
+}
 
-/* 下单按钮 */
-.modal-footer { margin-top: 8px; }
+.detail-order-btn {
+  min-width: 180px;
+  height: 44px;
+  border-radius: 14px;
+  font-weight: 800;
+}
 
-.order-btn {
+.notice-detail-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #fff1d9;
+  color: #cf7700;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.notice-detail p {
+  margin: 16px 0 0;
+  color: #616b7a;
+  line-height: 1.9;
+  font-size: 15px;
+}
+
+:deep(.el-dialog) {
+  border-radius: 24px !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  box-shadow: 0 24px 60px rgba(22, 28, 45, 0.18) !important;
+}
+
+:deep(.el-dialog__header) {
+  display: none !important;
+}
+
+:deep(.el-dialog__body) {
+  padding: 0 !important;
+}
+
+:deep(.el-overlay) {
+  background: rgba(35, 39, 48, 0.36) !important;
+  backdrop-filter: blur(4px);
+}
+
+:deep(.el-input__wrapper),
+:deep(.el-select__wrapper),
+:deep(.el-textarea__inner) {
+  min-height: 40px;
+  background: #fff !important;
+  box-shadow: 0 0 0 1px #eceef3 inset !important;
+  border-radius: 12px !important;
+}
+
+:deep(.el-input__inner),
+:deep(.el-select__placeholder) {
+  color: #1f2430 !important;
+}
+
+:deep(.el-input-number) {
   width: 100%;
-  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%) !important;
-  border: none !important;
-  color: #fff !important;
-  padding: 12px !important;
-  border-radius: 12px !important;
-  font-size: 15px !important;
-  font-weight: 600 !important;
-  box-shadow: 0 4px 14px rgba(30, 64, 175, 0.4);
 }
 
-.order-btn:hover:not(:disabled) {
-  box-shadow: 0 6px 18px rgba(30, 64, 175, 0.5) !important;
-  transform: translateY(-1px);
+:deep(.el-pagination.is-background .btn-next),
+:deep(.el-pagination.is-background .btn-prev),
+:deep(.el-pagination.is-background .el-pager li) {
+  background: #fff !important;
+  border: 1px solid #eceef3;
+  color: #506071 !important;
 }
 
-.order-btn:disabled {
-  background: rgba(255,255,255,0.06) !important;
-  color: #475569 !important;
-  box-shadow: none !important;
+:deep(.el-pagination.is-background .el-pager li.is-active) {
+  background: #ffe57b !important;
+  border-color: #ffd242 !important;
+  color: #6a4a00 !important;
 }
 
-/* ==================== Element Plus 深色覆盖 ==================== */
-:deep(.el-input__wrapper) {
-  background: #1e293b !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
-  box-shadow: none !important;
+@media (max-width: 1180px) {
+  .hero-board {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-side {
+    order: 2;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .notice-panel {
+    order: 3;
+  }
+
+  .zone-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .filter-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .row-card {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+
+  .row-side {
+    grid-column: 1 / -1;
+    border-left: 0;
+    border-top: 1px solid #f0f1f4;
+    padding-left: 0;
+    padding-top: 14px;
+  }
+
+  .card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
 }
 
-:deep(.el-input__inner) { color: #e2e8f0 !important; }
-:deep(.el-input__inner::placeholder) { color: #475569 !important; }
-:deep(.el-input__suffix) { color: #64748b !important; }
-
-:deep(.el-select .el-input__wrapper) {
-  background: #1e293b !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
-}
-
-:deep(.el-select__wrapper) {
-  background: #1e293b !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
-  box-shadow: none !important;
-}
-
-:deep(.el-select__placeholder) { color: #64748b !important; }
-:deep(.el-select__tags) { display: none; }
-:deep(.el-select-dropdown) {
-  background: #1e293b !important;
-  border: 1px solid rgba(96, 165, 250, 0.2) !important;
-  border-radius: 12px !important;
-}
-
-:deep(.el-select-dropdown__item) { color: #e2e8f0 !important; }
-:deep(.el-select-dropdown__item.hover),
-:deep(.el-select-dropdown__item:hover) { background: rgba(96, 165, 250, 0.1) !important; }
-:deep(.el-select-dropdown__item.is-selected) { color: #60a5fa !important; background: rgba(96, 165, 250, 0.08) !important; }
-:deep(.el-select-dropdown__item.is-hovering) { background: rgba(96, 165, 250, 0.05) !important; }
-
-:deep(.el-pagination) { --el-pagination-bg-color: transparent !important; }
-:deep(.el-pagination button) { background: rgba(255,255,255,0.05) !important; border-color: rgba(96,165,250,0.15) !important; color: #94a3b8 !important; }
-:deep(.el-pagination button:hover) { background: rgba(96,165,250,0.15) !important; color: #60a5fa !important; }
-:deep(.el-pager li) { background: rgba(255,255,255,0.05) !important; border-color: rgba(96,165,250,0.15) !important; color: #94a3b8 !important; }
-:deep(.el-pager li:hover) { color: #60a5fa !important; }
-:deep(.el-pager li.is-active) { background: #1e40af !important; border-color: #1e40af !important; color: #fff !important; }
-
-/* ==================== 响应式 ==================== */
 @media (max-width: 900px) {
-  .product-grid { grid-template-columns: repeat(2, 1fr); }
-  .filter-row { flex-direction: column; align-items: stretch; }
-  .filter-input, .filter-select, .sort-select { width: 100%; }
-  .refresh-btn { margin-left: 0; }
-  .hero-card { flex-direction: column; align-items: flex-start; gap: 16px; }
-  .hero-stat { align-items: flex-start; }
+  .page-inner {
+    padding: 18px 14px 30px;
+  }
+
+  .hero-banner {
+    min-height: auto;
+    padding: 24px 22px 48px;
+  }
+
+  .hero-banner h1 {
+    font-size: 32px;
+  }
+
+  .hero-side {
+    grid-template-columns: 1fr;
+  }
+
+  .zone-strip,
+  .filter-grid,
+  .advanced-grid,
+  .card-grid,
+  .detail-top,
+  .duration-grid,
+  .detail-metrics,
+  .resource-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .toolbar-top,
+  .filter-summary {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .row-card {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-grid,
+  .skeleton-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .detail-price-box {
+    min-width: 0;
+  }
 }
 
-@media (max-width: 600px) {
-  .product-grid { grid-template-columns: 1fr; }
-  .duration-grid { grid-template-columns: repeat(2, 1fr); }
-  .page-shell { padding: 12px; }
-  .hero-card { padding: 20px 16px; }
-  .page-title { font-size: 22px; }
+@media (max-width: 640px) {
+  .hero-banner h1 {
+    font-size: 26px;
+  }
+
+  .banner-stats {
+    flex-direction: column;
+  }
+
+  .metric-grid,
+  .skeleton-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .advanced-panel,
+  .detail-panel,
+  .notice-detail {
+    padding: 18px;
+  }
 }
 </style>

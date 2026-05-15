@@ -1,20 +1,25 @@
 <template>
   <div class="admin-card">
     <div class="panel-header">
-      <h2 class="section-title">账号管理</h2>
+      <div>
+        <h2 class="section-title">账号管理</h2>
+        <p class="section-desc">维护租号大厅的基础字段与扩展展示字段。</p>
+      </div>
       <div class="toolbar">
         <el-input v-model="keyword" placeholder="搜索账号名称" clearable class="toolbar-item" />
         <el-button @click="loadProducts">查询</el-button>
-        <el-button type="primary" @click="openCreate">新增账号</el-button>
+        <el-button type="warning" @click="openCreate">新增账号</el-button>
       </div>
     </div>
 
-    <el-table v-loading="loading" :data="products">
+    <el-table v-loading="loading" :data="products" class="product-table">
       <el-table-column prop="id" label="ID" width="80" />
-      <el-table-column prop="name" label="账号名称" min-width="180" />
-      <el-table-column prop="tagText" label="标签" min-width="160" />
+      <el-table-column prop="name" label="账号名称" min-width="220" />
+      <el-table-column prop="category" label="分类" width="120" />
+      <el-table-column prop="rankText" label="段位" width="110" />
+      <el-table-column prop="loginRegion" label="常用地区" width="120" />
       <el-table-column prop="hourPrice" label="价格" width="110">
-        <template #default="{ row }">￥{{ Number(row.hourPrice).toFixed(2) }}/小时</template>
+        <template #default="{ row }">¥{{ Number(row.hourPrice).toFixed(2) }}/小时</template>
       </el-table-column>
       <el-table-column prop="status" label="状态" width="120">
         <template #default="{ row }">
@@ -34,35 +39,71 @@
       </el-table-column>
     </el-table>
 
-    <el-dialog v-model="dialogVisible" :title="form.id ? '编辑账号' : '新增账号'" width="640px">
+    <el-dialog v-model="dialogVisible" :title="form.id ? '编辑账号' : '新增账号'" width="920px">
       <el-form label-position="top">
-        <div class="grid-2">
+        <div class="grid-3">
           <el-form-item label="账号名称">
             <el-input v-model="form.name" />
           </el-form-item>
           <el-form-item label="分类">
             <el-input v-model="form.category" />
           </el-form-item>
-        </div>
-        <div class="grid-2">
           <el-form-item label="标签">
-            <el-input v-model="form.tagText" />
+            <el-input v-model="form.tagText" placeholder="多个标签用英文逗号分隔" />
           </el-form-item>
+        </div>
+
+        <div class="grid-3">
           <el-form-item label="小时价">
             <el-input-number v-model="form.hourPrice" :min="0" :precision="2" class="full-width" />
           </el-form-item>
-        </div>
-        <div class="grid-2">
-          <el-form-item label="哈夫币数量">
+          <el-form-item label="哈夫币">
             <el-input-number v-model="form.coinAmount" :min="0" class="full-width" />
           </el-form-item>
+          <el-form-item label="仓库估值">
+            <el-input v-model="form.warehouseValueText" />
+          </el-form-item>
+        </div>
+
+        <div class="grid-3">
           <el-form-item label="装备等级">
             <el-input v-model="form.equipmentLevelText" />
           </el-form-item>
+          <el-form-item label="比例">
+            <el-input v-model="form.ratioText" placeholder="例如 1:35" />
+          </el-form-item>
+          <el-form-item label="保险箱">
+            <el-input v-model="form.insuranceBoxText" placeholder="例如 4格 / 9格" />
+          </el-form-item>
         </div>
+
+        <div class="grid-3">
+          <el-form-item label="体力">
+            <el-input v-model="form.staminaText" placeholder="例如 7体7负" />
+          </el-form-item>
+          <el-form-item label="负重">
+            <el-input v-model="form.weightText" placeholder="例如 60" />
+          </el-form-item>
+          <el-form-item label="段位">
+            <el-input v-model="form.rankText" placeholder="例如 黑鹰 / 北极星" />
+          </el-form-item>
+        </div>
+
+        <div class="grid-3">
+          <el-form-item label="常用登录地">
+            <el-input v-model="form.loginRegion" placeholder="例如 四川省 / 福建省" />
+          </el-form-item>
+          <el-form-item label="武器皮肤">
+            <el-input v-model="form.weaponSkinText" placeholder="例如 AWM子弹 / M4皮肤" />
+          </el-form-item>
+          <el-form-item label="干员皮肤">
+            <el-input v-model="form.characterSkinText" placeholder="例如 近战皮肤 / 套装" />
+          </el-form-item>
+        </div>
+
         <div class="grid-2">
-          <el-form-item label="仓库价值">
-            <el-input v-model="form.warehouseValueText" />
+          <el-form-item label="封面图 URL">
+            <el-input v-model="form.coverImageUrl" placeholder="可选，后续可替换为真实截图" />
           </el-form-item>
           <el-form-item label="状态">
             <el-select v-model="form.status" class="full-width">
@@ -72,13 +113,15 @@
             </el-select>
           </el-form-item>
         </div>
+
         <el-form-item label="描述">
           <el-input v-model="form.description" type="textarea" :rows="4" />
         </el-form-item>
       </el-form>
+
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="saving" @click="submitProduct">保存</el-button>
+        <el-button type="warning" :loading="saving" @click="submitProduct">保存</el-button>
       </template>
     </el-dialog>
   </div>
@@ -105,6 +148,15 @@ const emptyForm = (): RentalProduct => ({
   coinAmount: 0,
   equipmentLevelText: '',
   warehouseValueText: '',
+  ratioText: '',
+  insuranceBoxText: '',
+  staminaText: '',
+  weightText: '',
+  rankText: '',
+  loginRegion: '',
+  weaponSkinText: '',
+  characterSkinText: '',
+  coverImageUrl: '',
   status: 'AVAILABLE',
   description: ''
 });
@@ -112,7 +164,11 @@ const emptyForm = (): RentalProduct => ({
 const form = reactive<RentalProduct>(emptyForm());
 
 function statusText(status: string) {
-  return { AVAILABLE: '可租', MAINTENANCE: '维护中', RENTED: '已租出' }[status] || status;
+  return {
+    AVAILABLE: '可租',
+    MAINTENANCE: '维护中',
+    RENTED: '已租出'
+  }[status] || status;
 }
 
 async function loadProducts() {
@@ -151,7 +207,7 @@ function openEdit(product: RentalProduct) {
 
 async function submitProduct() {
   if (!form.name.trim()) {
-    ElMessage.warning('请填写账号名称');
+    ElMessage.warning('请先填写账号名称');
     return;
   }
 
@@ -165,6 +221,15 @@ async function submitProduct() {
       coinAmount: form.coinAmount,
       equipmentLevelText: form.equipmentLevelText?.trim(),
       warehouseValueText: form.warehouseValueText?.trim(),
+      ratioText: form.ratioText?.trim(),
+      insuranceBoxText: form.insuranceBoxText?.trim(),
+      staminaText: form.staminaText?.trim(),
+      weightText: form.weightText?.trim(),
+      rankText: form.rankText?.trim(),
+      loginRegion: form.loginRegion?.trim(),
+      weaponSkinText: form.weaponSkinText?.trim(),
+      characterSkinText: form.characterSkinText?.trim(),
+      coverImageUrl: form.coverImageUrl?.trim(),
       status: form.status,
       description: form.description?.trim()
     };
@@ -217,18 +282,29 @@ onMounted(loadProducts);
 
 <style scoped>
 .admin-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(96, 165, 250, 0.1);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 22px;
   padding: 24px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06);
 }
 
 .panel-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 16px;
+}
+
+.section-title {
+  margin: 0;
+}
+
+.section-desc {
+  margin: 8px 0 0;
+  color: #64748b;
+  font-size: 13px;
 }
 
 .toolbar {
@@ -241,117 +317,69 @@ onMounted(loadProducts);
   width: 220px;
 }
 
-.grid-2 {
+.grid-2,
+.grid-3 {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .full-width {
   width: 100%;
 }
 
-:deep(.el-input__wrapper) {
-  background: #1e293b !important;
-  border: 1px solid rgba(96, 165, 250, 0.3) !important;
-  box-shadow: none !important;
-}
-:deep(.el-input__inner) { color: #e2e8f0 !important; }
-:deep(.el-input__inner::placeholder) { color: #475569 !important; }
-:deep(.el-select .el-input__wrapper) {
-  background: #1e293b !important;
-  border: 1px solid rgba(96, 165, 250, 0.3) !important;
-}
-:deep(.el-select__wrapper) {
-  background: #1e293b !important;
-  border: 1px solid rgba(96, 165, 250, 0.3) !important;
-  box-shadow: none !important;
-}
-:deep(.el-select-dropdown) {
-  background: #1e293b !important;
-  border: 1px solid rgba(96, 165, 250, 0.2) !important;
-  border-radius: 12px !important;
-}
-:deep(.el-select-dropdown__item) { color: #e2e8f0 !important; }
-:deep(.el-select-dropdown__item:hover) { background: rgba(96, 165, 250, 0.1) !important; }
-:deep(.el-table) {
-  background: transparent !important;
-  --el-table-bg-color: transparent;
-  --el-table-tr-bg-color: transparent;
-  --el-table-header-bg-color: rgba(96, 165, 250, 0.08);
-  --el-table-row-hover-bg-color: rgba(96, 165, 250, 0.1);
-  --el-table-border-color: rgba(96, 165, 250, 0.15);
-  --el-table-text-color: #e2e8f0;
-  --el-table-header-text-color: #94a3b8;
-}
-:deep(.el-table__header th) {
-  background: rgba(96, 165, 250, 0.08) !important;
-}
-:deep(.el-table__body tr) {
-  background: transparent !important;
-}
-:deep(.el-table__body tr:hover > td) {
-  background: rgba(96, 165, 250, 0.1) !important;
-}
-:deep(.el-table td.el-table__cell) {
-  border-bottom-color: rgba(96, 165, 250, 0.1) !important;
-}
-:deep(.el-dialog) {
-  background: #1e293b !important;
-  border: 1px solid rgba(96, 165, 250, 0.5) !important;
-  border-radius: 16px !important;
-}
-:deep(.el-dialog__header) { color: #f1f5f9 !important; }
-:deep(.el-dialog__title) { color: #f1f5f9 !important; }
-:deep(.el-form-item__label) { color: #94a3b8 !important; }
-:deep(.el-form-item) { margin-bottom: 18px !important; }
-:deep(.el-form-item__content) { color: #e2e8f0 !important; }
-:deep(.el-input-number) {
-  background: #1e293b !important;
-  border: 1px solid rgba(96, 165, 250, 0.3) !important;
-  border-radius: 8px !important;
-}
-:deep(.el-input-number .el-input__wrapper) {
-  background: #1e293b !important;
-}
-:deep(.el-input-number__decrease, .el-input-number__increase) {
-  background: rgba(255,255,255,0.05) !important;
-  border: 1px solid rgba(96, 165, 250, 0.3) !important;
-  color: #94a3b8 !important;
-}
-:deep(.el-input-number__decrease:hover, .el-input-number__increase:hover) {
-  color: #60a5fa !important;
-}
+:deep(.el-input__wrapper),
+:deep(.el-select__wrapper),
 :deep(.el-textarea__inner) {
-  background: #1e293b !important;
-  border: 1px solid rgba(96, 165, 250, 0.3) !important;
-  color: #e2e8f0 !important;
-  resize: none !important;
+  background: #fff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 0 0 1px #dbe3ef inset !important;
 }
-:deep(.el-textarea__inner:focus) {
-  border-color: rgba(96, 165, 250, 0.5) !important;
+
+:deep(.el-table) {
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: #fff;
+  --el-table-header-bg-color: #f8fafc;
+  --el-table-row-hover-bg-color: #fff7e6;
+  --el-table-border-color: #e2e8f0;
+  --el-table-text-color: #1f2937;
+  --el-table-header-text-color: #64748b;
+  border-radius: 16px;
+  overflow: hidden;
 }
-:deep(.el-dialog__footer) {
-  background: #1e293b !important;
-  border-top: 1px solid rgba(96, 165, 250, 0.15) !important;
-  padding: 16px 24px !important;
+
+:deep(.el-table__header th) {
+  background: #f8fafc !important;
 }
-:deep(.el-button--primary) {
-  background: #1e40af !important;
-  border-color: #1e40af !important;
-  color: #fff !important;
+
+:deep(.el-dialog) {
+  border-radius: 20px !important;
+  overflow: hidden !important;
 }
-:deep(.el-button--primary:hover) {
-  background: #1e3a8a !important;
-  border-color: #1e3a8a !important;
+
+:deep(.el-dialog__body) {
+  padding-top: 8px !important;
 }
-:deep(.el-button) {
-  background: rgba(255,255,255,0.05) !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
-  color: #94a3b8 !important;
+
+:deep(.el-form-item__label) {
+  color: #475569 !important;
 }
-:deep(.el-button:hover) {
-  color: #60a5fa !important;
-  border-color: rgba(96, 165, 250, 0.4) !important;
+
+@media (max-width: 900px) {
+  .panel-header {
+    flex-direction: column;
+  }
+
+  .grid-2,
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

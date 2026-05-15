@@ -212,15 +212,15 @@ onMounted(loadAccounts);
 <style scoped>
 .page-shell {
   min-height: 100vh;
-  background: linear-gradient(135deg, #060d1a 0%, #0f1c33 50%, #0a1525 100%);
-  color: #e2e8f0;
+  background: transparent;
+  color: #1f2937;
   padding: 40px 20px;
 }
 
 .hero-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(96, 165, 250, 0.12);
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 24px;
   padding: 36px 40px;
   margin-bottom: 24px;
 }
@@ -229,10 +229,10 @@ onMounted(loadAccounts);
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(96, 165, 250, 0.2);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  color: #93c5fd;
+  color: #9b5d00;
   font-size: 13px;
   padding: 6px 14px;
   cursor: pointer;
@@ -241,9 +241,9 @@ onMounted(loadAccounts);
 }
 
 .back-btn:hover {
-  background: rgba(96, 165, 250, 0.12);
-  border-color: rgba(96, 165, 250, 0.35);
-  color: #bfdbfe;
+  background: #fff0d0;
+  border-color: #ffd46b;
+  color: #9b5d00;
 }
 
 .back-icon {
@@ -253,7 +253,7 @@ onMounted(loadAccounts);
 .page-title {
   font-size: 26px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #1f2937;
   margin: 0 0 10px;
 }
 
@@ -264,9 +264,9 @@ onMounted(loadAccounts);
 }
 
 .panel-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(96, 165, 250, 0.1);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e2e8f0;
+  border-radius: 22px;
   padding: 32px 36px;
   max-width: 720px;
 }
@@ -275,8 +275,8 @@ onMounted(loadAccounts);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(96, 165, 250, 0.15);
+  background: #fffdf7;
+  border: 1px solid #f3e5b8;
   border-radius: 12px;
   padding: 18px 22px;
   margin-bottom: 18px;
@@ -291,7 +291,7 @@ onMounted(loadAccounts);
 .account-name {
   font-size: 16px;
   font-weight: 600;
-  color: #d8e4f0;
+  color: #1f2937;
 }
 
 .account-tags {
@@ -301,12 +301,12 @@ onMounted(loadAccounts);
 }
 
 .tag-chip {
-  background: rgba(96, 165, 250, 0.1);
-  border: 1px solid rgba(96, 165, 250, 0.18);
+  background: #fff3d9;
+  border: 1px solid #ffd46b;
   border-radius: 6px;
   padding: 2px 8px;
   font-size: 12px;
-  color: #93c5fd;
+  color: #9b5d00;
 }
 
 .account-price-block {
@@ -322,7 +322,7 @@ onMounted(loadAccounts);
 .price-value {
   font-size: 22px;
   font-weight: 700;
-  color: #60a5fa;
+  color: #f05b2c;
 }
 
 .price-unit {
@@ -331,17 +331,17 @@ onMounted(loadAccounts);
 }
 
 .discount-tip {
-  background: rgba(96, 165, 250, 0.06);
-  border: 1px solid rgba(96, 165, 250, 0.15);
+  background: #fff7e6;
+  border: 1px solid #f3e5b8;
   border-radius: 10px;
   padding: 10px 16px;
   font-size: 13px;
-  color: #94a3b8;
+  color: #64748b;
   margin-bottom: 24px;
 }
 
 .discount-tip strong {
-  color: #60a5fa;
+  color: #f05b2c;
 }
 
 .discount-icon {
@@ -352,8 +352,8 @@ onMounted(loadAccounts);
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(96, 165, 250, 0.15);
+  background: #fffdf7;
+  border: 1px solid #f3e5b8;
   border-radius: 10px;
   padding: 14px 20px;
   margin-bottom: 18px;
@@ -368,16 +368,16 @@ onMounted(loadAccounts);
 .duration-value {
   font-size: 16px;
   font-weight: 600;
-  color: #d8e4f0;
+  color: #1f2937;
 }
 
 .duration-discount {
-  background: rgba(96, 165, 250, 0.12);
-  border: 1px solid rgba(96, 165, 250, 0.2);
+  background: #fff3d9;
+  border: 1px solid #ffd46b;
   border-radius: 6px;
   padding: 2px 10px;
   font-size: 12px;
-  color: #60a5fa;
+  color: #9b5d00;
 }
 
 .grid-2 {
@@ -387,7 +387,7 @@ onMounted(loadAccounts);
 }
 
 :deep(.el-form-item__label) {
-  color: #94a3b8;
+  color: #64748b;
   font-size: 13px;
   font-weight: 500;
   padding-bottom: 6px;
@@ -395,24 +395,23 @@ onMounted(loadAccounts);
 
 :deep(.el-input__wrapper),
 :deep(.el-select .el-input__wrapper) {
-  background: #1e293b !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
+  background: #fff !important;
   border-radius: 10px;
-  box-shadow: none !important;
+  box-shadow: 0 0 0 1px #dbe3ef inset !important;
   padding: 0 14px;
 }
 
 :deep(.el-input__inner) {
-  color: #e2e8f0;
+  color: #1f2937;
   font-size: 14px;
 }
 
 :deep(.el-input__inner::placeholder) {
-  color: #475569;
+  color: #94a3b8;
 }
 
 :deep(.el-select .el-input__inner) {
-  color: #e2e8f0;
+  color: #1f2937;
 }
 
 :deep(.el-form-item) {
@@ -420,17 +419,18 @@ onMounted(loadAccounts);
 }
 
 :deep(.el-button--primary) {
-  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  background: linear-gradient(135deg, #ffe057 0%, #ffc420 100%);
   border: none;
   border-radius: 10px;
   font-size: 15px;
   font-weight: 600;
   padding: 12px 32px;
   letter-spacing: 1px;
+  color: #5a3c00;
 }
 
 :deep(.el-button--primary:hover) {
-  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  background: linear-gradient(135deg, #ffd95a 0%, #ffb81f 100%);
 }
 
 .result-card {

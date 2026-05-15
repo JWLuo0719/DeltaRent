@@ -430,7 +430,9 @@ onUnmounted(() => {
 html,
 body,
 #app {
-  background: linear-gradient(135deg, #060d1a 0%, #0f1c33 40%, #0a1525 100%);
+  background:
+    radial-gradient(circle at top left, rgba(255, 221, 111, 0.2), transparent 20%),
+    linear-gradient(180deg, #fff8df 0%, #fffdf4 24%, #f8fafc 100%);
   min-height: 100vh;
 }
 </style>
@@ -459,7 +461,7 @@ body,
 .brand-panel {
   width: 42%;
   flex-shrink: 0;
-  background: linear-gradient(160deg, rgba(12, 25, 41, 0.85) 0%, rgba(30, 58, 95, 0.85) 100%);
+  background: linear-gradient(160deg, rgba(255, 245, 214, 0.86) 0%, rgba(255, 226, 144, 0.82) 100%);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -495,13 +497,13 @@ body,
   font-size: 28px;
   font-weight: 700;
   letter-spacing: 2px;
-  color: #f1f5f9;
+  color: #5a3c00;
 }
 
 .brand-slogan {
   margin: 0 0 28px;
   font-size: 13px;
-  color: #64748b;
+  color: #7c6b39;
   letter-spacing: 2px;
 }
 
@@ -518,7 +520,7 @@ body,
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #94a3b8;
+  color: #6b7280;
   letter-spacing: 1px;
 }
 
@@ -526,14 +528,14 @@ body,
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #60a5fa;
-  box-shadow: 0 0 8px #60a5fa;
+  background: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.45);
 }
 
 /* 任务列表 */
 .mission-list {
-  background: rgba(96, 165, 250, 0.05);
-  border: 1px solid rgba(96, 165, 250, 0.1);
+  background: rgba(255, 255, 255, 0.46);
+  border: 1px solid rgba(255, 214, 107, 0.5);
   border-radius: 8px;
   padding: 16px 20px;
   margin-bottom: 24px;
@@ -546,8 +548,8 @@ body,
   gap: 10px;
   padding: 8px 0;
   font-size: 13px;
-  color: #cbd5e1;
-  border-bottom: 1px solid rgba(96, 165, 250, 0.08);
+  color: #4b5563;
+  border-bottom: 1px solid rgba(255, 214, 107, 0.35);
 }
 
 .mission-item:last-child {
@@ -555,14 +557,14 @@ body,
 }
 
 .mission-icon {
-  color: #60a5fa;
+  color: #f59e0b;
   font-size: 10px;
 }
 
 /* 版本信息 */
 .version-info {
   font-size: 11px;
-  color: #475569;
+  color: #7c6b39;
   letter-spacing: 1px;
 }
 
@@ -586,8 +588,8 @@ body,
   backdrop-filter: blur(12px);
   border-radius: 16px;
   box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(96, 165, 250, 0.1);
+    0 20px 40px rgba(181, 145, 41, 0.12),
+    0 0 0 1px rgba(255, 214, 107, 0.2);
 }
 
 .form-header {
@@ -622,7 +624,7 @@ body,
 }
 
 .input-group:focus-within label {
-  color: #2563eb;
+  color: #c57a00;
 }
 
 :deep(.el-input__wrapper) {
@@ -636,7 +638,7 @@ body,
 }
 
 :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 2px #2563eb;
+  box-shadow: 0 0 0 2px #f3c347;
 }
 
 :deep(.el-input__inner) {
@@ -658,15 +660,16 @@ body,
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 3px;
-  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  background: linear-gradient(135deg, #ffe057 0%, #ffc420 100%);
   border: none;
-  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+  box-shadow: 0 4px 12px rgba(255, 196, 32, 0.3);
+  color: #5a3c00;
   transition: all 0.2s;
 }
 
 .login-btn:hover:not(:disabled) {
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(30, 64, 175, 0.4);
+  box-shadow: 0 6px 16px rgba(255, 196, 32, 0.38);
 }
 
 .login-btn:active:not(:disabled) {
@@ -705,7 +708,7 @@ body,
 }
 
 .guest-btn:hover {
-  color: #2563eb;
+  color: #c57a00;
 }
 
 @media (max-width: 900px) {

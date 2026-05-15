@@ -32,6 +32,15 @@ export interface RentalProduct {
   coinAmount: number;
   equipmentLevelText: string;
   warehouseValueText: string;
+  ratioText?: string;
+  insuranceBoxText?: string;
+  staminaText?: string;
+  weightText?: string;
+  rankText?: string;
+  loginRegion?: string;
+  weaponSkinText?: string;
+  characterSkinText?: string;
+  coverImageUrl?: string;
   status: 'AVAILABLE' | 'RENTED' | 'MAINTENANCE' | string;
   description: string;
   isHot?: boolean;

@@ -1,7 +1,6 @@
 CREATE DATABASE IF NOT EXISTS `deltarent` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE `deltarent`;
 
--- 用户表
 CREATE TABLE IF NOT EXISTS `sys_user` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `username` VARCHAR(50) NOT NULL,
@@ -18,7 +17,6 @@ CREATE TABLE IF NOT EXISTS `sys_user` (
   UNIQUE KEY `uk_sys_user_phone` (`phone`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 角色表
 CREATE TABLE IF NOT EXISTS `sys_role` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `role_code` VARCHAR(50) NOT NULL,
@@ -28,7 +26,6 @@ CREATE TABLE IF NOT EXISTS `sys_role` (
   UNIQUE KEY `uk_sys_role_code` (`role_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 用户角色关联表
 CREATE TABLE IF NOT EXISTS `sys_user_role` (
   `user_id` BIGINT NOT NULL,
   `role_id` BIGINT NOT NULL,
@@ -37,7 +34,6 @@ CREATE TABLE IF NOT EXISTS `sys_user_role` (
   CONSTRAINT `fk_user_role_role` FOREIGN KEY (`role_id`) REFERENCES `sys_role` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 租赁产品表
 CREATE TABLE IF NOT EXISTS `rental_product` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(100) NOT NULL,
@@ -47,6 +43,15 @@ CREATE TABLE IF NOT EXISTS `rental_product` (
   `coin_amount` BIGINT DEFAULT NULL,
   `equipment_level_text` VARCHAR(100) DEFAULT NULL,
   `warehouse_value_text` VARCHAR(100) DEFAULT NULL,
+  `ratio_text` VARCHAR(50) DEFAULT NULL,
+  `insurance_box_text` VARCHAR(50) DEFAULT NULL,
+  `stamina_text` VARCHAR(50) DEFAULT NULL,
+  `weight_text` VARCHAR(50) DEFAULT NULL,
+  `rank_text` VARCHAR(50) DEFAULT NULL,
+  `login_region` VARCHAR(50) DEFAULT NULL,
+  `weapon_skin_text` VARCHAR(255) DEFAULT NULL,
+  `character_skin_text` VARCHAR(255) DEFAULT NULL,
+  `cover_image_url` VARCHAR(255) DEFAULT NULL,
   `status` VARCHAR(30) NOT NULL DEFAULT 'AVAILABLE',
   `description` TEXT,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -57,7 +62,6 @@ CREATE TABLE IF NOT EXISTS `rental_product` (
   KEY `idx_rental_product_category` (`category`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 租赁订单表
 CREATE TABLE IF NOT EXISTS `rental_order` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `order_no` VARCHAR(40) NOT NULL,
@@ -83,7 +87,6 @@ CREATE TABLE IF NOT EXISTS `rental_order` (
   CONSTRAINT `fk_rental_order_product` FOREIGN KEY (`product_id`) REFERENCES `rental_product` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 公告表
 CREATE TABLE IF NOT EXISTS `notice` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `title` VARCHAR(120) NOT NULL,
@@ -95,7 +98,6 @@ CREATE TABLE IF NOT EXISTS `notice` (
   CONSTRAINT `fk_notice_author` FOREIGN KEY (`author_id`) REFERENCES `sys_user` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 短信验证码表
 CREATE TABLE IF NOT EXISTS `sms_verify_code` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `phone` VARCHAR(20) NOT NULL,
@@ -109,7 +111,6 @@ CREATE TABLE IF NOT EXISTS `sms_verify_code` (
   KEY `idx_sms_verify_code_phone_type_created` (`phone`, `type`, `created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 申诉记录表
 CREATE TABLE IF NOT EXISTS `appeal_record` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `order_type` VARCHAR(30) NOT NULL,
@@ -130,7 +131,6 @@ CREATE TABLE IF NOT EXISTS `appeal_record` (
   CONSTRAINT `fk_appeal_record_handler` FOREIGN KEY (`handler_id`) REFERENCES `sys_user` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 操作日志表
 CREATE TABLE IF NOT EXISTS `operation_log` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `operator_id` BIGINT DEFAULT NULL,
@@ -143,8 +143,6 @@ CREATE TABLE IF NOT EXISTS `operation_log` (
   KEY `idx_operation_log_operator_id` (`operator_id`),
   CONSTRAINT `fk_operation_log_operator` FOREIGN KEY (`operator_id`) REFERENCES `sys_user` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- ==================== 初始数据 ====================
 
 INSERT INTO `sys_user` (`id`, `username`, `phone`, `password_hash`, `nickname`, `status`)
 VALUES
@@ -176,17 +174,19 @@ ON DUPLICATE KEY UPDATE
   `role_id` = VALUES(`role_id`);
 
 INSERT INTO `rental_product`
-  (`id`, `name`, `category`, `tag_text`, `hour_price`, `coin_amount`, `equipment_level_text`, `warehouse_value_text`, `status`, `description`)
+  (`id`, `name`, `category`, `tag_text`, `hour_price`, `coin_amount`, `equipment_level_text`, `warehouse_value_text`,
+   `ratio_text`, `insurance_box_text`, `stamina_text`, `weight_text`, `rank_text`, `login_region`,
+   `weapon_skin_text`, `character_skin_text`, `cover_image_url`, `status`, `description`)
 VALUES
-  (1001, '高战满仓号 A01', '高配冲分', '满仓库,毕业装,高段位', 28.00, 12000000, '六套毕业装', '高价值仓库', 'AVAILABLE', '适合排位冲分和高强度作战，客服确认后交付。'),
-  (1002, '活动收藏号 B02', '活动收藏', '稀有外观,活动资源,中高配', 18.00, 3400000, '中高配作战装', '活动收藏资源', 'AVAILABLE', '含活动收藏资源和常用作战配置，适合体验稀有外观。'),
-  (1003, '新手体验号 C03', '低价体验', '新手试用,基础装备,低价', 8.00, 800000, '基础装备', '入门资源', 'MAINTENANCE', '当前维护中，适合后续演示维护状态筛选。'),
-  (1004, '烽火地带冲分号 D04', '高配冲分', '高段位,满仓库,六套毕业装', 32.00, 15800000, '满配毕业装', '顶级仓库', 'AVAILABLE', '主打高段位冲分，仓库资源充足，适合长时段租赁。'),
-  (1005, '周末娱乐号 E05', '低价体验', '娱乐体验,基础装备,可租', 9.90, 1200000, '基础作战装', '轻量仓库', 'AVAILABLE', '适合短时间体验和课程演示下单流程。'),
-  (1006, '稀有皮肤收藏号 F06', '活动收藏', '稀有外观,收藏号,活动资源', 22.00, 4600000, '进阶装备', '外观收藏仓库', 'AVAILABLE', '包含多套活动外观和收藏资源，适合展示账号详情。'),
-  (1007, '哈夫币储备号 G07', '资源储备', '哈夫币充足,仓库价值高,可租', 25.00, 22000000, '高阶装备', '资源储备仓库', 'AVAILABLE', '哈夫币储备较高，适合演示资源筛选和价格排序。'),
-  (1008, '战术入门号 H08', '低价体验', '入门体验,基础装备,低价', 6.00, 500000, '新手基础装', '入门仓库', 'AVAILABLE', '低价体验账号，适合游客浏览和快速租赁演示。'),
-  (1009, '客服测试号 I09', '运营测试', '测试账号,订单演示,维护中', 12.00, 2000000, '中阶装备', '测试仓库', 'RENTED', '用于演示已租出状态和后台状态维护。')
+  (1001, '高战满仓号 A01', '高配冲分', '满仓库,毕业装,高段位', 28.00, 12000000, '六套毕业装', '高价值仓库', '1:35', '4格', '7体7负', '60', '黑鹰', '江西省', '117 发 AWM 子弹', '近战套装', '', 'AVAILABLE', '适合排位冲分和高强度作战，客服确认后交付。'),
+  (1002, '活动收藏号 B02', '活动收藏', '稀有外观,活动资源,中高配', 18.00, 3400000, '中高配作战装', '活动收藏资源', '1:32', '9格', '7体7负', '60', '坠星者', '福建省', '81 发 AWM 子弹', '限定外观', '', 'AVAILABLE', '包含活动收藏资源和常用作战配置，适合体验稀有外观。'),
+  (1003, '新手体验号 C03', '低价体验', '新手试用,基础装备,低价', 8.00, 800000, '基础装备', '入门资源', '1:40', '4格', '5体6负', '45', '青铜', '四川省', '基础弹药', '基础套装', '', 'MAINTENANCE', '当前维护中，适合后续演示维护状态筛选。'),
+  (1004, '热区冲分号 D04', '高配冲分', '高段位,满仓库,毕业装', 32.00, 15800000, '满配毕业装', '顶级仓库', '1:37', '9格', '7体7负', '60', '北极星', '四川省', '41 发 AWM 子弹', '毕业近战皮肤', '', 'AVAILABLE', '主打高段位冲分，仓库资源充足，适合长时段租赁。'),
+  (1005, '周末娱乐号 E05', '低价体验', '娱乐体验,基础装备,可租', 9.90, 1200000, '基础作战装', '轻量仓库', '1:29', '4格', '5体6负', '48', '白银', '湖北省', '练习弹药', '基础外观', '', 'AVAILABLE', '适合短时间体验和课程演示下单流程。'),
+  (1006, '稀有皮肤收藏号 F06', '活动收藏', '稀有外观,收藏号,活动资源', 22.00, 4600000, '进阶装备', '外观收藏仓库', '1:31', '6格', '6体6负', '55', '赛伊德', '广东省', '稀有武器皮肤', '活动干员皮肤', '', 'AVAILABLE', '包含多套活动外观和收藏资源，适合展示账号详情。'),
+  (1007, '哈夫币储备号 G07', '资源储备', '哈夫币充足,仓库价值高,可租', 25.00, 22000000, '高阶装备', '资源储备仓库', '1:33', '9格', '7体6负', '58', '暗星', '浙江省', '高配武器弹药', '资源型皮肤', '', 'AVAILABLE', '哈夫币储备较高，适合演示资源筛选和价格排序。'),
+  (1008, '战术入门号 H08', '低价体验', '入门体验,基础装备,低价', 6.00, 500000, '新手基础装', '入门仓库', '1:20', '4格', '4体5负', '40', '新兵', '安徽省', '入门武器资源', '新手外观', '', 'AVAILABLE', '低价体验账号，适合游客浏览和快速租赁演示。'),
+  (1009, '客服测试号 I09', '运营测试', '测试账号,订单演示,维护中', 12.00, 2000000, '中阶装备', '测试仓库', '1:28', '4格', '6体6负', '50', '黄金', '测试区', '测试武器皮肤', '测试干员皮肤', '', 'RENTED', '用于演示已租出状态和后台状态维护。')
 ON DUPLICATE KEY UPDATE
   `name` = VALUES(`name`),
   `category` = VALUES(`category`),
@@ -195,6 +195,15 @@ ON DUPLICATE KEY UPDATE
   `coin_amount` = VALUES(`coin_amount`),
   `equipment_level_text` = VALUES(`equipment_level_text`),
   `warehouse_value_text` = VALUES(`warehouse_value_text`),
+  `ratio_text` = VALUES(`ratio_text`),
+  `insurance_box_text` = VALUES(`insurance_box_text`),
+  `stamina_text` = VALUES(`stamina_text`),
+  `weight_text` = VALUES(`weight_text`),
+  `rank_text` = VALUES(`rank_text`),
+  `login_region` = VALUES(`login_region`),
+  `weapon_skin_text` = VALUES(`weapon_skin_text`),
+  `character_skin_text` = VALUES(`character_skin_text`),
+  `cover_image_url` = VALUES(`cover_image_url`),
   `status` = VALUES(`status`),
   `description` = VALUES(`description`);
 

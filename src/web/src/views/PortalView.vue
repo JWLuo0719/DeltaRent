@@ -508,9 +508,11 @@ export default { name: 'PortalView' };
 <style scoped>
 /* ==================== 整体深色主题 ==================== */
 .dark-theme {
-  background: linear-gradient(135deg, #060d1a 0%, #0f1c33 50%, #0a1525 100%);
+  background:
+    radial-gradient(circle at top left, rgba(255, 221, 111, 0.2), transparent 20%),
+    linear-gradient(180deg, #fff8df 0%, #fffdf4 24%, #f8fafc 100%);
   min-height: 100vh;
-  color: #e2e8f0;
+  color: #1f2937;
 }
 
 /* ==================== Hero ==================== */
@@ -519,9 +521,9 @@ export default { name: 'PortalView' };
   border-radius: 24px;
   overflow: hidden;
   padding: 72px 48px 56px;
-  background: linear-gradient(160deg, rgba(15, 28, 51, 0.95) 0%, rgba(30, 58, 95, 0.8) 100%);
+  background: linear-gradient(145deg, rgba(255, 243, 201, 0.96) 0%, rgba(255, 223, 122, 0.88) 100%);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(96, 165, 250, 0.12);
+  border: 1px solid rgba(242, 201, 76, 0.28);
   margin-bottom: 24px;
   text-align: center;
 }
@@ -541,26 +543,26 @@ export default { name: 'PortalView' };
   display: inline-block;
   padding: 4px 16px;
   border-radius: 20px;
-  border: 1px solid rgba(96, 165, 250, 0.3);
+  border: 1px solid rgba(201, 136, 22, 0.24);
   font-size: 12px;
-  color: #93c5fd;
+  color: #9b5d00;
   letter-spacing: 3px;
   margin-bottom: 20px;
-  background: rgba(96, 165, 250, 0.08);
+  background: rgba(255, 255, 255, 0.55);
 }
 
 .hero-title {
   margin: 0 0 16px;
   font-size: 40px;
   font-weight: 800;
-  color: #f1f5f9;
+  color: #3c2b00;
   letter-spacing: 3px;
 }
 
 .hero-subtitle {
   margin: 0 0 36px;
   font-size: 16px;
-  color: #94a3b8;
+  color: #6b7280;
   line-height: 1.7;
 }
 
@@ -572,25 +574,26 @@ export default { name: 'PortalView' };
 }
 
 .btn-primary-action {
-  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  background: linear-gradient(135deg, #ffe057 0%, #ffc420 100%);
   border: none;
-  box-shadow: 0 4px 16px rgba(30, 64, 175, 0.4);
+  box-shadow: 0 4px 16px rgba(255, 196, 32, 0.32);
+  color: #5a3c00;
 }
 
 .btn-primary-action:hover {
-  box-shadow: 0 6px 20px rgba(30, 64, 175, 0.5);
+  box-shadow: 0 6px 20px rgba(255, 196, 32, 0.4);
   transform: translateY(-1px);
 }
 
 .hero-actions .el-button:not(.btn-primary-action) {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 214, 107, 0.6);
+  color: #5a3c00;
 }
 
 .hero-actions .el-button:not(.btn-primary-action):hover {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  background: #fff7e6;
+  color: #9b5d00;
 }
 
 /* ==================== 通用 Section ==================== */
@@ -605,7 +608,7 @@ export default { name: 'PortalView' };
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #1f2937;
   letter-spacing: 1px;
 }
 
@@ -613,7 +616,7 @@ export default { name: 'PortalView' };
 
 .see-all-link {
   font-size: 13px;
-  color: #60a5fa;
+  color: #c57a00;
   text-decoration: none;
   transition: opacity 0.2s;
 }
@@ -630,8 +633,8 @@ export default { name: 'PortalView' };
 }
 
 .product-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(96, 165, 250, 0.1);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(226, 232, 240, 0.9);
   border-radius: 16px;
   padding: 20px;
   cursor: pointer;
@@ -643,9 +646,9 @@ export default { name: 'PortalView' };
 
 .product-card:hover {
   transform: translateY(-4px);
-  background: rgba(96, 165, 250, 0.08);
-  border-color: rgba(96, 165, 250, 0.3);
-  box-shadow: 0 8px 24px rgba(96, 165, 250, 0.12);
+  background: #fffdf7;
+  border-color: rgba(255, 196, 32, 0.5);
+  box-shadow: 0 12px 28px rgba(181, 145, 41, 0.12);
 }
 
 .skeleton-card { cursor: default; }
@@ -669,7 +672,7 @@ export default { name: 'PortalView' };
 .product-name {
   font-size: 15px;
   font-weight: 600;
-  color: #f1f5f9;
+  color: #1f2937;
   line-height: 1.4;
 }
 
@@ -682,7 +685,7 @@ export default { name: 'PortalView' };
 }
 
 .attr-k { color: #64748b; }
-.attr-v { color: #94a3b8; }
+.attr-v { color: #475569; }
 
 .product-price-row {
   display: flex;
@@ -695,12 +698,12 @@ export default { name: 'PortalView' };
 .product-price {
   font-size: 16px;
   font-weight: 700;
-  color: #fbbf24;
+  color: #f05b2c;
 }
 
 .product-cta {
   font-size: 12px;
-  color: #60a5fa;
+  color: #c57a00;
 }
 
 .hot-empty {

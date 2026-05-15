@@ -148,10 +148,11 @@ onMounted(loadUsers);
 
 <style scoped>
 .admin-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(96, 165, 250, 0.1);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 22px;
   padding: 24px;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.06);
 }
 
 .panel-header {
@@ -184,55 +185,32 @@ onMounted(loadUsers);
 }
 
 :deep(.el-input__wrapper) {
-  background: #1e293b !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
-  box-shadow: none !important;
+  background: #fff !important;
+  box-shadow: 0 0 0 1px #dbe3ef inset !important;
 }
-:deep(.el-input__inner) { color: #e2e8f0 !important; }
-:deep(.el-input__inner::placeholder) { color: #475569 !important; }
-:deep(.el-select .el-input__wrapper) {
-  background: #1e293b !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
-}
-:deep(.el-select__wrapper) {
-  background: #1e293b !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
-  box-shadow: none !important;
-}
-:deep(.el-select__placeholder) { color: #64748b !important; }
-:deep(.el-select-dropdown) {
-  background: #1e293b !important;
-  border: 1px solid rgba(96, 165, 250, 0.2) !important;
-  border-radius: 12px !important;
-}
-:deep(.el-select-dropdown__item) { color: #e2e8f0 !important; }
-:deep(.el-select-dropdown__item:hover) { background: rgba(96, 165, 250, 0.1) !important; }
+:deep(.el-input__inner) { color: #1f2937 !important; }
 :deep(.el-pagination) { --el-pagination-bg-color: transparent !important; }
-:deep(.el-pagination button) { background: rgba(255,255,255,0.05) !important; border-color: rgba(96,165,250,0.15) !important; color: #94a3b8 !important; }
-:deep(.el-pagination button:hover) { background: rgba(96,165,250,0.15) !important; color: #60a5fa !important; }
-:deep(.el-pager li) { background: rgba(255,255,255,0.05) !important; border-color: rgba(96,165,250,0.15) !important; color: #94a3b8 !important; }
-:deep(.el-pager li:hover) { color: #60a5fa !important; }
-:deep(.el-pager li.is-active) { background: #1e40af !important; border-color: #1e40af !important; color: #fff !important; }
+:deep(.el-pagination button) { background: #fff !important; border-color: #dbe3ef !important; color: #64748b !important; }
+:deep(.el-pagination button:hover) { background: #fff7e6 !important; color: #9b5d00 !important; }
+:deep(.el-pager li) { background: #fff !important; border-color: #dbe3ef !important; color: #64748b !important; }
+:deep(.el-pager li:hover) { color: #9b5d00 !important; }
+:deep(.el-pager li.is-active) { background: #ffe57b !important; border-color: #ffd242 !important; color: #6a4a00 !important; }
 :deep(.el-table) {
-  background: transparent !important;
   --el-table-bg-color: transparent;
-  --el-table-tr-bg-color: transparent;
-  --el-table-header-bg-color: rgba(96, 165, 250, 0.08);
-  --el-table-row-hover-bg-color: rgba(96, 165, 250, 0.1);
-  --el-table-border-color: rgba(96, 165, 250, 0.15);
-  --el-table-text-color: #e2e8f0;
-  --el-table-header-text-color: #94a3b8;
+  --el-table-tr-bg-color: #fff;
+  --el-table-header-bg-color: #f8fafc;
+  --el-table-row-hover-bg-color: #fff7e6;
+  --el-table-border-color: #e2e8f0;
+  --el-table-text-color: #1f2937;
+  --el-table-header-text-color: #64748b;
 }
 :deep(.el-table__header th) {
-  background: rgba(96, 165, 250, 0.08) !important;
-}
-:deep(.el-table__body tr) {
-  background: transparent !important;
+  background: #f8fafc !important;
 }
 :deep(.el-table__body tr:hover > td) {
-  background: rgba(96, 165, 250, 0.1) !important;
+  background: #fff7e6 !important;
 }
 :deep(.el-table td.el-table__cell) {
-  border-bottom-color: rgba(96, 165, 250, 0.1) !important;
+  border-bottom-color: #e2e8f0 !important;
 }
 </style>

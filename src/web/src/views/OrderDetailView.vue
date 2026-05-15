@@ -166,9 +166,8 @@ onMounted(loadOrder);
 <style scoped>
 .page-shell {
   min-height: 100vh;
-  background-color: #0f1c33;
-  background-image: linear-gradient(135deg, #060d1a 0%, #0f1c33 50%, #0a1525 100%);
-  color: #e2e8f0;
+  background: transparent;
+  color: #1f2937;
   padding: 24px;
 }
 
@@ -180,10 +179,10 @@ onMounted(loadOrder);
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(96, 165, 250, 0.2);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e2e8f0;
   border-radius: 8px;
-  color: #93c5fd;
+  color: #9b5d00;
   font-size: 13px;
   padding: 6px 14px;
   cursor: pointer;
@@ -191,15 +190,15 @@ onMounted(loadOrder);
 }
 
 .back-btn:hover {
-  background: rgba(96, 165, 250, 0.12);
-  border-color: rgba(96, 165, 250, 0.35);
-  color: #bfdbfe;
+  background: #fff0d0;
+  border-color: #ffd46b;
+  color: #9b5d00;
 }
 
 .detail-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(96, 165, 250, 0.1);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
   padding: 20px 24px;
   margin-bottom: 16px;
 }
@@ -218,7 +217,7 @@ onMounted(loadOrder);
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #1f2937;
 }
 
 .status-tag {
@@ -254,7 +253,7 @@ onMounted(loadOrder);
 .info-v {
   font-size: 14px;
   font-weight: 500;
-  color: #e2e8f0;
+  color: #1f2937;
 }
 
 .info-v.price {
@@ -266,7 +265,7 @@ onMounted(loadOrder);
   margin: 0 0 16px;
   font-size: 15px;
   font-weight: 600;
-  color: #f1f5f9;
+  color: #1f2937;
 }
 
 .timeline {
@@ -326,7 +325,7 @@ onMounted(loadOrder);
 
 .timeline-content {
   font-size: 14px;
-  color: #e2e8f0;
+  color: #1f2937;
 }
 
 .actions {
@@ -344,15 +343,16 @@ onMounted(loadOrder);
 }
 
 .empty-icon { font-size: 56px; margin-bottom: 16px; }
-.empty-title { font-size: 18px; font-weight: 600; color: #f1f5f9; }
+.empty-title { font-size: 18px; font-weight: 600; color: #1f2937; }
 
 :deep(.el-button--primary) {
-  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%) !important;
+  background: linear-gradient(135deg, #ffe057 0%, #ffc420 100%) !important;
   border: none !important;
+  color: #5a3c00 !important;
 }
 
 :deep(.el-button--primary:hover) {
-  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+  background: linear-gradient(135deg, #ffd95a 0%, #ffb81f 100%) !important;
 }
 
 :deep(.el-button--danger) {

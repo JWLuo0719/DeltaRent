@@ -118,16 +118,15 @@ onMounted(loadOrders);
 <style scoped>
 .page-shell {
   min-height: 100vh;
-  background-color: #0f1c33;
-  background-image: linear-gradient(135deg, #060d1a 0%, #0f1c33 50%, #0a1525 100%);
-  color: #e2e8f0;
+  background: transparent;
+  color: #1f2937;
   padding: 24px;
 }
 
 .page-header-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(96, 165, 250, 0.12);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 22px;
   padding: 24px 28px;
   margin-bottom: 16px;
 }
@@ -136,14 +135,14 @@ onMounted(loadOrders);
   margin: 0;
   font-size: 20px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #1f2937;
   letter-spacing: 1px;
 }
 
 .filter-bar {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(96, 165, 250, 0.1);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.84);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 20px;
   padding: 14px 20px;
   margin-bottom: 16px;
 }
@@ -155,19 +154,19 @@ onMounted(loadOrders);
 }
 
 .order-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(96, 165, 250, 0.1);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
   padding: 16px 20px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .order-card:hover {
-  background: rgba(96, 165, 250, 0.06);
-  border-color: rgba(96, 165, 250, 0.25);
+  background: #fffdf7;
+  border-color: #ffd46b;
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 14px 28px rgba(181, 145, 41, 0.12);
 }
 
 .order-header {
@@ -198,7 +197,7 @@ onMounted(loadOrders);
 .order-item {
   font-size: 15px;
   font-weight: 600;
-  color: #f1f5f9;
+  color: #1f2937;
   margin-bottom: 8px;
 }
 
@@ -212,7 +211,7 @@ onMounted(loadOrders);
 
 .order-time {
   font-size: 12px;
-  color: #475569;
+  color: #64748b;
 }
 
 .empty-state {
@@ -225,7 +224,7 @@ onMounted(loadOrders);
 }
 
 .empty-icon { font-size: 56px; margin-bottom: 16px; }
-.empty-title { font-size: 18px; font-weight: 600; color: #f1f5f9; margin-bottom: 8px; }
+.empty-title { font-size: 18px; font-weight: 600; color: #1f2937; margin-bottom: 8px; }
 .empty-desc { font-size: 14px; color: #64748b; margin-bottom: 20px; }
 
 .empty-btn {
@@ -241,35 +240,11 @@ onMounted(loadOrders);
 }
 
 :deep(.el-input__wrapper) {
-  background: #1e293b !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
-  box-shadow: none !important;
+  background: #fff !important;
+  box-shadow: 0 0 0 1px #dbe3ef inset !important;
 }
 
-:deep(.el-input__inner) { color: #e2e8f0 !important; }
-:deep(.el-input__inner::placeholder) { color: #475569 !important; }
-
-:deep(.el-select .el-input__wrapper) {
-  background: #1e293b !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
-}
-
-:deep(.el-select__wrapper) {
-  background: #1e293b !important;
-  border-color: rgba(96, 165, 250, 0.2) !important;
-  box-shadow: none !important;
-}
-
-:deep(.el-select__placeholder) { color: #64748b !important; }
-:deep(.el-select-dropdown) {
-  background: #1e293b !important;
-  border: 1px solid rgba(96, 165, 250, 0.2) !important;
-  border-radius: 12px !important;
-}
-
-:deep(.el-select-dropdown__item) { color: #e2e8f0 !important; }
-:deep(.el-select-dropdown__item:hover) { background: rgba(96, 165, 250, 0.1) !important; }
-:deep(.el-select-dropdown__item.is-selected) { color: #60a5fa !important; }
+:deep(.el-input__inner) { color: #1f2937 !important; }
 
 :deep(.el-pagination button) { background: rgba(255,255,255,0.05) !important; border-color: rgba(96,165,250,0.15) !important; color: #94a3b8 !important; }
 :deep(.el-pagination button:hover) { background: rgba(96,165,250,0.15) !important; color: #60a5fa !important; }

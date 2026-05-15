@@ -1,14 +1,15 @@
 :root {
-  color-scheme: dark;
+  color-scheme: light;
   font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
-  color: #e2e8f0;
-  --el-skeleton-color: rgba(255, 255, 255, 0.07);
-  --el-skeleton-to-color: rgba(255, 255, 255, 0.13);
+  color: #1f2937;
+  --el-skeleton-color: rgba(226, 232, 240, 0.9);
+  --el-skeleton-to-color: rgba(248, 250, 252, 1);
 }
 
 html, body {
-  background-color: #0f1c33;
-  background-image: linear-gradient(135deg, #060d1a 0%, #0f1c33 50%, #0a1525 100%);
+  background:
+    radial-gradient(circle at top left, rgba(255, 221, 111, 0.2), transparent 20%),
+    linear-gradient(180deg, #fff8df 0%, #fffcf4 30%, #f8fafc 100%);
 }
 
 * {
@@ -77,14 +78,14 @@ a {
 .metric {
   padding: 20px;
   border-radius: 20px;
-  background: linear-gradient(135deg, #0f172a, #1d4ed8);
-  color: #f8fafc;
+  background: linear-gradient(135deg, #fff3c2, #ffd760);
+  color: #5a3c00;
 }
 
 .metric h3 {
   margin: 0;
   font-size: 14px;
-  color: rgba(248, 250, 252, 0.8);
+  color: rgba(90, 60, 0, 0.8);
 }
 
 .metric strong {

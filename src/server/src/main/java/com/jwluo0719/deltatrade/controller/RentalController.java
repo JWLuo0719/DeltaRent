@@ -58,24 +58,16 @@ public class RentalController {
     @GetMapping("/{id}")
     public ApiResponse<Map<String, Object>> detail(@PathVariable Long id) {
         RentalProduct product = productService.getById(id);
-        if (product == null) return ApiResponse.fail("账号不存在");
+        if (product == null) {
+            return ApiResponse.fail("账号不存在");
+        }
         return ApiResponse.success(toView(product));
     }
 
     @PostMapping
     public ApiResponse<Map<String, Object>> create(@RequestBody Map<String, Object> payload) {
         try {
-            RentalProduct product = new RentalProduct();
-            product.setName(String.valueOf(payload.getOrDefault("name", "")));
-            product.setCategory(String.valueOf(payload.getOrDefault("category", "")));
-            product.setTagText(String.valueOf(payload.getOrDefault("tagText", "")));
-            product.setHourPrice(new BigDecimal(String.valueOf(payload.getOrDefault("hourPrice", "0"))));
-            Object coinAmountVal = payload.getOrDefault("coinAmount", payload.getOrDefault("coinAmountText", 0));
-            product.setCoinAmount(Long.parseLong(String.valueOf(coinAmountVal)));
-            product.setEquipmentLevelText(String.valueOf(payload.getOrDefault("equipmentLevelText", "")));
-            product.setWarehouseValueText(String.valueOf(payload.getOrDefault("warehouseValueText", "")));
-            product.setStatus(String.valueOf(payload.getOrDefault("status", "AVAILABLE")));
-            product.setDescription(String.valueOf(payload.getOrDefault("description", "")));
+            RentalProduct product = fromPayload(null, payload);
             productService.create(product);
             return ApiResponse.success("创建成功", toView(product));
         } catch (IllegalArgumentException e) {
@@ -86,18 +78,7 @@ public class RentalController {
     @PutMapping("/{id}")
     public ApiResponse<?> update(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
         try {
-            RentalProduct product = new RentalProduct();
-            product.setId(id);
-            product.setName(String.valueOf(payload.getOrDefault("name", "")));
-            product.setCategory(String.valueOf(payload.getOrDefault("category", "")));
-            product.setTagText(String.valueOf(payload.getOrDefault("tagText", "")));
-            product.setHourPrice(new BigDecimal(String.valueOf(payload.getOrDefault("hourPrice", "0"))));
-            Object coinAmountVal2 = payload.getOrDefault("coinAmount", payload.getOrDefault("coinAmountText", 0));
-            product.setCoinAmount(Long.parseLong(String.valueOf(coinAmountVal2)));
-            product.setEquipmentLevelText(String.valueOf(payload.getOrDefault("equipmentLevelText", "")));
-            product.setWarehouseValueText(String.valueOf(payload.getOrDefault("warehouseValueText", "")));
-            product.setStatus(String.valueOf(payload.getOrDefault("status", "AVAILABLE")));
-            product.setDescription(String.valueOf(payload.getOrDefault("description", "")));
+            RentalProduct product = fromPayload(id, payload);
             productService.update(product);
             return ApiResponse.success("更新成功", null);
         } catch (IllegalArgumentException e) {
@@ -118,6 +99,36 @@ public class RentalController {
         return ApiResponse.success("状态更新成功", null);
     }
 
+    private RentalProduct fromPayload(Long id, Map<String, Object> payload) {
+        RentalProduct product = new RentalProduct();
+        if (id != null) {
+            product.setId(id);
+        }
+
+        product.setName(String.valueOf(payload.getOrDefault("name", "")));
+        product.setCategory(String.valueOf(payload.getOrDefault("category", "")));
+        product.setTagText(String.valueOf(payload.getOrDefault("tagText", "")));
+        product.setHourPrice(new BigDecimal(String.valueOf(payload.getOrDefault("hourPrice", "0"))));
+
+        Object coinAmountVal = payload.getOrDefault("coinAmount", payload.getOrDefault("coinAmountText", 0));
+        product.setCoinAmount(Long.parseLong(String.valueOf(coinAmountVal)));
+
+        product.setEquipmentLevelText(String.valueOf(payload.getOrDefault("equipmentLevelText", "")));
+        product.setWarehouseValueText(String.valueOf(payload.getOrDefault("warehouseValueText", "")));
+        product.setRatioText(String.valueOf(payload.getOrDefault("ratioText", "")));
+        product.setInsuranceBoxText(String.valueOf(payload.getOrDefault("insuranceBoxText", "")));
+        product.setStaminaText(String.valueOf(payload.getOrDefault("staminaText", "")));
+        product.setWeightText(String.valueOf(payload.getOrDefault("weightText", "")));
+        product.setRankText(String.valueOf(payload.getOrDefault("rankText", "")));
+        product.setLoginRegion(String.valueOf(payload.getOrDefault("loginRegion", "")));
+        product.setWeaponSkinText(String.valueOf(payload.getOrDefault("weaponSkinText", "")));
+        product.setCharacterSkinText(String.valueOf(payload.getOrDefault("characterSkinText", "")));
+        product.setCoverImageUrl(String.valueOf(payload.getOrDefault("coverImageUrl", "")));
+        product.setStatus(String.valueOf(payload.getOrDefault("status", "AVAILABLE")));
+        product.setDescription(String.valueOf(payload.getOrDefault("description", "")));
+        return product;
+    }
+
     private Map<String, Object> toView(RentalProduct product) {
         Map<String, Object> item = new LinkedHashMap<>();
         item.put("id", product.getId());
@@ -128,13 +139,27 @@ public class RentalController {
         item.put("coinAmount", product.getCoinAmount());
         item.put("equipmentLevelText", product.getEquipmentLevelText());
         item.put("warehouseValueText", product.getWarehouseValueText());
+        item.put("ratioText", product.getRatioText());
+        item.put("insuranceBoxText", product.getInsuranceBoxText());
+        item.put("staminaText", product.getStaminaText());
+        item.put("weightText", product.getWeightText());
+        item.put("rankText", product.getRankText());
+        item.put("loginRegion", product.getLoginRegion());
+        item.put("weaponSkinText", product.getWeaponSkinText());
+        item.put("characterSkinText", product.getCharacterSkinText());
+        item.put("coverImageUrl", product.getCoverImageUrl());
+        item.put("status", product.getStatus());
+        item.put("description", product.getDescription());
+
         item.put("tag", product.getTagText());
         item.put("price", product.getHourPrice() + " / 小时");
-        item.put("status", product.getStatus());
-        item.put("coinAmount", product.getCoinAmount());
         item.put("equipmentLevel", product.getEquipmentLevelText());
         item.put("warehouseValue", product.getWarehouseValueText());
-        item.put("description", product.getDescription());
+        item.put("ratio", product.getRatioText());
+        item.put("insuranceBox", product.getInsuranceBoxText());
+        item.put("stamina", product.getStaminaText());
+        item.put("weight", product.getWeightText());
+        item.put("rank", product.getRankText());
         item.put("isHot", "AVAILABLE".equals(product.getStatus())
                 && product.getHourPrice() != null
                 && product.getHourPrice().compareTo(new BigDecimal("15")) >= 0);

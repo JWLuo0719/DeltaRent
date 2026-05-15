@@ -1,20 +1,20 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import AppLayout from '@/views/layouts/AppLayout.vue';
-import PortalView from '@/views/PortalView.vue';
-import LoginView from '@/views/LoginView.vue';
-import RegisterView from '@/views/RegisterView.vue';
-import RentalOrderCreateView from '@/views/RentalOrderCreateView.vue';
-import RentalListView from '@/views/RentalListView.vue';
-import AdminDashboardView from '@/views/AdminDashboardView.vue';
-import OrderListView from '@/views/OrderListView.vue';
-import OrderDetailView from '@/views/OrderDetailView.vue';
-import ProfileView from '@/views/ProfileView.vue';
+
+const PortalView = () => import('@/views/PortalView.vue');
+const LoginView = () => import('@/views/LoginView.vue');
+const RegisterView = () => import('@/views/RegisterView.vue');
+const RentalOrderCreateView = () => import('@/views/RentalOrderCreateView.vue');
+const RentalListView = () => import('@/views/RentalListView.vue');
+const AdminDashboardView = () => import('@/views/AdminDashboardView.vue');
+const OrderListView = () => import('@/views/OrderListView.vue');
+const OrderDetailView = () => import('@/views/OrderDetailView.vue');
+const ProfileView = () => import('@/views/ProfileView.vue');
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    // ==================== 登录/注册（无顶栏）====================
     {
       path: '/login',
       name: 'login',
@@ -27,7 +27,6 @@ const router = createRouter({
       component: RegisterView,
       meta: { roles: [] }
     },
-    // ==================== 共享布局路由 ====================
     {
       path: '/',
       component: AppLayout,
@@ -48,7 +47,6 @@ const router = createRouter({
           component: RentalListView,
           meta: { roles: [] }
         },
-        // ==================== 需要登录的路由 ====================
         {
           path: 'orders/create',
           name: 'rental-create',
@@ -73,7 +71,6 @@ const router = createRouter({
           component: ProfileView,
           meta: { roles: ['USER', 'ADMIN', 'CS'], requireAuth: true }
         },
-        // ==================== 后台管理路由（ADMIN / CS）====================
         {
           path: 'admin',
           name: 'admin',
@@ -85,7 +82,6 @@ const router = createRouter({
   ]
 });
 
-// 路由守卫
 router.beforeEach((to, _from, next) => {
   const auth = useAuthStore();
   const { requireAuth, roles } = to.meta as { requireAuth?: boolean; roles?: string[] };
@@ -95,7 +91,7 @@ router.beforeEach((to, _from, next) => {
     return;
   }
 
-  if (requireAuth && !auth.isLoggedIn) {
+  if (!auth.isLoggedIn) {
     next({ name: 'login', query: { redirect: to.fullPath } });
     return;
   }
