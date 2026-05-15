@@ -16,7 +16,7 @@ import java.util.Date;
  */
 public final class JwtUtil {
 
-    // 签名密钥（课程项目使用固定密钥，生产环境应从配置中心读取）
+    // 签名密钥（课程项目使用固定密钥，生产环境应从配置中心读取）给token上密钥
     private static final String SECRET = "DeltaRent-JWT-Secret-Key-2026-Course-Project-Must-Be-Long-Enough-For-HS256";
     private static final long EXPIRATION_MS = 24 * 60 * 60 * 1000L; // 24 小时
     private static final DateTimeFormatter PASSWORD_VERSION_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
