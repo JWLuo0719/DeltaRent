@@ -54,6 +54,7 @@ export function getPortalSummary() {
 export function getRentals(params?: {
   keyword?: string;
   tags?: string;
+  category?: string;
   level?: string;
   status?: string;
   sortBy?: string;

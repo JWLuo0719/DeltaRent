@@ -5,25 +5,39 @@
     <section class="hero-card">
       <div class="hero-left">
         <h1 class="page-title">账号租赁大厅</h1>
-        <p class="page-subtitle">浏览所有可租账号，选择心仪套餐，快速完成租赁</p>
+        <p class="page-subtitle">按段位、仓库、哈夫币和价格快速筛选，适合短租体验、活动冲分和高配作战场景。</p>
       </div>
       <div class="hero-stat">
         <span class="stat-num">{{ total }}</span>
-        <span class="stat-label">个账号在架</span>
+        <span class="stat-label">个账号可供筛选</span>
       </div>
     </section>
 
     <!-- 筛选工具栏 -->
     <section class="filter-bar">
+      <div class="quick-filter-row">
+        <button
+          v-for="preset in quickFilters"
+          :key="preset.key"
+          class="quick-chip"
+          :class="{ active: activeQuickFilter === preset.key }"
+          @click="applyQuickFilter(preset.key)"
+        >
+          {{ preset.label }}
+        </button>
+      </div>
       <div class="filter-row">
         <el-input
           v-model="keyword"
-          placeholder="搜索账号名称"
+          placeholder="搜索账号名称、标签或配置"
           class="filter-input"
           clearable
           @input="onKeywordChange"
         />
-        <el-select v-model="selectedTags" multiple collapse-tags collapse-tags-tooltip placeholder="标签筛选" class="filter-select">
+        <el-select v-model="selectedCategory" placeholder="账号分类" clearable class="filter-select">
+          <el-option v-for="category in allCategories" :key="category" :label="categoryText(category)" :value="category" />
+        </el-select>
+        <el-select v-model="selectedTags" multiple collapse-tags collapse-tags-tooltip placeholder="资源标签" class="filter-select wide-select">
           <el-option v-for="tag in allTags" :key="tag" :label="tag" :value="tag" />
         </el-select>
         <el-select v-model="selectedLevel" placeholder="装备等级" clearable class="filter-select">
@@ -34,7 +48,14 @@
         </el-select>
         <el-select v-model="selectedStatus" placeholder="可租状态" clearable class="filter-select">
           <el-option label="仅看可租" value="AVAILABLE" />
+          <el-option label="维护中" value="MAINTENANCE" />
+          <el-option label="已租出" value="RENTED" />
           <el-option label="全部" value="" />
+        </el-select>
+        <el-select v-model="selectedPriceRange" placeholder="价格区间" clearable class="filter-select">
+          <el-option label="10元以下" value="low" />
+          <el-option label="10-20元" value="mid" />
+          <el-option label="20元以上" value="high" />
         </el-select>
         <el-select v-model="sortBy" class="filter-select sort-select">
           <el-option label="默认排序" value="default" />
@@ -87,6 +108,7 @@
 
           <!-- 账号名称 -->
           <div class="card-name">{{ p.name }}</div>
+          <div class="card-subtitle">{{ categoryText(p.category) }} · {{ p.description || '客服确认后交付，适合课程演示租赁流程' }}</div>
 
           <!-- 标签行 -->
           <div class="card-tag-row">
@@ -107,7 +129,7 @@
             </div>
             <div class="attr-row">
               <span class="attr-k">哈夫币</span>
-              <span class="attr-v">{{ p.coinAmount?.toLocaleString() }}</span>
+              <span class="attr-v">{{ formatCoinAmount(p.coinAmount) }}</span>
             </div>
           </div>
 
@@ -184,11 +206,11 @@
               </div>
               <div class="res-row">
                 <span class="res-k">哈夫币</span>
-                <span class="res-v">{{ selectedProduct.coinAmount?.toLocaleString() }}</span>
+                <span class="res-v">{{ formatCoinAmount(selectedProduct.coinAmount) }}</span>
               </div>
               <div class="res-row">
                 <span class="res-k">分类</span>
-                <span class="res-v">{{ selectedProduct.category }}</span>
+                <span class="res-v">{{ categoryText(selectedProduct.category) }}</span>
               </div>
             </div>
           </div>
@@ -259,13 +281,16 @@ const loading = ref(true);
 const products = ref<RentalProduct[]>([]);
 const keyword = ref('');
 const selectedTags = ref<string[]>([]);
+const selectedCategory = ref('');
 const selectedLevel = ref('');
 const selectedStatus = ref('');
+const selectedPriceRange = ref('');
 const sortBy = ref('default');
 const currentPage = ref(1);
 const pageSize = ref(12);
 const total = ref(0);
 const allTags = ref<string[]>([]);
+const allCategories = ref<string[]>([]);
 
 // ---- 详情 Drawer ----
 const drawerVisible = ref(false);
@@ -279,6 +304,14 @@ const durations = [
   { hours: 12, discount: 0.8 },
   { hours: 24, discount: 0.7 }
 ];
+
+const quickFilters = [
+  { key: 'available', label: '可租现货' },
+  { key: 'premium', label: '高配冲分' },
+  { key: 'event', label: '活动收藏' },
+  { key: 'budget', label: '低价体验' }
+];
+const activeQuickFilter = ref('');
 
 function calcPrice(hours: number) {
   if (!selectedProduct.value) return 0;
@@ -296,15 +329,50 @@ function selectDuration(h: number) {
   selectedDuration.value = selectedDuration.value === h ? null : h;
 }
 
-// ---- 筛选 + 排序（后端处理，前端只做展示） ----
-const filteredProducts = computed(() => products.value);
+// ---- 筛选 + 排序（主要由后端处理，价格档位在当前页内补充过滤） ----
+const filteredProducts = computed(() => {
+  if (!selectedPriceRange.value) return products.value;
+  return products.value.filter(product => {
+    const price = Number(product.hourPrice || 0);
+    if (selectedPriceRange.value === 'low') return price < 10;
+    if (selectedPriceRange.value === 'mid') return price >= 10 && price <= 20;
+    if (selectedPriceRange.value === 'high') return price > 20;
+    return true;
+  });
+});
 
 function clearFilters() {
   keyword.value = '';
   selectedTags.value = [];
+  selectedCategory.value = '';
   selectedLevel.value = '';
   selectedStatus.value = '';
+  selectedPriceRange.value = '';
   sortBy.value = 'default';
+  activeQuickFilter.value = '';
+}
+
+function applyQuickFilter(key: string) {
+  activeQuickFilter.value = activeQuickFilter.value === key ? '' : key;
+  selectedTags.value = [];
+  selectedCategory.value = '';
+  selectedLevel.value = '';
+  selectedStatus.value = '';
+  selectedPriceRange.value = '';
+  sortBy.value = 'default';
+
+  if (activeQuickFilter.value === 'available') {
+    selectedStatus.value = 'AVAILABLE';
+  } else if (activeQuickFilter.value === 'premium') {
+    selectedCategory.value = '高配冲分';
+    selectedLevel.value = 'Advanced';
+    sortBy.value = 'price_desc';
+  } else if (activeQuickFilter.value === 'event') {
+    selectedCategory.value = '活动收藏';
+  } else if (activeQuickFilter.value === 'budget') {
+    selectedPriceRange.value = 'low';
+    sortBy.value = 'price_asc';
+  }
 }
 
 // ---- 加载数据（后端筛选） ----
@@ -314,6 +382,7 @@ async function loadRentals() {
     const res = await getRentals({
       keyword: keyword.value || undefined,
       tags: selectedTags.value.length ? selectedTags.value.join(',') : undefined,
+      category: selectedCategory.value || undefined,
       page: currentPage.value,
       pageSize: pageSize.value,
       level: selectedLevel.value || undefined,
@@ -324,6 +393,7 @@ async function loadRentals() {
       products.value = res.data.data.list;
       total.value = res.data.data.total;
       allTags.value = res.data.data.allTags;
+      allCategories.value = res.data.data.allCategories ?? [];
     } else {
       ElMessage.error(res.data.message || '账号列表加载失败');
     }
@@ -373,6 +443,16 @@ function splitTags(tagText: string | undefined): string[] {
   return (tagText ?? '').split(',').map(t => t.trim()).filter(Boolean);
 }
 
+function categoryText(category: string | undefined) {
+  return category || '综合账号';
+}
+
+function formatCoinAmount(value: number | undefined) {
+  if (!value) return '未录入';
+  if (value >= 10000) return `${(value / 10000).toFixed(value >= 1000000 ? 0 : 1)}万`;
+  return value.toLocaleString();
+}
+
 function getStatusText(status: string) {
   return { AVAILABLE: '可租', RENTED: '已租出', MAINTENANCE: '维护中' }[status] ?? status;
 }
@@ -396,7 +476,7 @@ watch(currentPage, () => {
   loadRentals();
 });
 
-watch([selectedTags, selectedLevel, selectedStatus, sortBy], () => {
+watch([selectedTags, selectedCategory, selectedLevel, selectedStatus, selectedPriceRange, sortBy], () => {
   if (currentPage.value !== 1) {
     currentPage.value = 1;
     return;
@@ -490,6 +570,30 @@ export default { name: 'RentalListView' };
   margin-bottom: 20px;
 }
 
+.quick-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.quick-chip {
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  background: rgba(96, 165, 250, 0.06);
+  color: #93c5fd;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.quick-chip.active,
+.quick-chip:hover {
+  background: rgba(96, 165, 250, 0.2);
+  border-color: rgba(96, 165, 250, 0.48);
+  color: #dbeafe;
+}
+
 .filter-row {
   display: flex;
   align-items: center;
@@ -499,6 +603,7 @@ export default { name: 'RentalListView' };
 
 .filter-input { width: 200px; }
 .filter-select { width: 150px; }
+.wide-select { width: 190px; }
 .sort-select { width: 160px; }
 
 .refresh-btn {
@@ -586,6 +691,17 @@ export default { name: 'RentalListView' };
   font-weight: 600;
   color: #f1f5f9;
   line-height: 1.4;
+}
+
+.card-subtitle {
+  min-height: 36px;
+  color: #64748b;
+  font-size: 12px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 /* 标签行 */

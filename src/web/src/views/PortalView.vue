@@ -57,7 +57,7 @@
             <div class="product-attrs">
               <div class="attr-row"><span class="attr-k">装备等级</span><span class="attr-v">{{ p.equipmentLevel }}</span></div>
               <div class="attr-row"><span class="attr-k">库存价值</span><span class="attr-v">{{ p.warehouseValue }}</span></div>
-              <div class="attr-row"><span class="attr-k">金币数量</span><span class="attr-v">{{ p.coinAmount }}</span></div>
+              <div class="attr-row"><span class="attr-k">哈夫币</span><span class="attr-v">{{ formatCoinAmount(p.coinAmount) }}</span></div>
             </div>
             <div class="product-price-row">
               <span class="product-price">{{ p.price }}</span>
@@ -170,7 +170,7 @@
         <p class="footer-disclaimer">
           本平台仅提供账号租赁中介服务，租用期间账号安全由双方共同负责，请勿进行违规操作。
         </p>
-        <p class="footer-copy">© 2024 DeltaRent · 三角洲行动专业租赁平台</p>
+        <p class="footer-copy">DeltaRent · 三角洲行动账号租赁课程原型系统</p>
       </div>
     </footer>
 
@@ -328,6 +328,13 @@ function handleEntryClick(entry: Entry) {
     return;
   }
   router.push(entry.path);
+}
+
+function formatCoinAmount(value: number | string | undefined) {
+  const numeric = Number(value || 0);
+  if (!numeric) return value || '未录入';
+  if (numeric >= 10000) return `${(numeric / 10000).toFixed(numeric >= 1000000 ? 0 : 1)}万`;
+  return numeric.toLocaleString();
 }
 
 // ---- 门户数据 ----

@@ -32,13 +32,13 @@ public class PortalController {
     @GetMapping("/summary")
     public ApiResponse<Map<String, Object>> summary() {
         Map<String, Object> result = new LinkedHashMap<>();
-        result.put("heroTitle", "三角洲行动账号租赁管理系统");
-        result.put("heroSubtitle", "一期先跑通账号展示、下单、订单状态和后台看板，确保课程项目可演示、可联调、可扩展。");
+        result.put("heroTitle", "三角洲行动账号租赁平台");
+        result.put("heroSubtitle", "严选高配账号、活动收藏号和低价体验号，支持在线下单、客服确认、订单跟踪与售后申诉。");
 
         List<Map<String, String>> metrics = Arrays.asList(
                 metric("在线可租账号", String.valueOf(productService.countAvailable())),
-                metric("总订单数", String.valueOf(orderService.countAll())),
-                metric("课程原型状态", "Ready")
+                metric("累计租赁订单", String.valueOf(orderService.countAll())),
+                metric("当前服务状态", "稳定运行")
         );
         result.put("metrics", metrics);
 

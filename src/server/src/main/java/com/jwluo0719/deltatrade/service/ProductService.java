@@ -28,6 +28,7 @@ public class ProductService {
 
     public Map<String, Object> listForBrowse(String keyword,
                                              String tags,
+                                             String category,
                                              String level,
                                              String status,
                                              String sortBy,
@@ -35,6 +36,7 @@ public class ProductService {
                                              Integer pageSize) {
         List<RentalProduct> products = productMapper.findAll();
         List<String> allTags = collectAllTags(products);
+        List<String> allCategories = collectAllCategories(products);
 
         if (keyword != null && !keyword.isBlank()) {
             String normalized = keyword.trim().toLowerCase(Locale.ROOT);
@@ -43,6 +45,12 @@ public class ProductService {
                             || containsIgnoreCase(product.getCategory(), normalized)
                             || containsIgnoreCase(product.getTagText(), normalized)
                             || containsIgnoreCase(product.getEquipmentLevelText(), normalized))
+                    .collect(Collectors.toList());
+        }
+
+        if (category != null && !category.isBlank()) {
+            products = products.stream()
+                    .filter(product -> category.equalsIgnoreCase(product.getCategory()))
                     .collect(Collectors.toList());
         }
 
@@ -95,6 +103,7 @@ public class ProductService {
         result.put("list", products.subList(fromIndex, toIndex));
         result.put("total", total);
         result.put("allTags", allTags);
+        result.put("allCategories", allCategories);
         return result;
     }
 
@@ -170,6 +179,16 @@ public class ProductService {
                 .flatMap(tagText -> Arrays.stream(tagText.split(",")))
                 .map(String::trim)
                 .filter(tag -> !tag.isBlank())
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    private List<String> collectAllCategories(List<RentalProduct> products) {
+        return products.stream()
+                .map(RentalProduct::getCategory)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(category -> !category.isBlank())
                 .distinct()
                 .collect(Collectors.toList());
     }

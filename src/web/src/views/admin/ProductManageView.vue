@@ -53,7 +53,7 @@
           </el-form-item>
         </div>
         <div class="grid-2">
-          <el-form-item label="金币数量">
+          <el-form-item label="哈夫币数量">
             <el-input-number v-model="form.coinAmount" :min="0" class="full-width" />
           </el-form-item>
           <el-form-item label="装备等级">

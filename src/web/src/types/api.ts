@@ -45,6 +45,7 @@ export interface RentalListResult {
   list: RentalProduct[];
   total: number;
   allTags: string[];
+  allCategories?: string[];
 }
 
 export interface AccountDetail extends RentalProduct {

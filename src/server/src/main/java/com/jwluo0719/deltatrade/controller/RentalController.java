@@ -32,12 +32,13 @@ public class RentalController {
     @GetMapping
     public ApiResponse<Map<String, Object>> list(@RequestParam(required = false) String keyword,
                                                  @RequestParam(required = false) String tags,
+                                                 @RequestParam(required = false) String category,
                                                  @RequestParam(required = false) String level,
                                                  @RequestParam(required = false) String status,
                                                  @RequestParam(required = false) String sortBy,
                                                  @RequestParam(required = false) Integer page,
                                                  @RequestParam(required = false) Integer pageSize) {
-        Map<String, Object> payload = productService.listForBrowse(keyword, tags, level, status, sortBy, page, pageSize);
+        Map<String, Object> payload = productService.listForBrowse(keyword, tags, category, level, status, sortBy, page, pageSize);
         @SuppressWarnings("unchecked")
         List<RentalProduct> list = (List<RentalProduct>) payload.getOrDefault("list", List.of());
 
@@ -50,6 +51,7 @@ public class RentalController {
         response.put("list", result);
         response.put("total", payload.get("total"));
         response.put("allTags", payload.get("allTags"));
+        response.put("allCategories", payload.get("allCategories"));
         return ApiResponse.success(response);
     }
 

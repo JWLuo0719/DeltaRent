@@ -148,9 +148,9 @@ CREATE TABLE IF NOT EXISTS `operation_log` (
 
 INSERT INTO `sys_user` (`id`, `username`, `phone`, `password_hash`, `nickname`, `status`)
 VALUES
-  (1, 'admin', '13800000000', '$2b$12$3rHydvFkXa.nLRBnuknsAOLAEDgJLtepE7zZfbmuUEYCSVMOffQ4C', 'Admin Demo User', 1),
-  (2, 'demo_user', '13900000000', '$2b$12$3rHydvFkXa.nLRBnuknsAOLAEDgJLtepE7zZfbmuUEYCSVMOffQ4C', 'Rental Demo User', 1),
-  (3, 'cs_demo', '13700000000', '$2b$12$3rHydvFkXa.nLRBnuknsAOLAEDgJLtepE7zZfbmuUEYCSVMOffQ4C', 'Customer Service Demo', 1)
+  (1, 'admin', '13800000000', '$2b$12$3rHydvFkXa.nLRBnuknsAOLAEDgJLtepE7zZfbmuUEYCSVMOffQ4C', '平台管理员', 1),
+  (2, 'demo_user', '13900000000', '$2b$12$3rHydvFkXa.nLRBnuknsAOLAEDgJLtepE7zZfbmuUEYCSVMOffQ4C', '租赁演示用户', 1),
+  (3, 'cs_demo', '13700000000', '$2b$12$3rHydvFkXa.nLRBnuknsAOLAEDgJLtepE7zZfbmuUEYCSVMOffQ4C', '客服演示账号', 1)
 ON DUPLICATE KEY UPDATE
   `username` = VALUES(`username`),
   `password_hash` = VALUES(`password_hash`),
@@ -159,9 +159,9 @@ ON DUPLICATE KEY UPDATE
 
 INSERT INTO `sys_role` (`id`, `role_code`, `role_name`, `description`)
 VALUES
-  (1, 'ADMIN', 'Administrator', 'System administrator with full access.'),
-  (2, 'USER', 'Normal User', 'Registered rental user.'),
-  (3, 'CS', 'Customer Service', 'Customer service staff for order and after-sales handling.')
+  (1, 'ADMIN', '管理员', '拥有后台用户、角色、账号、订单和公告管理权限。'),
+  (2, 'USER', '普通用户', '可浏览账号、创建订单、查看订单和提交售后申诉。'),
+  (3, 'CS', '客服', '负责账号维护、订单确认和售后处理。')
 ON DUPLICATE KEY UPDATE
   `role_name` = VALUES(`role_name`),
   `description` = VALUES(`description`);
@@ -178,9 +178,15 @@ ON DUPLICATE KEY UPDATE
 INSERT INTO `rental_product`
   (`id`, `name`, `category`, `tag_text`, `hour_price`, `coin_amount`, `equipment_level_text`, `warehouse_value_text`, `status`, `description`)
 VALUES
-  (1001, 'High Rank Account A01', 'premium', 'Full warehouse', 18.00, 12000000, 'Advanced equipment set', 'High-value warehouse', 'AVAILABLE', 'Demo rental account for the main order flow.'),
-  (1002, 'Event Account B02', 'event', 'Rare skins', 18.00, 3400000, 'Mid-high equipment', 'Event collection resources', 'AVAILABLE', 'Demo rental account with event resources.'),
-  (1003, 'Beginner Trial Account C03', 'trial', 'Beginner trial', 8.00, 800000, 'Basic equipment', 'Entry resources', 'MAINTENANCE', 'Demo account currently under maintenance.')
+  (1001, '高战满仓号 A01', '高配冲分', '满仓库,毕业装,高段位', 28.00, 12000000, '六套毕业装', '高价值仓库', 'AVAILABLE', '适合排位冲分和高强度作战，客服确认后交付。'),
+  (1002, '活动收藏号 B02', '活动收藏', '稀有外观,活动资源,中高配', 18.00, 3400000, '中高配作战装', '活动收藏资源', 'AVAILABLE', '含活动收藏资源和常用作战配置，适合体验稀有外观。'),
+  (1003, '新手体验号 C03', '低价体验', '新手试用,基础装备,低价', 8.00, 800000, '基础装备', '入门资源', 'MAINTENANCE', '当前维护中，适合后续演示维护状态筛选。'),
+  (1004, '烽火地带冲分号 D04', '高配冲分', '高段位,满仓库,六套毕业装', 32.00, 15800000, '满配毕业装', '顶级仓库', 'AVAILABLE', '主打高段位冲分，仓库资源充足，适合长时段租赁。'),
+  (1005, '周末娱乐号 E05', '低价体验', '娱乐体验,基础装备,可租', 9.90, 1200000, '基础作战装', '轻量仓库', 'AVAILABLE', '适合短时间体验和课程演示下单流程。'),
+  (1006, '稀有皮肤收藏号 F06', '活动收藏', '稀有外观,收藏号,活动资源', 22.00, 4600000, '进阶装备', '外观收藏仓库', 'AVAILABLE', '包含多套活动外观和收藏资源，适合展示账号详情。'),
+  (1007, '哈夫币储备号 G07', '资源储备', '哈夫币充足,仓库价值高,可租', 25.00, 22000000, '高阶装备', '资源储备仓库', 'AVAILABLE', '哈夫币储备较高，适合演示资源筛选和价格排序。'),
+  (1008, '战术入门号 H08', '低价体验', '入门体验,基础装备,低价', 6.00, 500000, '新手基础装', '入门仓库', 'AVAILABLE', '低价体验账号，适合游客浏览和快速租赁演示。'),
+  (1009, '客服测试号 I09', '运营测试', '测试账号,订单演示,维护中', 12.00, 2000000, '中阶装备', '测试仓库', 'RENTED', '用于演示已租出状态和后台状态维护。')
 ON DUPLICATE KEY UPDATE
   `name` = VALUES(`name`),
   `category` = VALUES(`category`),
@@ -194,8 +200,9 @@ ON DUPLICATE KEY UPDATE
 
 INSERT INTO `notice` (`id`, `title`, `content`, `author_id`, `status`)
 VALUES
-  (1, 'Demo notice', 'This is a course prototype environment. All data is for testing only.', 1, 1),
-  (2, 'Rental rule', 'Orders enter WAITING_CONFIRM after submission and should be handled by admin staff.', 1, 1)
+  (1, '租赁须知', '下单前请确认租赁时长、联系方式和账号资源说明。订单提交后将进入待确认状态，由客服进行核验。', 1, 1),
+  (2, '课程演示说明', '当前系统为课程实践原型，账号、订单和价格均为测试数据，不接入真实支付和真实账号自动化交付。', 1, 1),
+  (3, '售后处理规则', '如租赁过程中出现账号异常，请在订单详情中提交申诉并附上问题描述，客服将在后台进行处理。', 1, 1)
 ON DUPLICATE KEY UPDATE
   `title` = VALUES(`title`),
   `content` = VALUES(`content`),

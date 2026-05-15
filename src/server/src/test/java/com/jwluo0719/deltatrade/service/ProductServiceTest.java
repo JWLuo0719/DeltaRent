@@ -21,15 +21,15 @@ class ProductServiceTest {
     @BeforeEach
     void setUp() {
         productMapper = new InMemoryRentalProductMapper();
-        productMapper.products.add(product(1001L, "High Rank Account A01", "premium", "Full warehouse", "Advanced equipment set", "AVAILABLE", "18.00"));
-        productMapper.products.add(product(1002L, "Event Account B02", "event", "Rare skins", "Mid-high equipment", "AVAILABLE", "18.00"));
-        productMapper.products.add(product(1003L, "Beginner Trial Account C03", "trial", "Beginner trial", "Basic equipment", "MAINTENANCE", "8.00"));
+        productMapper.products.add(product(1001L, "高战满仓号 A01", "高配冲分", "满仓库", "六套毕业装", "AVAILABLE", "28.00"));
+        productMapper.products.add(product(1002L, "活动收藏号 B02", "活动收藏", "稀有外观", "中高配作战装", "AVAILABLE", "18.00"));
+        productMapper.products.add(product(1003L, "新手体验号 C03", "低价体验", "新手试用", "基础装备", "MAINTENANCE", "8.00"));
         productService = new ProductService(productMapper);
     }
 
     @Test
     void listForBrowseFiltersByKeywordStatusAndSortsByPrice() {
-        Map<String, Object> result = productService.listForBrowse("account", null, null, "AVAILABLE", "price_desc", 1, 10);
+        Map<String, Object> result = productService.listForBrowse("号", null, null, null, "AVAILABLE", "price_desc", 1, 10);
 
         @SuppressWarnings("unchecked")
         List<RentalProduct> list = (List<RentalProduct>) result.get("list");
@@ -40,9 +40,20 @@ class ProductServiceTest {
     }
 
     @Test
+    void listForBrowseFiltersByCategory() {
+        Map<String, Object> result = productService.listForBrowse(null, null, "活动收藏", null, null, null, 1, 10);
+
+        @SuppressWarnings("unchecked")
+        List<RentalProduct> list = (List<RentalProduct>) result.get("list");
+
+        assertEquals(1, result.get("total"));
+        assertEquals(1002L, list.get(0).getId());
+    }
+
+    @Test
     void listForBrowseMatchesEquipmentLevel() {
-        Map<String, Object> advanced = productService.listForBrowse(null, null, "Advanced", null, null, 1, 10);
-        Map<String, Object> basic = productService.listForBrowse(null, null, "Basic", null, null, 1, 10);
+        Map<String, Object> advanced = productService.listForBrowse(null, null, null, "Advanced", null, null, 1, 10);
+        Map<String, Object> basic = productService.listForBrowse(null, null, null, "Basic", null, null, 1, 10);
 
         @SuppressWarnings("unchecked")
         List<RentalProduct> advancedList = (List<RentalProduct>) advanced.get("list");
