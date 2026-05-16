@@ -31,7 +31,14 @@ CALL add_column_if_not_exists('rental_product', 'insurance_box_text', 'VARCHAR(5
 CALL add_column_if_not_exists('rental_product', 'stamina_text', 'VARCHAR(50) DEFAULT NULL');
 CALL add_column_if_not_exists('rental_product', 'weight_text', 'VARCHAR(50) DEFAULT NULL');
 CALL add_column_if_not_exists('rental_product', 'rank_text', 'VARCHAR(50) DEFAULT NULL');
+CALL add_column_if_not_exists('rental_product', 'login_method', 'VARCHAR(50) DEFAULT NULL');
+CALL add_column_if_not_exists('rental_product', 'kd_text', 'VARCHAR(50) DEFAULT NULL');
+CALL add_column_if_not_exists('rental_product', 'diving_level_text', 'VARCHAR(50) DEFAULT NULL');
 CALL add_column_if_not_exists('rental_product', 'login_region', 'VARCHAR(50) DEFAULT NULL');
+CALL add_column_if_not_exists('rental_product', 'trade_time_text', 'VARCHAR(100) DEFAULT NULL');
+CALL add_column_if_not_exists('rental_product', 'rental_days', 'INT DEFAULT NULL');
+CALL add_column_if_not_exists('rental_product', 'deposit', 'DECIMAL(10,2) DEFAULT NULL');
+CALL add_column_if_not_exists('rental_product', 'knife_skin_text', 'VARCHAR(255) DEFAULT NULL');
 CALL add_column_if_not_exists('rental_product', 'weapon_skin_text', 'VARCHAR(255) DEFAULT NULL');
 CALL add_column_if_not_exists('rental_product', 'character_skin_text', 'VARCHAR(255) DEFAULT NULL');
 CALL add_column_if_not_exists('rental_product', 'cover_image_url', 'VARCHAR(255) DEFAULT NULL');

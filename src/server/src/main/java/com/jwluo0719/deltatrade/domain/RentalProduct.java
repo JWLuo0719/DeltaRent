@@ -13,12 +13,19 @@ public class RentalProduct {
     private Long coinAmount;
     private String equipmentLevelText;
     private String warehouseValueText;
+    private String loginMethod;
     private String ratioText;
     private String insuranceBoxText;
     private String staminaText;
     private String weightText;
     private String rankText;
+    private String kdText;
+    private String divingLevelText;
     private String loginRegion;
+    private String tradeTimeText;
+    private Integer rentalDays;
+    private BigDecimal deposit;
+    private String knifeSkinText;
     private String weaponSkinText;
     private String characterSkinText;
     private String coverImageUrl;
@@ -89,6 +96,14 @@ public class RentalProduct {
         this.warehouseValueText = warehouseValueText;
     }
 
+    public String getLoginMethod() {
+        return loginMethod;
+    }
+
+    public void setLoginMethod(String loginMethod) {
+        this.loginMethod = loginMethod;
+    }
+
     public String getRatioText() {
         return ratioText;
     }
@@ -129,12 +144,60 @@ public class RentalProduct {
         this.rankText = rankText;
     }
 
+    public String getKdText() {
+        return kdText;
+    }
+
+    public void setKdText(String kdText) {
+        this.kdText = kdText;
+    }
+
+    public String getDivingLevelText() {
+        return divingLevelText;
+    }
+
+    public void setDivingLevelText(String divingLevelText) {
+        this.divingLevelText = divingLevelText;
+    }
+
     public String getLoginRegion() {
         return loginRegion;
     }
 
     public void setLoginRegion(String loginRegion) {
         this.loginRegion = loginRegion;
+    }
+
+    public String getTradeTimeText() {
+        return tradeTimeText;
+    }
+
+    public void setTradeTimeText(String tradeTimeText) {
+        this.tradeTimeText = tradeTimeText;
+    }
+
+    public Integer getRentalDays() {
+        return rentalDays;
+    }
+
+    public void setRentalDays(Integer rentalDays) {
+        this.rentalDays = rentalDays;
+    }
+
+    public BigDecimal getDeposit() {
+        return deposit;
+    }
+
+    public void setDeposit(BigDecimal deposit) {
+        this.deposit = deposit;
+    }
+
+    public String getKnifeSkinText() {
+        return knifeSkinText;
+    }
+
+    public void setKnifeSkinText(String knifeSkinText) {
+        this.knifeSkinText = knifeSkinText;
     }
 
     public String getWeaponSkinText() {

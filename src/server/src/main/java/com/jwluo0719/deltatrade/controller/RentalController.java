@@ -109,18 +109,27 @@ public class RentalController {
         product.setCategory(String.valueOf(payload.getOrDefault("category", "")));
         product.setTagText(String.valueOf(payload.getOrDefault("tagText", "")));
         product.setHourPrice(new BigDecimal(String.valueOf(payload.getOrDefault("hourPrice", "0"))));
+        product.setDeposit(new BigDecimal(String.valueOf(payload.getOrDefault("deposit", "0"))));
 
         Object coinAmountVal = payload.getOrDefault("coinAmount", payload.getOrDefault("coinAmountText", 0));
         product.setCoinAmount(Long.parseLong(String.valueOf(coinAmountVal)));
 
+        Object rentalDaysVal = payload.getOrDefault("rentalDays", 0);
+        product.setRentalDays(Integer.parseInt(String.valueOf(rentalDaysVal)));
+
         product.setEquipmentLevelText(String.valueOf(payload.getOrDefault("equipmentLevelText", "")));
         product.setWarehouseValueText(String.valueOf(payload.getOrDefault("warehouseValueText", "")));
+        product.setLoginMethod(String.valueOf(payload.getOrDefault("loginMethod", "")));
         product.setRatioText(String.valueOf(payload.getOrDefault("ratioText", "")));
         product.setInsuranceBoxText(String.valueOf(payload.getOrDefault("insuranceBoxText", "")));
         product.setStaminaText(String.valueOf(payload.getOrDefault("staminaText", "")));
         product.setWeightText(String.valueOf(payload.getOrDefault("weightText", "")));
         product.setRankText(String.valueOf(payload.getOrDefault("rankText", "")));
+        product.setKdText(String.valueOf(payload.getOrDefault("kdText", "")));
+        product.setDivingLevelText(String.valueOf(payload.getOrDefault("divingLevelText", "")));
         product.setLoginRegion(String.valueOf(payload.getOrDefault("loginRegion", "")));
+        product.setTradeTimeText(String.valueOf(payload.getOrDefault("tradeTimeText", "")));
+        product.setKnifeSkinText(String.valueOf(payload.getOrDefault("knifeSkinText", "")));
         product.setWeaponSkinText(String.valueOf(payload.getOrDefault("weaponSkinText", "")));
         product.setCharacterSkinText(String.valueOf(payload.getOrDefault("characterSkinText", "")));
         product.setCoverImageUrl(String.valueOf(payload.getOrDefault("coverImageUrl", "")));
@@ -137,14 +146,21 @@ public class RentalController {
         item.put("tagText", product.getTagText());
         item.put("hourPrice", product.getHourPrice());
         item.put("coinAmount", product.getCoinAmount());
+        item.put("deposit", product.getDeposit());
+        item.put("rentalDays", product.getRentalDays());
         item.put("equipmentLevelText", product.getEquipmentLevelText());
         item.put("warehouseValueText", product.getWarehouseValueText());
+        item.put("loginMethod", product.getLoginMethod());
         item.put("ratioText", product.getRatioText());
         item.put("insuranceBoxText", product.getInsuranceBoxText());
         item.put("staminaText", product.getStaminaText());
         item.put("weightText", product.getWeightText());
         item.put("rankText", product.getRankText());
+        item.put("kdText", product.getKdText());
+        item.put("divingLevelText", product.getDivingLevelText());
         item.put("loginRegion", product.getLoginRegion());
+        item.put("tradeTimeText", product.getTradeTimeText());
+        item.put("knifeSkinText", product.getKnifeSkinText());
         item.put("weaponSkinText", product.getWeaponSkinText());
         item.put("characterSkinText", product.getCharacterSkinText());
         item.put("coverImageUrl", product.getCoverImageUrl());

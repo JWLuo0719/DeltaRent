@@ -30,14 +30,21 @@ export interface RentalProduct {
   tagText: string;
   hourPrice: number;
   coinAmount: number;
+  deposit?: number;
+  rentalDays?: number;
   equipmentLevelText: string;
   warehouseValueText: string;
+  loginMethod?: string;
   ratioText?: string;
   insuranceBoxText?: string;
   staminaText?: string;
   weightText?: string;
   rankText?: string;
+  kdText?: string;
+  divingLevelText?: string;
   loginRegion?: string;
+  tradeTimeText?: string;
+  knifeSkinText?: string;
   weaponSkinText?: string;
   characterSkinText?: string;
   coverImageUrl?: string;
@@ -167,6 +174,33 @@ export interface UpdateProfilePayload {
 export interface ChangePasswordPayload {
   oldPassword: string;
   newPassword: string;
+}
+
+export interface RentalPublishPayload {
+  name: string;
+  category: string;
+  tagText: string;
+  hourPrice: number;
+  coinAmount: number;
+  deposit?: number;
+  rentalDays?: number;
+  equipmentLevelText: string;
+  warehouseValueText: string;
+  loginMethod?: string;
+  ratioText?: string;
+  insuranceBoxText?: string;
+  staminaText?: string;
+  weightText?: string;
+  rankText?: string;
+  kdText?: string;
+  divingLevelText?: string;
+  loginRegion?: string;
+  tradeTimeText?: string;
+  knifeSkinText?: string;
+  weaponSkinText?: string;
+  characterSkinText?: string;
+  coverImageUrl?: string;
+  description: string;
 }
 
 export interface SubmitAppealPayload {

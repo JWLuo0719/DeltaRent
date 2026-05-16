@@ -7,6 +7,7 @@ const LoginView = () => import('@/views/LoginView.vue');
 const RegisterView = () => import('@/views/RegisterView.vue');
 const RentalOrderCreateView = () => import('@/views/RentalOrderCreateView.vue');
 const RentalListView = () => import('@/views/RentalListView.vue');
+const RentalPublishView = () => import('@/views/RentalPublishView.vue');
 const AdminDashboardView = () => import('@/views/AdminDashboardView.vue');
 const OrderListView = () => import('@/views/OrderListView.vue');
 const OrderDetailView = () => import('@/views/OrderDetailView.vue');
@@ -46,6 +47,12 @@ const router = createRouter({
           name: 'rentals',
           component: RentalListView,
           meta: { roles: [] }
+        },
+        {
+          path: 'rentals/publish',
+          name: 'rental-publish',
+          component: RentalPublishView,
+          meta: { roles: ['USER', 'ADMIN', 'CS'], requireAuth: true }
         },
         {
           path: 'orders/create',

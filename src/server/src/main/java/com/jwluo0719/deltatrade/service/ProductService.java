@@ -44,7 +44,9 @@ public class ProductService {
                     .filter(product -> containsIgnoreCase(product.getName(), normalized)
                             || containsIgnoreCase(product.getCategory(), normalized)
                             || containsIgnoreCase(product.getTagText(), normalized)
-                            || containsIgnoreCase(product.getEquipmentLevelText(), normalized))
+                            || containsIgnoreCase(product.getRankText(), normalized)
+                            || containsIgnoreCase(product.getKnifeSkinText(), normalized)
+                            || containsIgnoreCase(product.getCharacterSkinText(), normalized))
                     .collect(Collectors.toList());
         }
 
@@ -122,7 +124,7 @@ public class ProductService {
         if (product.getHourPrice() == null || product.getHourPrice().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("价格必须大于 0");
         }
-        if (product.getStatus() == null) {
+        if (product.getStatus() == null || product.getStatus().isBlank()) {
             product.setStatus("AVAILABLE");
         }
         productMapper.insert(product);
@@ -131,7 +133,9 @@ public class ProductService {
 
     public void update(RentalProduct product) {
         RentalProduct exist = productMapper.findById(product.getId());
-        if (exist == null) throw new IllegalArgumentException("账号不存在");
+        if (exist == null) {
+            throw new IllegalArgumentException("账号不存在");
+        }
         productMapper.update(product);
     }
 

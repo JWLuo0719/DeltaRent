@@ -1,65 +1,70 @@
 package com.jwluo0719.deltatrade.mapper;
 
 import com.jwluo0719.deltatrade.domain.RentalProduct;
-import org.apache.ibatis.annotations.*;
+import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Options;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
 
-/**
- * 租赁商品数据访问层 — 负责 rental_product 表的增删改查，
- * 支撑前台账号展示和后台商品管理。
- */
 @Mapper
 public interface RentalProductMapper {
 
-    /** 查询全部商品，按 ID 倒序 */
     @Select("""
             select id, name, category, tag_text, hour_price, coin_amount,
-                   equipment_level_text, warehouse_value_text, ratio_text,
-                   insurance_box_text, stamina_text, weight_text, rank_text,
-                   login_region, weapon_skin_text, character_skin_text,
-                   cover_image_url, status, description
+                   equipment_level_text, warehouse_value_text, login_method,
+                   ratio_text, insurance_box_text, stamina_text, weight_text,
+                   rank_text, kd_text, diving_level_text, login_region,
+                   trade_time_text, rental_days, deposit, knife_skin_text,
+                   weapon_skin_text, character_skin_text, cover_image_url,
+                   status, description
             from rental_product
             order by id desc
             """)
     List<RentalProduct> findAll();
 
-    /** 按 ID 查询单个商品 */
     @Select("""
             select id, name, category, tag_text, hour_price, coin_amount,
-                   equipment_level_text, warehouse_value_text, ratio_text,
-                   insurance_box_text, stamina_text, weight_text, rank_text,
-                   login_region, weapon_skin_text, character_skin_text,
-                   cover_image_url, status, description
+                   equipment_level_text, warehouse_value_text, login_method,
+                   ratio_text, insurance_box_text, stamina_text, weight_text,
+                   rank_text, kd_text, diving_level_text, login_region,
+                   trade_time_text, rental_days, deposit, knife_skin_text,
+                   weapon_skin_text, character_skin_text, cover_image_url,
+                   status, description
             from rental_product
             where id = #{id}
             """)
     RentalProduct findById(Long id);
 
-    /** 统计可租商品数量 */
     @Select("select count(*) from rental_product where status = 'AVAILABLE'")
     long countAvailable();
 
-    /** 新增商品（管理员） */
     @Insert("""
             insert into rental_product(
                 name, category, tag_text, hour_price, coin_amount,
-                equipment_level_text, warehouse_value_text, ratio_text,
-                insurance_box_text, stamina_text, weight_text, rank_text,
-                login_region, weapon_skin_text, character_skin_text,
-                cover_image_url, status, description
+                equipment_level_text, warehouse_value_text, login_method,
+                ratio_text, insurance_box_text, stamina_text, weight_text,
+                rank_text, kd_text, diving_level_text, login_region,
+                trade_time_text, rental_days, deposit, knife_skin_text,
+                weapon_skin_text, character_skin_text, cover_image_url,
+                status, description
             ) values(
                 #{name}, #{category}, #{tagText}, #{hourPrice}, #{coinAmount},
-                #{equipmentLevelText}, #{warehouseValueText}, #{ratioText},
-                #{insuranceBoxText}, #{staminaText}, #{weightText}, #{rankText},
-                #{loginRegion}, #{weaponSkinText}, #{characterSkinText},
-                #{coverImageUrl}, #{status}, #{description}
+                #{equipmentLevelText}, #{warehouseValueText}, #{loginMethod},
+                #{ratioText}, #{insuranceBoxText}, #{staminaText}, #{weightText},
+                #{rankText}, #{kdText}, #{divingLevelText}, #{loginRegion},
+                #{tradeTimeText}, #{rentalDays}, #{deposit}, #{knifeSkinText},
+                #{weaponSkinText}, #{characterSkinText}, #{coverImageUrl},
+                #{status}, #{description}
             )
             """)
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(RentalProduct product);
 
-    /** 更新商品信息（管理员） */
     @Update("""
             update rental_product
             set name = #{name},
@@ -69,12 +74,19 @@ public interface RentalProductMapper {
                 coin_amount = #{coinAmount},
                 equipment_level_text = #{equipmentLevelText},
                 warehouse_value_text = #{warehouseValueText},
+                login_method = #{loginMethod},
                 ratio_text = #{ratioText},
                 insurance_box_text = #{insuranceBoxText},
                 stamina_text = #{staminaText},
                 weight_text = #{weightText},
                 rank_text = #{rankText},
+                kd_text = #{kdText},
+                diving_level_text = #{divingLevelText},
                 login_region = #{loginRegion},
+                trade_time_text = #{tradeTimeText},
+                rental_days = #{rentalDays},
+                deposit = #{deposit},
+                knife_skin_text = #{knifeSkinText},
                 weapon_skin_text = #{weaponSkinText},
                 character_skin_text = #{characterSkinText},
                 cover_image_url = #{coverImageUrl},
@@ -84,11 +96,9 @@ public interface RentalProductMapper {
             """)
     int update(RentalProduct product);
 
-    /** 删除商品（管理员） */
     @Delete("delete from rental_product where id = #{id}")
     int deleteById(Long id);
 
-    /** 更新商品状态（上架/下架/维护） */
     @Update("update rental_product set status = #{status} where id = #{id}")
     int updateStatus(@Param("id") Long id, @Param("status") String status);
 }
