@@ -44,7 +44,7 @@ import { computed, ref, watchEffect } from 'vue';
 import { useAuthStore } from '@/stores/auth';
 import StatsView from './admin/StatsView.vue';
 import UserManageView from './admin/UserManageView.vue';
-import RoleManageView from './admin/RoleManageView.vue';
+
 import ProductManageView from './admin/ProductManageView.vue';
 import OrderManageView from './admin/OrderManageView.vue';
 import NoticeManageView from './admin/NoticeManageView.vue';
@@ -56,7 +56,7 @@ const activeMenu = ref('stats');
 const allMenus = [
   { key: 'stats', label: '数据看板', icon: '📊', roles: ['ADMIN'] },
   { key: 'users', label: '用户管理', icon: '👤', roles: ['ADMIN'] },
-  { key: 'roles', label: '角色管理', icon: '🔐', roles: ['ADMIN'] },
+
   { key: 'products', label: '账号管理', icon: '🎮', roles: ['ADMIN', 'CS'] },
   { key: 'orders', label: '订单管理', icon: '📋', roles: ['ADMIN', 'CS'] },
   { key: 'notices', label: '公告管理', icon: '📢', roles: ['ADMIN'] }
@@ -83,7 +83,7 @@ const currentMenuItem = computed(() =>
 const viewMap: Record<string, any> = {
   stats: StatsView,
   users: UserManageView,
-  roles: RoleManageView,
+
   products: ProductManageView,
   orders: OrderManageView,
   notices: NoticeManageView
