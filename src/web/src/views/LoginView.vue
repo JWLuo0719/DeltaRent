@@ -14,7 +14,7 @@
             <rect width="64" height="64" rx="8" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.15)"/>
             <path d="M16 48V20l14-8v36l-14-0z" fill="white"/>
             <path d="M30 12l14 8v24l-14-8V12z" fill="white" opacity="0.65"/>
-            <circle cx="44" cy="20" r="5" fill="#60a5fa" stroke="white" stroke-width="1.5"/>
+            <circle cx="44" cy="20" r="5" fill="#f59e0b" stroke="white" stroke-width="1.5"/>
           </svg>
         </div>
         <h1 class="brand-name">三角洲账号租赁</h1>
@@ -178,6 +178,7 @@ const router = useRouter();
 const auth = useAuthStore();
 const canvasRef = ref<HTMLCanvasElement | null>(null);
 let animationId: number | null = null;
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const submitting = ref(false);
 const rememberMe = ref(!!localStorage.getItem('remembered_phone'));
@@ -348,20 +349,22 @@ function animateParticles(canvas: HTMLCanvasElement, particles: Particle[]) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   particles.forEach(p => {
-    p.x += p.vx;
-    p.y += p.vy;
+    if (!reducedMotion) {
+      p.x += p.vx;
+      p.y += p.vy;
 
-    if (p.x < 0) p.x = canvas.width;
-    if (p.x > canvas.width) p.x = 0;
-    if (p.y < 0) p.y = canvas.height;
-    if (p.y > canvas.height) p.y = 0;
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+    }
 
     if (p.highlight) {
       const r = p.size * 4;
       const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r);
-      gradient.addColorStop(0, `rgba(96, 165, 250, ${p.opacity})`);
-      gradient.addColorStop(0.4, `rgba(96, 165, 250, ${p.opacity * 0.4})`);
-      gradient.addColorStop(1, 'rgba(96, 165, 250, 0)');
+      gradient.addColorStop(0, `rgba(245, 158, 11, ${p.opacity})`);
+      gradient.addColorStop(0.4, `rgba(245, 158, 11, ${p.opacity * 0.4})`);
+      gradient.addColorStop(1, 'rgba(245, 158, 11, 0)');
       ctx.beginPath();
       ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
       ctx.fillStyle = gradient;
@@ -369,7 +372,7 @@ function animateParticles(canvas: HTMLCanvasElement, particles: Particle[]) {
     } else {
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(147, 197, 253, ${p.opacity})`;
+      ctx.fillStyle = `rgba(255, 214, 107, ${p.opacity})`;
       ctx.fill();
     }
   });
@@ -386,7 +389,7 @@ function animateParticles(canvas: HTMLCanvasElement, particles: Particle[]) {
         ctx.moveTo(p1.x, p1.y);
         ctx.lineTo(p2.x, p2.y);
         const lineOpacity = 0.25 * (1 - dist / maxDist);
-        ctx.strokeStyle = `rgba(147, 197, 253, ${lineOpacity})`;
+        ctx.strokeStyle = `rgba(255, 214, 107, ${lineOpacity})`;
         ctx.lineWidth = 0.6;
         ctx.stroke();
       }
@@ -443,7 +446,7 @@ body,
   min-height: 100vh;
   position: relative;
   overflow: hidden;
-  background: transparent;
+  background: linear-gradient(180deg, #fff8df 0%, #fffdf4 30%, #f8fafc 100%);
 }
 
 /* 粒子画布 */
@@ -475,8 +478,8 @@ body,
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(96, 165, 250, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(96, 165, 250, 0.06) 1px, transparent 1px);
+    linear-gradient(rgba(245, 158, 11, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(245, 158, 11, 0.06) 1px, transparent 1px);
   background-size: 50px 50px;
 }
 
