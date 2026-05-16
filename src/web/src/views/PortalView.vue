@@ -1,5 +1,5 @@
 <template>
-  <div class="page-shell dark-theme">
+  <div class="page-shell warm-theme">
 
     <!-- Hero 区域 -->
     <section class="hero-section">
@@ -385,6 +385,7 @@ const steps = [
 // ---- 粒子动画 ----
 const heroCanvas = ref<HTMLCanvasElement | null>(null);
 let animId: number | null = null;
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 interface P { x: number; y: number; vx: number; vy: number; size: number; opacity: number; }
 const particles: P[] = [];
@@ -410,24 +411,28 @@ function animateHero(canvas: HTMLCanvasElement) {
   if (!ctx) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   particles.forEach(p => {
-    p.x += p.vx; p.y += p.vy;
-    if (p.x < 0) p.x = canvas.width;
-    if (p.x > canvas.width) p.x = 0;
-    if (p.y < 0) p.y = canvas.height;
-    if (p.y > canvas.height) p.y = 0;
+    if (!reducedMotion) {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = canvas.width;
+      if (p.x > canvas.width) p.x = 0;
+      if (p.y < 0) p.y = canvas.height;
+      if (p.y > canvas.height) p.y = 0;
+    }
     ctx.beginPath();
     ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(96, 165, 250, ${p.opacity})`;
+    ctx.fillStyle = `rgba(245, 158, 11, ${p.opacity})`;
     ctx.fill();
   });
-  animId = requestAnimationFrame(() => animateHero(canvas));
+  if (!reducedMotion) {
+    animId = requestAnimationFrame(() => animateHero(canvas));
+  }
 }
 
 function handleVisibilityChange() {
   const canvas = heroCanvas.value;
   if (!canvas) return;
   if (document.hidden) {
-    cancelAnimationFrame(animId!);
+    if (animId) cancelAnimationFrame(animId);
     animId = null;
   } else {
     animateHero(canvas);
@@ -439,6 +444,10 @@ const metricsSection = ref<HTMLElement | null>(null);
 let metricsObserver: IntersectionObserver | null = null;
 
 function animateCountUp(el: HTMLElement, raw: string) {
+  if (reducedMotion) {
+    el.textContent = raw;
+    return;
+  }
   const match = raw.match(/^([^\d]*)([\d,]+\.?\d*)(.*)$/);
   if (!match) return;
   const prefix = match[1];
@@ -506,8 +515,8 @@ export default { name: 'PortalView' };
 </script>
 
 <style scoped>
-/* ==================== 整体深色主题 ==================== */
-.dark-theme {
+/* ==================== 整体暖色主题 ==================== */
+.warm-theme {
   background:
     radial-gradient(circle at top left, rgba(255, 221, 111, 0.2), transparent 20%),
     linear-gradient(180deg, #fff8df 0%, #fffdf4 24%, #f8fafc 100%);
@@ -555,8 +564,10 @@ export default { name: 'PortalView' };
   margin: 0 0 16px;
   font-size: 40px;
   font-weight: 800;
+  font-family: "Bebas Neue", "Noto Sans SC", sans-serif;
   color: #3c2b00;
-  letter-spacing: 3px;
+  letter-spacing: 4px;
+  line-height: 1.1;
 }
 
 .hero-subtitle {
@@ -742,8 +753,8 @@ export default { name: 'PortalView' };
 }
 
 .entry-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(96, 165, 250, 0.1);
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 214, 107, 0.4);
   border-radius: 16px;
   padding: 28px 20px;
   text-align: center;
@@ -753,17 +764,17 @@ export default { name: 'PortalView' };
 
 .entry-card:hover {
   transform: translateY(-4px);
-  background: rgba(96, 165, 250, 0.1);
-  border-color: rgba(96, 165, 250, 0.35);
-  box-shadow: 0 8px 30px rgba(96, 165, 250, 0.15);
+  background: #fffdf7;
+  border-color: rgba(255, 196, 32, 0.55);
+  box-shadow: 0 8px 30px rgba(181, 145, 41, 0.14);
 }
 
 .entry-card.entry-locked { opacity: 0.65; }
 .entry-card.entry-locked:hover { opacity: 0.85; }
 
 .entry-card:hover .entry-icon-svg {
-  color: #60a5fa;
-  filter: drop-shadow(0 0 8px rgba(96, 165, 250, 0.6));
+  color: #c57a00;
+  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.4));
 }
 
 .entry-icon-wrap {
@@ -790,7 +801,7 @@ export default { name: 'PortalView' };
 .entry-label {
   font-size: 15px;
   font-weight: 600;
-  color: #f1f5f9;
+  color: #3c2b00;
 }
 
 .lock-tag {
@@ -799,7 +810,7 @@ export default { name: 'PortalView' };
   border-radius: 8px;
   background: rgba(251, 191, 36, 0.12);
   border: 1px solid rgba(251, 191, 36, 0.3);
-  color: #fbbf24;
+  color: #d97706;
 }
 
 .entry-desc {
@@ -821,8 +832,8 @@ export default { name: 'PortalView' };
 
 .step-card {
   flex: 1;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(96, 165, 250, 0.1);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(255, 214, 107, 0.4);
   border-radius: 16px;
   padding: 28px 20px;
   text-align: center;
@@ -834,28 +845,28 @@ export default { name: 'PortalView' };
   align-items: center;
   padding: 0 12px;
   font-size: 20px;
-  color: rgba(96, 165, 250, 0.4);
+  color: rgba(245, 158, 11, 0.4);
 }
 
 .step-num {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #1e40af, #1e3a8a);
-  box-shadow: 0 4px 12px rgba(30, 64, 175, 0.4);
+  background: linear-gradient(135deg, #ffe057 0%, #ffc420 100%);
+  box-shadow: 0 4px 12px rgba(255, 196, 32, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 16px;
   font-weight: 700;
-  color: #fff;
+  color: #5a3c00;
   margin: 0 auto 14px;
 }
 
 .step-title {
   font-size: 15px;
   font-weight: 600;
-  color: #f1f5f9;
+  color: #3c2b00;
   margin-bottom: 8px;
 }
 
@@ -875,8 +886,8 @@ export default { name: 'PortalView' };
 }
 
 .metric-card {
-  background: linear-gradient(160deg, #1e293b 0%, #1e3a5f 100%);
-  border: 1px solid rgba(96, 165, 250, 0.15);
+  background: linear-gradient(160deg, #fff3c2 0%, #ffd760 100%);
+  border: 1px solid rgba(255, 214, 107, 0.5);
   border-radius: 16px;
   padding: 28px 24px;
   text-align: center;
@@ -889,43 +900,43 @@ export default { name: 'PortalView' };
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #60a5fa, transparent);
+  background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.6), transparent);
 }
 
 .metric-value {
   font-size: 30px;
   font-weight: 800;
-  color: #fef3c7;
+  color: #5a3c00;
   margin-bottom: 8px;
 }
 
 .metric-label {
   font-size: 13px;
-  color: #94a3b8;
+  color: #9b5d00;
   letter-spacing: 1px;
 }
 
 /* ==================== 公告 + FAQ ==================== */
 .info-section {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(96, 165, 250, 0.1);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(255, 214, 107, 0.3);
   border-radius: 16px;
   padding: 24px;
   margin-bottom: 24px;
 }
 
 .info-section :deep(.el-tabs__header) {
-  border-bottom: 1px solid rgba(96, 165, 250, 0.1);
+  border-bottom: 1px solid rgba(255, 214, 107, 0.3);
 }
 
-.info-section :deep(.el-tabs__item) { color: #94a3b8; }
-.info-section :deep(.el-tabs__item.is-active) { color: #60a5fa; }
-.info-section :deep(.el-tabs__active-bar) { background: #60a5fa; }
-.info-section :deep(.el-tabs__content) { color: #94a3b8; }
+.info-section :deep(.el-tabs__item) { color: #64748b; }
+.info-section :deep(.el-tabs__item.is-active) { color: #c57a00; }
+.info-section :deep(.el-tabs__active-bar) { background: #f3c347; }
+.info-section :deep(.el-tabs__content) { color: #64748b; }
 .info-section :deep(.el-collapse) { border: none; background: transparent; }
-.info-section :deep(.el-collapse-item__header) { background: rgba(96, 165, 250, 0.04); color: #e2e8f0; border-bottom: 1px solid rgba(96, 165, 250, 0.08); }
-.info-section :deep(.el-collapse-item__wrap) { background: transparent; border-bottom: 1px solid rgba(96, 165, 250, 0.08); }
-.info-section :deep(.el-collapse-item__content) { color: #94a3b8; }
+.info-section :deep(.el-collapse-item__header) { background: rgba(255, 245, 214, 0.5); color: #5a3c00; border-bottom: 1px solid rgba(255, 214, 107, 0.2); }
+.info-section :deep(.el-collapse-item__wrap) { background: transparent; border-bottom: 1px solid rgba(255, 214, 107, 0.2); }
+.info-section :deep(.el-collapse-item__content) { color: #64748b; }
 
 .notice-list { display: flex; flex-direction: column; gap: 12px; }
 
@@ -934,28 +945,28 @@ export default { name: 'PortalView' };
   align-items: flex-start;
   gap: 12px;
   padding: 14px 16px;
-  background: rgba(96, 165, 250, 0.04);
+  background: rgba(255, 245, 214, 0.5);
   border-radius: 12px;
-  border: 1px solid rgba(96, 165, 250, 0.08);
+  border: 1px solid rgba(255, 214, 107, 0.2);
 }
 
 .notice-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #60a5fa;
-  box-shadow: 0 0 8px rgba(96, 165, 250, 0.5);
+  background: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
   margin-top: 6px;
   flex-shrink: 0;
 }
 
-.notice-body h4 { margin: 0 0 6px; font-size: 14px; color: #e2e8f0; }
+.notice-body h4 { margin: 0 0 6px; font-size: 14px; color: #5a3c00; }
 .notice-body p { margin: 0; font-size: 13px; color: #64748b; line-height: 1.6; }
-.faq-answer { margin: 0; font-size: 13px; color: #94a3b8; line-height: 1.7; }
+.faq-answer { margin: 0; font-size: 13px; color: #64748b; line-height: 1.7; }
 
 /* ==================== Footer ==================== */
 .portal-footer {
-  border-top: 1px solid rgba(96, 165, 250, 0.08);
+  border-top: 1px solid rgba(255, 214, 107, 0.3);
   padding: 32px 0 16px;
 }
 
@@ -975,33 +986,33 @@ export default { name: 'PortalView' };
   font-weight: 600;
 }
 
-.f-logo { color: #60a5fa; font-size: 18px; }
-.f-name { color: #f1f5f9; }
+.f-logo { color: #f59e0b; font-size: 18px; }
+.f-name { color: #5a3c00; }
 
 .footer-contact {
   font-size: 13px;
-  color: #94a3b8;
+  color: #9b5d00;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.footer-contact b { color: #f1f5f9; }
-.fsep { color: #475569; }
+.footer-contact b { color: #5a3c00; }
+.fsep { color: #d97706; }
 
 .footer-disclaimer {
   margin: 0;
   font-size: 11px;
-  color: #475569;
+  color: #9b5d00;
   max-width: 480px;
   line-height: 1.6;
 }
 
-.footer-copy { font-size: 11px; color: #334155; margin: 0; }
+.footer-copy { font-size: 11px; color: #c57a00; margin: 0; }
 
 /* ==================== 联系客服弹窗 ==================== */
 :deep(.el-overlay) {
-  background: rgba(6, 13, 26, 0.75) !important;
+  background: rgba(30, 20, 0, 0.65) !important;
   backdrop-filter: blur(4px);
 }
 
@@ -1010,10 +1021,10 @@ export default { name: 'PortalView' };
   left: 50% !important;
   top: 50% !important;
   transform: translate(-50%, -50%) !important;
-  background: #0f1c33 !important;
-  border: 1px solid rgba(96, 165, 250, 0.2) !important;
+  background: #fffdf4 !important;
+  border: 1px solid rgba(255, 214, 107, 0.5) !important;
   border-radius: 20px !important;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7) !important;
+  box-shadow: 0 24px 60px rgba(90, 60, 0, 0.3) !important;
   padding: 0 !important;
   margin: 0 !important;
   max-width: 400px !important;
@@ -1026,7 +1037,7 @@ export default { name: 'PortalView' };
 
 :deep(.el-dialog__body) {
   padding: 0 !important;
-  color: #94a3b8 !important;
+  color: #64748b !important;
 }
 
 :deep(.el-dialog__footer) {
@@ -1051,19 +1062,19 @@ export default { name: 'PortalView' };
   width: 56px;
   height: 56px;
   border-radius: 16px;
-  background: linear-gradient(135deg, rgba(96, 165, 250, 0.2) 0%, rgba(30, 64, 175, 0.3) 100%);
-  border: 1px solid rgba(96, 165, 250, 0.3);
+  background: linear-gradient(135deg, rgba(255, 243, 201, 0.96) 0%, rgba(255, 223, 122, 0.88) 100%);
+  border: 1px solid rgba(255, 214, 107, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 0 20px rgba(96, 165, 250, 0.15);
+  box-shadow: 0 0 20px rgba(245, 158, 11, 0.2);
 }
 
 .cs-headset-icon {
   width: 30px;
   height: 30px;
-  color: #60a5fa;
+  color: #c57a00;
 }
 
 .cs-title-group {
@@ -1076,20 +1087,20 @@ export default { name: 'PortalView' };
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: #5a3c00;
   letter-spacing: 1px;
 }
 
 .cs-modal-sub {
   margin: 0;
   font-size: 12px;
-  color: #64748b;
+  color: #9b5d00;
 }
 
 /* 分隔线 */
 .cs-divider {
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.2), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 214, 107, 0.5), transparent);
   margin: 0 0 20px;
 }
 
@@ -1103,16 +1114,16 @@ export default { name: 'PortalView' };
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(96, 165, 250, 0.12);
+  background: rgba(255, 245, 214, 0.5);
+  border: 1px solid rgba(255, 214, 107, 0.3);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .cs-method-card:first-child:hover {
-  background: rgba(96, 165, 250, 0.08);
-  border-color: rgba(96, 165, 250, 0.3);
+  background: rgba(255, 243, 201, 0.8);
+  border-color: rgba(255, 196, 32, 0.5);
 }
 
 .cs-method-left {
@@ -1134,37 +1145,37 @@ export default { name: 'PortalView' };
 }
 
 .cs-qq-icon {
-  background: rgba(96, 165, 250, 0.15);
-  color: #60a5fa;
+  background: rgba(255, 196, 32, 0.15);
+  color: #c57a00;
   font-family: serif;
   font-size: 20px;
 }
 
 .cs-time-icon { font-size: 18px; }
 
-.cs-method-label { font-size: 11px; color: #64748b; margin-bottom: 2px; }
-.cs-method-value { font-size: 14px; font-weight: 600; color: #f1f5f9; }
+.cs-method-label { font-size: 11px; color: #9b5d00; margin-bottom: 2px; }
+.cs-method-value { font-size: 14px; font-weight: 600; color: #5a3c00; }
 
 .cs-method-action {
   font-size: 12px;
   padding: 4px 12px;
   border-radius: 8px;
-  border: 1px solid rgba(96, 165, 250, 0.25);
-  color: #60a5fa;
-  background: rgba(96, 165, 250, 0.05);
+  border: 1px solid rgba(255, 196, 32, 0.4);
+  color: #c57a00;
+  background: rgba(255, 245, 214, 0.5);
   transition: all 0.2s;
   cursor: pointer;
 }
 
 .cs-method-action:hover {
-  background: rgba(96, 165, 250, 0.15);
-  border-color: #60a5fa;
+  background: rgba(255, 243, 201, 0.8);
+  border-color: #f3c347;
 }
 
 .cs-method-action.copied {
   background: rgba(34, 197, 94, 0.15);
   border-color: rgba(34, 197, 94, 0.4);
-  color: #4ade80;
+  color: #16a34a;
 }
 
 .cs-online-dot {
@@ -1187,15 +1198,15 @@ export default { name: 'PortalView' };
   align-items: flex-start;
   gap: 8px;
   padding: 10px 14px;
-  background: rgba(96, 165, 250, 0.06);
-  border: 1px solid rgba(96, 165, 250, 0.12);
+  background: rgba(255, 245, 214, 0.5);
+  border: 1px solid rgba(255, 214, 107, 0.3);
   border-radius: 10px;
   font-size: 12px;
-  color: #94a3b8;
+  color: #9b5d00;
   line-height: 1.6;
 }
 
-.cs-tip-box strong { color: #60a5fa; }
+.cs-tip-box strong { color: #c57a00; }
 .cs-tip-icon { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; }
 
 /* 底部按钮 */
@@ -1206,26 +1217,27 @@ export default { name: 'PortalView' };
 }
 
 .cs-close-btn {
-  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%) !important;
+  background: linear-gradient(135deg, #ffe057 0%, #ffc420 100%) !important;
   border: none !important;
-  color: #fff !important;
+  color: #5a3c00 !important;
   padding: 8px 32px !important;
   border-radius: 10px !important;
   font-size: 14px !important;
-  box-shadow: 0 4px 14px rgba(30, 64, 175, 0.4);
+  font-weight: 600 !important;
+  box-shadow: 0 4px 14px rgba(255, 196, 32, 0.35);
 }
 
 .cs-close-btn:hover {
-  box-shadow: 0 6px 18px rgba(30, 64, 175, 0.5) !important;
+  box-shadow: 0 6px 18px rgba(255, 196, 32, 0.45) !important;
   transform: translateY(-1px);
 }
 
-/* ==================== 全局深色 Element Plus 覆盖 ==================== */
-:deep(.el-dialog__body) { color: #94a3b8; }
+/* ==================== 全局暖色 Element Plus 覆盖 ==================== */
+:deep(.el-dialog__body) { color: #64748b; }
 
-:deep(.el-tabs__nav-bottom-border) { border-color: rgba(96, 165, 250, 0.1); }
+:deep(.el-tabs__nav-bottom-border) { border-color: rgba(255, 214, 107, 0.3); }
 
-:deep(.el-tabs__content) { color: #94a3b8; }
+:deep(.el-tabs__content) { color: #64748b; }
 
 :deep(.el-collapse) {
   border: none;
@@ -1233,54 +1245,54 @@ export default { name: 'PortalView' };
 }
 
 :deep(.el-collapse-item__header) {
-  background: rgba(96, 165, 250, 0.04);
-  color: #e2e8f0;
-  border-bottom: 1px solid rgba(96, 165, 250, 0.08);
+  background: rgba(255, 245, 214, 0.5);
+  color: #5a3c00;
+  border-bottom: 1px solid rgba(255, 214, 107, 0.2);
   font-size: 14px;
 }
 
 :deep(.el-collapse-item__header:hover) {
-  color: #60a5fa;
-  background: rgba(96, 165, 250, 0.06);
+  color: #c57a00;
+  background: rgba(255, 243, 201, 0.6);
 }
 
 :deep(.el-collapse-item__wrap) {
   background: transparent;
-  border-bottom: 1px solid rgba(96, 165, 250, 0.08);
+  border-bottom: 1px solid rgba(255, 214, 107, 0.2);
 }
 
 :deep(.el-collapse-item__content) {
-  color: #94a3b8;
+  color: #64748b;
   font-size: 13px;
   line-height: 1.7;
 }
 
 :deep(.el-collapse-item__arrow) {
-  color: #64748b;
+  color: #9b5d00;
   transition: transform 0.3s;
 }
 
 :deep(.el-collapse-item__arrow.is-active) {
-  color: #60a5fa;
+  color: #c57a00;
 }
 
 /* 标签 */
 :deep(.el-tag) {
-  background: rgba(96, 165, 250, 0.1);
-  border-color: rgba(96, 165, 250, 0.2);
-  color: #93c5fd;
+  background: rgba(255, 196, 32, 0.12);
+  border-color: rgba(255, 196, 32, 0.3);
+  color: #c57a00;
 }
 
 :deep(.el-tag--success) {
-  background: rgba(34, 197, 94, 0.1);
+  background: rgba(34, 197, 94, 0.12);
   border-color: rgba(34, 197, 94, 0.3);
-  color: #4ade80;
+  color: #16a34a;
 }
 
 :deep(.el-tag--warning) {
-  background: rgba(251, 191, 36, 0.1);
+  background: rgba(251, 191, 36, 0.12);
   border-color: rgba(251, 191, 36, 0.3);
-  color: #fbbf24;
+  color: #d97706;
 }
 
 /* ==================== 响应式 ==================== */

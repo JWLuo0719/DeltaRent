@@ -135,7 +135,10 @@
       "Bash(mysql -u root -p123456 deltarent -e \"SELECT u.username, u.phone, r.role_code, r.role_name FROM sys_user u JOIN sys_user_role ur ON u.id = ur.user_id JOIN sys_role r ON ur.role_id = r.id WHERE u.phone = '13000000000';\")",
       "Bash(cd /d D:\\\\DeltaRent\\\\src\\\\server)",
       "Bash(gradlew.bat compileJava --no-daemon)",
-      "Bash(node -e \"const fs=require\\('fs'\\); const c=fs.readFileSync\\('src/web/src/views/ProfileView.vue','utf8'\\); const s=c.match\\(/:deep\\\\\\([^\\)]+\\\\{/g\\); console.log\\(s\\)\")"
+      "Bash(node -e \"const fs=require\\('fs'\\); const c=fs.readFileSync\\('src/web/src/views/ProfileView.vue','utf8'\\); const s=c.match\\(/:deep\\\\\\([^\\)]+\\\\{/g\\); console.log\\(s\\)\")",
+      "Bash(npx skills *)",
+      "Skill(frontend-design)",
+      "Skill(frontend-design:*)"
     ],
     "additionalDirectories": [
       "D:\\DeltaRent"

@@ -1,6 +1,7 @@
 :root {
   color-scheme: light;
-  font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+  font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-weight: 400;
   color: #1f2937;
   --el-skeleton-color: rgba(226, 232, 240, 0.9);
   --el-skeleton-to-color: rgba(248, 250, 252, 1);

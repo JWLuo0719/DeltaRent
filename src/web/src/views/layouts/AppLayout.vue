@@ -21,8 +21,8 @@
           <el-button size="small" :type="isRentalPage ? 'warning' : 'default'" @click="handleLogout">退出</el-button>
         </template>
         <template v-else>
-          <el-button size="small" :type="isRentalPage ? 'default' : 'default'" @click="$router.push('/login')">登录</el-button>
-          <el-button size="small" :type="isRentalPage ? 'warning' : 'primary'" @click="$router.push('/register')">注册</el-button>
+          <el-button size="small" type="warning" @click="$router.push('/login')">登录</el-button>
+          <el-button size="small" type="warning" @click="$router.push('/register')">注册</el-button>
         </template>
       </div>
     </header>
