@@ -103,13 +103,25 @@
           </div>
         </div>
 
-        <div class="filter-row multi">
+        <div class="filter-row">
           <el-input
             v-model="keyword"
             placeholder="搜索标题、刀皮、红皮、段位"
             clearable
-            class="filter-item keyword-item"
+            class="filter-item filter-search"
           />
+          <el-select v-model="selectedRank" clearable placeholder="段位" class="filter-item">
+            <el-option v-for="item in RANK_OPTIONS" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-select v-model="selectedPriceRange" clearable placeholder="价格" class="filter-item">
+            <el-option v-for="item in PRICE_RANGE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+          <el-select v-model="selectedCoinRange" clearable placeholder="哈夫币" class="filter-item">
+            <el-option v-for="item in COIN_RANGE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </div>
+
+        <div class="filter-row">
           <el-select v-model="selectedLoginMethod" clearable placeholder="上号方式" class="filter-item">
             <el-option v-for="item in LOGIN_METHOD_OPTIONS" :key="item" :label="item" :value="item" />
           </el-select>
@@ -122,23 +134,14 @@
           <el-select v-model="selectedOperatorSkin" clearable placeholder="红皮" class="filter-item">
             <el-option v-for="item in OPERATOR_SKIN_OPTIONS" :key="item" :label="item" :value="item" />
           </el-select>
-          <el-select v-model="selectedPriceRange" clearable placeholder="价格" class="filter-item">
-            <el-option v-for="item in PRICE_RANGE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
         </div>
 
-        <div class="filter-row multi">
-          <el-select v-model="selectedCoinRange" clearable placeholder="哈夫币" class="filter-item">
-            <el-option v-for="item in COIN_RANGE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+        <div class="filter-row">
           <el-select v-model="selectedStamina" clearable placeholder="体力" class="filter-item">
             <el-option v-for="item in STAMINA_WEIGHT_OPTIONS" :key="item" :label="item" :value="item" />
           </el-select>
           <el-select v-model="selectedWeight" clearable placeholder="负重" class="filter-item">
             <el-option v-for="item in STAMINA_WEIGHT_OPTIONS" :key="item" :label="item" :value="item" />
-          </el-select>
-          <el-select v-model="selectedRank" clearable placeholder="段位" class="filter-item">
-            <el-option v-for="item in RANK_OPTIONS" :key="item" :label="item" :value="item" />
           </el-select>
           <el-select v-model="selectedStatus" clearable placeholder="状态" class="filter-item">
             <el-option label="可租" value="AVAILABLE" />
@@ -179,7 +182,7 @@
             @click="openDrawer(product)"
           >
             <div class="row-cover">
-              <img v-if="product.coverImageUrl" :src="product.coverImageUrl" alt="" />
+              <img v-if="showCover(product)" :src="product.coverImageUrl" alt="" @error="handleCoverError(product)" />
               <div v-else class="cover-fallback">
                 <span>{{ product.rankText || '三角洲' }}</span>
                 <strong>{{ product.insuranceBoxText || '账号' }}</strong>
@@ -248,7 +251,7 @@
             @click="openDrawer(product)"
           >
             <div class="grid-cover">
-              <img v-if="product.coverImageUrl" :src="product.coverImageUrl" alt="" />
+              <img v-if="showCover(product)" :src="product.coverImageUrl" alt="" @error="handleCoverError(product)" />
               <div v-else class="cover-fallback">
                 <span>{{ product.rankText || '三角洲' }}</span>
                 <strong>{{ product.insuranceBoxText || '账号' }}</strong>
@@ -265,7 +268,7 @@
               </div>
               <div class="grid-footer">
                 <strong>{{ formatMoney(product.hourPrice) }}</strong>
-                <el-tag size="small" :type="product.status === 'AVAILABLE' ? 'success' : 'info'">
+                <el-tag size="small" :type="product.status === 'AVAILABLE' ? 'success' : 'warning'">
                   {{ product.status === 'AVAILABLE' ? '可租' : '不可租' }}
                 </el-tag>
               </div>
@@ -364,7 +367,7 @@
             <button class="close-btn fixed" type="button" @click="drawerVisible = false">×</button>
             <div class="detail-top">
               <div class="detail-cover">
-                <img v-if="selectedProduct.coverImageUrl" :src="selectedProduct.coverImageUrl" alt="" />
+                <img v-if="showCover(selectedProduct)" :src="selectedProduct.coverImageUrl" alt="" @error="handleCoverError(selectedProduct)" />
                 <div v-else class="cover-fallback">
                   <span>{{ selectedProduct.rankText || '三角洲' }}</span>
                   <strong>{{ selectedProduct.insuranceBoxText || '账号' }}</strong>
@@ -479,7 +482,7 @@ import {
 } from '@/constants/rental';
 
 type DisplayMode = 'list' | 'grid';
-type SortValue = 'default' | 'price_asc' | 'price_desc';
+type SortValue = 'default' | 'price_asc' | 'price_desc' | 'ratio_asc';
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -523,6 +526,17 @@ const advancedForm = reactive({
 
 const drawerVisible = ref(false);
 const selectedProduct = ref<RentalProduct | null>(null);
+const failedCovers = ref<Set<number>>(new Set());
+
+function showCover(product: RentalProduct) {
+  return !!product.coverImageUrl && !failedCovers.value.has(product.id);
+}
+
+function handleCoverError(product: RentalProduct) {
+  const next = new Set(failedCovers.value);
+  next.add(product.id);
+  failedCovers.value = next;
+}
 
 const noticeVisible = ref(false);
 const selectedNotice = ref<PortalNotice | null>(null);
@@ -562,8 +576,9 @@ const zoneCards = computed(() => QUICK_ZONE_OPTIONS.map(zone => ({
 
 const sortOptions = [
   { label: '默认排序', value: 'default' as SortValue },
-  { label: '价格排序', value: 'price_asc' as SortValue },
-  { label: '比例排序', value: 'price_desc' as SortValue }
+  { label: '价格升序', value: 'price_asc' as SortValue },
+  { label: '价格降序', value: 'price_desc' as SortValue },
+  { label: '比例排序', value: 'ratio_asc' as SortValue }
 ];
 
 const totalLoaded = computed(() => rawProducts.value.length);
@@ -647,6 +662,8 @@ const filteredProducts = computed(() => {
   if (sortBy.value === 'price_asc') {
     list = list.slice().sort((a, b) => Number(a.hourPrice || 0) - Number(b.hourPrice || 0));
   } else if (sortBy.value === 'price_desc') {
+    list = list.slice().sort((a, b) => Number(b.hourPrice || 0) - Number(a.hourPrice || 0));
+  } else if (sortBy.value === 'ratio_asc') {
     list = list.slice().sort((a, b) => parseRatio(a.ratioText) - parseRatio(b.ratioText));
   }
 
@@ -805,7 +822,6 @@ async function loadRentals() {
   loading.value = true;
   try {
     const response = await getRentals({
-      keyword: keyword.value || undefined,
       page: 1,
       pageSize: 1000
     });
@@ -813,7 +829,7 @@ async function loadRentals() {
       ElMessage.error(response.data.message || '租号列表加载失败');
       return;
     }
-    rawProducts.value = response.data.data.list;
+    rawProducts.value = response.data.data?.list ?? [];
   } catch (error) {
     ElMessage.error(error instanceof Error ? error.message : '租号列表加载失败');
   } finally {
@@ -832,15 +848,17 @@ async function loadNotices() {
   }
 }
 
-let keywordTimer: ReturnType<typeof setTimeout> | null = null;
 let bannerTimer: number | null = null;
 
-watch(keyword, () => {
-  if (keywordTimer) clearTimeout(keywordTimer);
-  keywordTimer = setTimeout(() => {
-    loadRentals();
-  }, 350);
-});
+watch(
+  [
+    keyword, activeZone, sortBy,
+    selectedLoginMethod, selectedCoinRange, selectedInsuranceBox,
+    selectedStamina, selectedWeight, selectedKnifeSkin, selectedOperatorSkin,
+    selectedPriceRange, selectedRank, selectedStatus
+  ],
+  () => { currentPage.value = 1; }
+);
 
 watch(total, value => {
   const maxPage = Math.max(1, Math.ceil(value / pageSize));
@@ -856,7 +874,6 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  if (keywordTimer) clearTimeout(keywordTimer);
   if (bannerTimer !== null) clearInterval(bannerTimer);
 });
 </script>
@@ -1113,8 +1130,19 @@ export default { name: 'RentalListView' };
 .filter-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-search {
+  flex: 1 1 160px;
+  min-width: 160px;
+}
+
+.filter-item {
+  flex: 1 1 140px;
+  min-width: 140px;
 }
 
 .sort-tabs {
@@ -1142,9 +1170,9 @@ export default { name: 'RentalListView' };
 }
 
 .filter-row.multi {
-  display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
   margin-top: 10px;
 }
 
@@ -1557,8 +1585,10 @@ export default { name: 'RentalListView' };
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
-  .filter-row.multi {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .filter-search,
+  .filter-item {
+    flex: 1 1 calc(33.33% - 10px);
+    min-width: 140px;
   }
 
   .row-card {
@@ -1580,7 +1610,6 @@ export default { name: 'RentalListView' };
   }
 
   .zone-strip,
-  .filter-row.multi,
   .advanced-grid,
   .detail-top,
   .detail-resource-grid,
@@ -1589,6 +1618,12 @@ export default { name: 'RentalListView' };
   .duration-grid,
   .grid-list {
     grid-template-columns: 1fr;
+  }
+
+  .filter-search,
+  .filter-item {
+    flex: 1 1 100%;
+    min-width: 0;
   }
 
   .keyword-item {

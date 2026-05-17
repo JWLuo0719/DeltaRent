@@ -1,99 +1,140 @@
 <template>
-  <div class="page-shell stack">
+  <div class="page-shell">
     <section class="hero-card">
       <button class="back-btn" @click="$router.push('/rentals')">
         <span class="back-icon">←</span> 返回账号列表
       </button>
-      <h1 class="page-title">创建账号租赁订单</h1>
-      <p class="page-subtitle">当前页面已接入真实后端接口，可直接确认账号信息并提交订单。</p>
+      <h1 class="page-title">租用账号</h1>
+      <p class="page-subtitle">确认账号信息后直接提交，客服将尽快联系您完成交付</p>
     </section>
 
-    <section class="panel-card">
-      <div v-if="selectedAccount" class="account-info-card">
-        <div class="account-info-left">
-          <div class="account-name">{{ selectedAccount.name }}</div>
-          <div v-if="accountTags.length" class="account-tags">
-            <span v-for="tag in accountTags" :key="tag" class="tag-chip">{{ tag }}</span>
+    <section class="main-content">
+      <!-- 账号信息卡 -->
+      <div v-if="selectedAccount" class="product-card">
+        <div class="product-cover">
+          <img v-if="selectedAccount.coverImageUrl" :src="selectedAccount.coverImageUrl" alt="" />
+          <div v-else class="cover-placeholder">
+            <span>{{ selectedAccount.rankText || '三角洲' }}</span>
+            <strong>{{ selectedAccount.insuranceBoxText || '账号' }}</strong>
+          </div>
+          <div class="product-price-badge">¥{{ selectedAccount.hourPrice }}</div>
+        </div>
+
+        <div class="product-info">
+          <h2 class="product-name">{{ selectedAccount.name }}</h2>
+
+          <div v-if="accountTags.length" class="product-tags">
+            <span v-for="tag in accountTags" :key="tag" class="tag">{{ tag }}</span>
+          </div>
+
+          <div class="product-attrs">
+            <div v-if="selectedAccount.rankText" class="attr-item">
+              <span class="attr-label">段位</span>
+              <span class="attr-value">{{ selectedAccount.rankText }}</span>
+            </div>
+            <div v-if="selectedAccount.insuranceBoxText" class="attr-item">
+              <span class="attr-label">保险箱</span>
+              <span class="attr-value">{{ selectedAccount.insuranceBoxText }}</span>
+            </div>
+            <div v-if="selectedAccount.coinAmount" class="attr-item">
+              <span class="attr-label">哈夫币</span>
+              <span class="attr-value">{{ formatCoin(selectedAccount.coinAmount) }}</span>
+            </div>
+            <div v-if="selectedAccount.loginMethod" class="attr-item">
+              <span class="attr-label">上号方式</span>
+              <span class="attr-value">{{ selectedAccount.loginMethod }}</span>
+            </div>
+            <div v-if="selectedAccount.staminaText || selectedAccount.weightText" class="attr-item">
+              <span class="attr-label">体力/负重</span>
+              <span class="attr-value">{{ selectedAccount.staminaText }}/{{ selectedAccount.weightText }}</span>
+            </div>
           </div>
         </div>
-        <div class="account-price-block">
-          <span class="price-label">单价</span>
-          <span class="price-value">¥{{ selectedAccount.hourPrice }}</span>
-          <span class="price-unit">/小时</span>
+      </div>
+
+      <!-- 账号选择 -->
+      <div v-if="!accountLocked" class="select-card">
+        <div class="select-label">
+          <span>选择账号</span>
+          <span class="select-hint">共 {{ accounts.length }} 个可租账号</span>
         </div>
+        <el-select
+          v-model="form.accountId"
+          placeholder="请选择账号"
+          filterable
+          :loading="accountsLoading"
+          class="account-select"
+        >
+          <template #prefix>
+            <span class="select-prefix-icon">☰</span>
+          </template>
+          <el-option
+            v-for="item in accounts"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
+          >
+            <div class="option-item">
+              <span class="option-name">{{ item.name }}</span>
+              <span class="option-meta">
+                <span v-if="item.rankText">{{ item.rankText }}</span>
+                <span class="option-price">¥{{ item.hourPrice }}</span>
+              </span>
+            </div>
+          </el-option>
+        </el-select>
       </div>
 
-      <div v-if="selectedAccount" class="discount-tip">
-        <span class="discount-icon">💡</span>
-        当前选择时长 {{ form.rentHours }} 小时，折扣：<strong>{{ discountLabel }}</strong>，实付：<strong>¥{{ finalPrice }}</strong>
-      </div>
-
-      <el-form label-position="top" class="order-form">
-        <div class="grid-2">
-          <el-form-item v-if="!accountLocked" label="账号编号">
-            <el-select
-              v-model="form.accountId"
-              placeholder="请选择账号"
-              filterable
-              :loading="accountsLoading"
-            >
-              <el-option
-                v-for="item in accounts"
-                :key="item.id"
-                :label="`${item.name}（￥${item.hourPrice}/小时）`"
-                :value="item.id"
-              />
-            </el-select>
-          </el-form-item>
-
-          <el-form-item v-if="!durationLocked" label="租赁时长">
-            <el-select v-model="form.rentHours" placeholder="请选择时长">
-              <el-option
-                v-for="hours in durationOptions"
-                :key="hours"
-                :label="`${hours}小时`"
-                :value="hours"
-              />
-            </el-select>
-          </el-form-item>
-
-          <div v-else class="duration-display-card">
-            <span class="duration-label">租赁时长</span>
-            <span class="duration-value">{{ form.rentHours }} 小时</span>
-            <span class="duration-discount">{{ discountLabel }}</span>
+      <!-- 操作区 -->
+      <div class="action-card">
+        <div class="order-summary">
+          <div class="summary-row">
+            <span>账号租金</span>
+            <span class="summary-value">¥{{ selectedAccount?.hourPrice || 0 }}</span>
           </div>
         </div>
 
-        <el-form-item label="联系方式">
-          <el-input v-model="form.contactInfo" placeholder="请输入 QQ / 微信 / 手机号" />
-        </el-form-item>
+        <el-button
+          type="primary"
+          size="large"
+          :loading="submitting"
+          class="submit-btn"
+          @click="submitOrder"
+        >
+          {{ submitting ? '提交中...' : '立即租用' }}
+        </el-button>
 
-        <el-form-item label="备注">
-          <el-input v-model="form.remark" placeholder="可填写交付时间、使用偏好等补充信息" />
-        </el-form-item>
-
-        <el-button type="primary" :loading="submitting" @click="submitOrder">提交订单</el-button>
-      </el-form>
-
-      <div v-if="resultMessage" class="result-card">
-        <div class="result-icon">✓</div>
-        <div class="result-content">
-          <div class="result-title">订单提交成功</div>
-          <div class="result-message">{{ resultMessage }}</div>
-        </div>
-        <button class="result-close" @click="resultMessage = ''">×</button>
+        <p class="submit-tip">提交后客服将在 10 分钟内联系您</p>
       </div>
+
+      <!-- 成功提示 -->
+      <transition name="slide-up">
+        <div v-if="resultMessage" class="success-card">
+          <div class="success-icon">
+            <svg viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="11" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M8 12l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="success-body">
+            <h3>订单已提交</h3>
+            <p>{{ resultMessage }}</p>
+          </div>
+          <button class="success-close" @click="resultMessage = ''">×</button>
+        </div>
+      </transition>
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { createOrder, getRentals } from '@/api';
 import type { CreateOrderPayload, RentalProduct } from '@/types/api';
 
+const router = useRouter();
 const route = useRoute();
 
 function parseQueryNumber(value: unknown) {
@@ -108,11 +149,14 @@ function splitTags(tagText?: string) {
     .filter(Boolean);
 }
 
+function formatCoin(value: number | undefined) {
+  const amount = Number(value || 0);
+  if (amount >= 10000) return `${(amount / 10000).toFixed(2)}亿`;
+  return `${amount}万`;
+}
+
 const requestedAccountId = parseQueryNumber(route.query.accountId);
-const requestedDuration = parseQueryNumber(route.query.duration);
 const accountLocked = requestedAccountId > 0;
-const durationLocked = requestedDuration > 0;
-const durationOptions = [1, 6, 12, 24];
 
 const accounts = ref<RentalProduct[]>([]);
 const accountsLoading = ref(false);
@@ -121,7 +165,7 @@ const resultMessage = ref('');
 
 const form = reactive<CreateOrderPayload>({
   accountId: requestedAccountId,
-  rentHours: requestedDuration || 1,
+  rentHours: 1,
   contactInfo: '',
   remark: ''
 });
@@ -131,26 +175,12 @@ const selectedAccount = computed(
 );
 const accountTags = computed(() => splitTags(selectedAccount.value?.tagText));
 
-const discountMap: Record<number, { label: string; factor: number }> = {
-  1: { label: '无折扣', factor: 1 },
-  6: { label: '9折', factor: 0.9 },
-  12: { label: '8折', factor: 0.8 },
-  24: { label: '7折', factor: 0.7 }
-};
-
-const discountLabel = computed(() => discountMap[form.rentHours]?.label || '无折扣');
-const discountFactor = computed(() => discountMap[form.rentHours]?.factor || 1);
-const finalPrice = computed(() => {
-  if (!selectedAccount.value) return '0.00';
-  return (selectedAccount.value.hourPrice * form.rentHours * discountFactor.value).toFixed(2);
-});
-
 async function loadAccounts() {
   accountsLoading.value = true;
   try {
     const response = await getRentals({ status: 'AVAILABLE', page: 1, pageSize: 1000 });
     if (response.data.success) {
-      accounts.value = response.data.data.list;
+      accounts.value = response.data.data?.list ?? [];
 
       if (!form.accountId && accounts.value.length > 0) {
         form.accountId = accounts.value[0].id;
@@ -183,18 +213,14 @@ async function submitOrder() {
     return;
   }
 
-  if (!form.contactInfo.trim()) {
-    ElMessage.warning('请先填写联系方式');
-    return;
-  }
-
   submitting.value = true;
   try {
     const response = await createOrder(form);
     if (response.data.success) {
       const result = response.data.data;
-      resultMessage.value = `订单 ${result.orderNo} 已创建，状态：${result.status}，${result.estimatedDelivery}`;
-      ElMessage.success(response.data.message);
+      resultMessage.value = `订单号 ${result.orderNo}，金额 ¥${result.amount}，状态：${result.status}`;
+      ElMessage.success('订单提交成功');
+      setTimeout(() => { router.push('/orders'); }, 1800);
       return;
     }
 
@@ -212,304 +238,386 @@ onMounted(loadAccounts);
 <style scoped>
 .page-shell {
   min-height: 100vh;
-  background: transparent;
-  color: #1f2937;
-  padding: 40px 20px;
+  background: #fffdf4;
+  padding: 40px 24px;
 }
 
 .hero-card {
-  background: rgba(255, 255, 255, 0.88);
+  max-width: 680px;
+  margin: 0 auto 28px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 20px;
+  padding: 32px 36px;
   border: 1px solid rgba(226, 232, 240, 0.9);
-  border-radius: 24px;
-  padding: 36px 40px;
-  margin-bottom: 24px;
 }
 
 .back-btn {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  gap: 6px;
+  background: rgba(255, 245, 214, 0.5);
+  border: 1px solid rgba(255, 214, 107, 0.4);
+  border-radius: 10px;
   color: #9b5d00;
   font-size: 13px;
-  padding: 6px 14px;
+  padding: 7px 16px;
   cursor: pointer;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
   transition: all 0.2s;
 }
 
 .back-btn:hover {
-  background: #fff0d0;
+  background: #fff7e6;
   border-color: #ffd46b;
-  color: #9b5d00;
 }
 
-.back-icon {
-  font-size: 16px;
-}
+.back-icon { font-size: 15px; }
 
 .page-title {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 700;
-  color: #1f2937;
-  margin: 0 0 10px;
+  color: #3c2b00;
+  margin: 0 0 8px;
+  letter-spacing: 1px;
 }
 
 .page-subtitle {
   font-size: 14px;
-  color: #64748b;
+  color: #9b5d00;
   margin: 0;
 }
 
-.panel-card {
-  background: rgba(255, 255, 255, 0.92);
-  border: 1px solid #e2e8f0;
-  border-radius: 22px;
-  padding: 32px 36px;
-  max-width: 720px;
-}
-
-.account-info-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: #fffdf7;
-  border: 1px solid #f3e5b8;
-  border-radius: 12px;
-  padding: 18px 22px;
-  margin-bottom: 18px;
-}
-
-.account-info-left {
+.main-content {
+  max-width: 680px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 18px;
 }
 
-.account-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1f2937;
+/* 产品卡 */
+.product-card {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(255, 214, 107, 0.35);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(181, 145, 41, 0.1);
 }
 
-.account-tags {
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+.product-cover {
+  position: relative;
+  min-height: 220px;
 }
 
-.tag-chip {
-  background: #fff3d9;
-  border: 1px solid #ffd46b;
-  border-radius: 6px;
-  padding: 2px 8px;
-  font-size: 12px;
-  color: #9b5d00;
-}
-
-.account-price-block {
-  text-align: right;
-}
-
-.price-label {
-  font-size: 12px;
-  color: #64748b;
+.product-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
 }
 
-.price-value {
+.cover-placeholder {
+  height: 100%;
+  min-height: 220px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #2d2d44 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 16px;
+  color: #fff;
+}
+
+.cover-placeholder span {
+  font-size: 11px;
+  opacity: 0.7;
+  letter-spacing: 1px;
+}
+
+.cover-placeholder strong {
   font-size: 22px;
+  margin-top: 4px;
+}
+
+.product-price-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: linear-gradient(135deg, #ffe057 0%, #ffc420 100%);
+  color: #5a3c00;
+  font-size: 15px;
   font-weight: 700;
-  color: #f05b2c;
-}
-
-.price-unit {
-  font-size: 13px;
-  color: #64748b;
-}
-
-.discount-tip {
-  background: #fff7e6;
-  border: 1px solid #f3e5b8;
+  padding: 5px 12px;
   border-radius: 10px;
-  padding: 10px 16px;
+  box-shadow: 0 4px 12px rgba(255, 196, 32, 0.3);
+}
+
+.product-info {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.product-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #3c2b00;
+  margin: 0;
+}
+
+.product-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tag {
+  background: rgba(255, 196, 32, 0.12);
+  border: 1px solid rgba(255, 196, 32, 0.25);
+  color: #c57a00;
+  font-size: 11px;
+  padding: 2px 10px;
+  border-radius: 12px;
+}
+
+.product-attrs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 16px;
+}
+
+.attr-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 245, 214, 0.5);
+  border-radius: 10px;
+}
+
+.attr-label {
+  font-size: 11px;
+  color: #9b5d00;
+}
+
+.attr-value {
   font-size: 13px;
-  color: #64748b;
-  margin-bottom: 24px;
+  font-weight: 600;
+  color: #5a3c00;
 }
 
-.discount-tip strong {
-  color: #f05b2c;
+/* 选择卡 */
+.select-card {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(255, 214, 107, 0.35);
+  border-radius: 20px;
+  padding: 20px 24px;
 }
 
-.discount-icon {
-  margin-right: 4px;
-}
-
-.duration-display-card {
+.select-label {
   display: flex;
   align-items: center;
-  gap: 12px;
-  background: #fffdf7;
-  border: 1px solid #f3e5b8;
-  border-radius: 10px;
-  padding: 14px 20px;
-  margin-bottom: 18px;
+  justify-content: space-between;
+  margin-bottom: 14px;
 }
 
-.duration-label {
-  font-size: 13px;
-  color: #64748b;
-  min-width: 60px;
-}
-
-.duration-value {
-  font-size: 16px;
+.select-label > span:first-child {
+  font-size: 14px;
   font-weight: 600;
-  color: #1f2937;
+  color: #5a3c00;
 }
 
-.duration-discount {
-  background: #fff3d9;
-  border: 1px solid #ffd46b;
-  border-radius: 6px;
-  padding: 2px 10px;
+.select-hint {
   font-size: 12px;
   color: #9b5d00;
 }
 
-.grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
+.account-select {
+  width: 100%;
 }
 
-:deep(.el-form-item__label) {
-  color: #64748b;
-  font-size: 13px;
-  font-weight: 500;
-  padding-bottom: 6px;
-}
-
-:deep(.el-input__wrapper),
-:deep(.el-select .el-input__wrapper) {
-  background: #fff !important;
-  border-radius: 10px;
-  box-shadow: 0 0 0 1px #dbe3ef inset !important;
-  padding: 0 14px;
-}
-
-:deep(.el-input__inner) {
-  color: #1f2937;
+.select-prefix-icon {
   font-size: 14px;
+  color: #c57a00;
 }
 
-:deep(.el-input__inner::placeholder) {
-  color: #94a3b8;
-}
-
-:deep(.el-select .el-input__inner) {
-  color: #1f2937;
-}
-
-:deep(.el-form-item) {
-  margin-bottom: 22px;
-}
-
-:deep(.el-button--primary) {
-  background: linear-gradient(135deg, #ffe057 0%, #ffc420 100%);
-  border: none;
-  border-radius: 10px;
-  font-size: 15px;
-  font-weight: 600;
-  padding: 12px 32px;
-  letter-spacing: 1px;
-  color: #5a3c00;
-}
-
-:deep(.el-button--primary:hover) {
-  background: linear-gradient(135deg, #ffd95a 0%, #ffb81f 100%);
-}
-
-.result-card {
+/* 操作卡 */
+.action-card {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(255, 214, 107, 0.35);
+  border-radius: 20px;
+  padding: 24px;
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
-  background: rgba(34, 197, 94, 0.08);
-  border: 1px solid rgba(34, 197, 94, 0.2);
-  border-radius: 12px;
-  padding: 18px 20px;
-  margin-top: 20px;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.result-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(34, 197, 94, 0.12);
-  color: #4ade80;
+.order-summary {
+  padding: 14px 18px;
+  background: rgba(255, 245, 214, 0.5);
+  border-radius: 12px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-row > span:first-child {
+  font-size: 14px;
+  color: #9b5d00;
+}
+
+.summary-value {
   font-size: 20px;
   font-weight: 700;
+  color: #f05b2c;
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, #ffe057 0%, #ffc420 100%) !important;
+  border: none !important;
+  color: #5a3c00 !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  letter-spacing: 2px;
+  padding: 14px !important;
+  border-radius: 14px !important;
+  box-shadow: 0 6px 20px rgba(255, 196, 32, 0.35);
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.submit-btn:hover {
+  box-shadow: 0 8px 24px rgba(255, 196, 32, 0.45) !important;
+  transform: translateY(-1px);
+}
+
+.submit-tip {
+  text-align: center;
+  font-size: 12px;
+  color: #9b5d00;
+  margin: 0;
+}
+
+/* 成功提示 */
+.success-card {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 16px;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 20px;
+  padding: 20px 24px;
+}
+
+.success-icon {
+  width: 44px;
+  height: 44px;
+  color: #4ade80;
   flex-shrink: 0;
 }
 
-.result-content {
+.success-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.success-body {
   flex: 1;
 }
 
-.result-title {
-  font-size: 15px;
-  font-weight: 600;
-  color: #4ade80;
-  margin-bottom: 4px;
+.success-body h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #16a34a;
 }
 
-.result-message {
+.success-body p {
+  margin: 0;
   font-size: 13px;
   color: #86efac;
   line-height: 1.5;
 }
 
-.result-close {
+.success-close {
   background: none;
   border: none;
-  color: #64748b;
+  color: #94a3b8;
   font-size: 22px;
   cursor: pointer;
-  padding: 0 4px;
+  padding: 4px;
   line-height: 1;
 }
 
-.result-close:hover {
-  color: #4ade80;
+.success-close:hover { color: #16a34a; }
+
+/* 动画 */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(16px);
+}
+
+/* Element Plus 覆盖 */
+:deep(.el-select__wrapper) {
+  background: #fff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 0 0 1px #e2d5a8 inset !important;
+  padding: 10px 14px !important;
+  min-height: 48px !important;
+}
+
+:deep(.el-select__placeholder) {
+  color: #94a3b8 !important;
+  font-size: 14px !important;
+}
+
+:deep(.el-select__selected-item) {
+  font-size: 14px !important;
+  color: #3c2b00 !important;
+}
+
+/* 下拉选项 */
+.option-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.option-name {
+  font-size: 14px;
+  color: #3c2b00;
+}
+
+.option-meta {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  color: #9b5d00;
+}
+
+.option-price {
+  color: #f05b2c;
+  font-weight: 600;
 }
 
 @media (max-width: 640px) {
-  .grid-2 {
-    grid-template-columns: 1fr;
-  }
-
-  .hero-card {
-    padding: 24px 20px;
-  }
-
-  .panel-card {
-    padding: 24px 20px;
-  }
-
-  .account-info-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .account-price-block {
-    text-align: left;
-  }
+  .page-shell { padding: 24px 16px; }
+  .hero-card { padding: 24px 20px; }
+  .product-card { grid-template-columns: 1fr; }
+  .product-cover { min-height: 180px; }
+  .cover-placeholder { min-height: 180px; }
+  .product-attrs { grid-template-columns: 1fr; }
 }
 </style>

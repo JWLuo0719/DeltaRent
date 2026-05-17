@@ -31,7 +31,7 @@
     <main class="layout-main" :class="{ 'layout-main-rental': isRentalPage }">
       <router-view v-slot="{ Component }">
         <Transition name="page-fade" mode="out-in">
-          <component :is="Component" />
+          <component :is="Component" :key="route.fullPath" />
         </Transition>
       </router-view>
     </main>

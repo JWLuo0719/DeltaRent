@@ -138,7 +138,15 @@
       "Bash(node -e \"const fs=require\\('fs'\\); const c=fs.readFileSync\\('src/web/src/views/ProfileView.vue','utf8'\\); const s=c.match\\(/:deep\\\\\\([^\\)]+\\\\{/g\\); console.log\\(s\\)\")",
       "Bash(npx skills *)",
       "Skill(frontend-design)",
-      "Skill(frontend-design:*)"
+      "Skill(frontend-design:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com)",
+      "Bash(set DASHSCOPE_API_KEY=sk-15202fcba85941069e6536abcf4b708b)",
+      "Bash(python3 \"C:\\\\Users\\\\Lenovo\\\\.agents\\\\skills\\\\qwencloud-vision\\\\scripts\\\\analyze.py\" --request \"{\\\\\"prompt\\\\\":\\\\\"描述这张截图里的问题，特别是关于页面顶部横幅左上角的视觉效果\\\\\",\\\\\"image\\\\\":\\\\\"https://minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com/ccv2%2F2026-05-17%2FMiniMax-M2.7%2F2047340932881191192%2F74b36aec3d71215a793158e54d19937d8b8c7a0506ddbd8aa48584a1944cf187..jpeg\\\\\"}\" --print-response)",
+      "Bash(python \"C:\\\\Users\\\\Lenovo\\\\.agents\\\\skills\\\\qwencloud-vision\\\\scripts\\\\analyze.py\" --request \"{\\\\\"prompt\\\\\":\\\\\"描述这张截图里的问题，特别是关于页面顶部横幅左上角的视觉效果\\\\\",\\\\\"image\\\\\":\\\\\"https://minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com/ccv2%2F2026-05-17%2FMiniMax-M2.7%2F2047340932881191192%2F74b36aec3d71215a793158e54d19937d8b8c7a0506ddbd8aa48584a1944cf187..jpeg\\\\\"}\" --print-response)",
+      "Bash(python \"C:\\\\Users\\\\Lenovo\\\\.agents\\\\skills\\\\qwencloud-vision\\\\scripts\\\\analyze.py\" --request \"{\\\\\"prompt\\\\\":\\\\\"描述这个页面的Hero区域（顶部横幅）现在变成了什么样子，有没有问题\\\\\",\\\\\"image\\\\\":\\\\\"https://minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com/ccv2%2F2026-05-17%2FMiniMax-M2.7%2F2047340932881191192%2F678d18f45a451b0de5bcf27e1a996fc2619b08d262bc2b40cd6ab1d6e54ab072..jpeg\\\\\"}\" --print-response)",
+      "Bash(curl -s -w \"\\\\n%{http_code}\" -X POST \"https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions\" -H \"Authorization: Bearer sk-15202fcba85941069e6536abcf4b708b\" -H \"Content-Type: application/json\" -d \"{\\\\\"model\\\\\":\\\\\"qwen-vl-plus\\\\\",\\\\\"messages\\\\\":[{\\\\\"role\\\\\":\\\\\"user\\\\\",\\\\\"content\\\\\":[{\\\\\"type\\\\\":\\\\\"text\\\\\",\\\\\"text\\\\\":\\\\\"hello\\\\\"}]}]}\")",
+      "Bash(chcp 65001)"
     ],
     "additionalDirectories": [
       "D:\\DeltaRent"
