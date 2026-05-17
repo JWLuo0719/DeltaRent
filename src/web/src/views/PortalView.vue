@@ -55,8 +55,8 @@
             </div>
             <div class="product-name">{{ p.name }}</div>
             <div class="product-attrs">
-              <div class="attr-row"><span class="attr-k">装备等级</span><span class="attr-v">{{ p.equipmentLevel }}</span></div>
-              <div class="attr-row"><span class="attr-k">库存价值</span><span class="attr-v">{{ p.warehouseValue }}</span></div>
+              <div class="attr-row"><span class="attr-k">段位</span><span class="attr-v">{{ p.rankText }}</span></div>
+              <div class="attr-row"><span class="attr-k">库存价值</span><span class="attr-v">{{ p.warehouseValueText }}</span></div>
               <div class="attr-row"><span class="attr-k">哈夫币</span><span class="attr-v">{{ formatCoinAmount(p.coinAmount) }}</span></div>
             </div>
             <div class="product-price-row">
@@ -532,7 +532,7 @@ export default { name: 'PortalView' };
   padding: 72px 48px 56px;
   background: linear-gradient(145deg, rgba(255, 243, 201, 0.96) 0%, rgba(255, 223, 122, 0.88) 100%);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(242, 201, 76, 0.28);
+  border: 0;
   margin-bottom: 24px;
   text-align: center;
 }

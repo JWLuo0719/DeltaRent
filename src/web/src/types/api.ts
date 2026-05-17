@@ -26,28 +26,44 @@ export interface PortalSummary {
 export interface RentalProduct {
   id: number;
   name: string;
+  ownerId?: number;
   category: string;
   tagText: string;
   hourPrice: number;
+  price?: number;
   coinAmount: number;
-  equipmentLevelText: string;
+  deposit?: number;
+  rentalDays?: number;
   warehouseValueText: string;
+  loginMethod?: string;
   ratioText?: string;
   insuranceBoxText?: string;
+  insuranceBox?: string;
   staminaText?: string;
+  staminaLevel?: number;
   weightText?: string;
+  weightLevel?: number;
   rankText?: string;
+  kdText?: string;
+  kd?: number;
+  divingLevelText?: string;
+  divingLevel?: number;
   loginRegion?: string;
+  tradeTimeText?: string;
+  knifeSkinText?: string;
   weaponSkinText?: string;
   characterSkinText?: string;
+  level?: number;
+  helmetCount?: number;
+  armorCount?: number;
+  awmAmmoCount?: number;
+  nineGridTrialCardCount?: number;
+  recentBanRecord?: string;
   coverImageUrl?: string;
-  status: 'AVAILABLE' | 'RENTED' | 'MAINTENANCE' | string;
+  status: 'AVAILABLE' | 'RENTED' | 'MAINTENANCE' | 'PENDING' | 'OFF_SHELF' | string;
   description: string;
   isHot?: boolean;
   tag?: string;
-  price?: string;
-  equipmentLevel?: string;
-  warehouseValue?: string;
 }
 
 export interface RentalListResult {
@@ -167,6 +183,38 @@ export interface UpdateProfilePayload {
 export interface ChangePasswordPayload {
   oldPassword: string;
   newPassword: string;
+}
+
+export interface RentalPublishPayload {
+  name: string;
+  category: string;
+  tagText: string;
+  hourPrice: number;
+  coinAmount: number;
+  deposit?: number;
+  rentalDays?: number;
+  warehouseValueText: string;
+  loginMethod?: string;
+  ratioText?: string;
+  insuranceBoxText?: string;
+  staminaText?: string;
+  weightText?: string;
+  rankText?: string;
+  kdText?: string;
+  divingLevelText?: string;
+  loginRegion?: string;
+  tradeTimeText?: string;
+  knifeSkinText?: string;
+  weaponSkinText?: string;
+  characterSkinText?: string;
+  level?: number;
+  helmetCount?: number;
+  armorCount?: number;
+  awmAmmoCount?: number;
+  nineGridTrialCardCount?: number;
+  recentBanRecord?: string;
+  coverImageUrl?: string;
+  description: string;
 }
 
 export interface SubmitAppealPayload {

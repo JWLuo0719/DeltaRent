@@ -7,183 +7,142 @@ public class RentalProduct {
 
     private Long id;
     private String name;
+    private Long ownerId;
     private String category;
     private String tagText;
-    private BigDecimal hourPrice;
+    private BigDecimal price;
+    private BigDecimal deposit;
+    private Integer rentalDays;
     private Long coinAmount;
-    private String equipmentLevelText;
-    private String warehouseValueText;
-    private String ratioText;
-    private String insuranceBoxText;
-    private String staminaText;
-    private String weightText;
+    private String loginMethod;
+    private String insuranceBox;
+    private Integer staminaLevel;
+    private Integer weightLevel;
     private String rankText;
+    private BigDecimal kd;
+    private Integer divingLevel;
+    private String ratioText;
     private String loginRegion;
+    private String tradeTimeText;
+    private String knifeSkinText;
     private String weaponSkinText;
     private String characterSkinText;
+    private Integer level;
+    private Integer helmetCount;
+    private Integer armorCount;
+    private Integer awmAmmoCount;
+    private Integer nineGridTrialCardCount;
+    private String recentBanRecord;
     private String coverImageUrl;
-    private String status;
+    private String warehouseValueText;
     private String description;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
-
-    public String getTagText() {
-        return tagText;
-    }
-
-    public void setTagText(String tagText) {
-        this.tagText = tagText;
-    }
-
-    public BigDecimal getHourPrice() {
-        return hourPrice;
-    }
-
-    public void setHourPrice(BigDecimal hourPrice) {
-        this.hourPrice = hourPrice;
-    }
-
-    public Long getCoinAmount() {
-        return coinAmount;
-    }
-
-    public void setCoinAmount(Long coinAmount) {
-        this.coinAmount = coinAmount;
-    }
-
-    public String getEquipmentLevelText() {
-        return equipmentLevelText;
-    }
-
-    public void setEquipmentLevelText(String equipmentLevelText) {
-        this.equipmentLevelText = equipmentLevelText;
-    }
-
-    public String getWarehouseValueText() {
-        return warehouseValueText;
-    }
-
-    public void setWarehouseValueText(String warehouseValueText) {
-        this.warehouseValueText = warehouseValueText;
-    }
-
-    public String getRatioText() {
-        return ratioText;
-    }
-
-    public void setRatioText(String ratioText) {
-        this.ratioText = ratioText;
-    }
-
-    public String getInsuranceBoxText() {
-        return insuranceBoxText;
-    }
-
-    public void setInsuranceBoxText(String insuranceBoxText) {
-        this.insuranceBoxText = insuranceBoxText;
-    }
-
-    public String getStaminaText() {
-        return staminaText;
-    }
-
-    public void setStaminaText(String staminaText) {
-        this.staminaText = staminaText;
-    }
-
-    public String getWeightText() {
-        return weightText;
-    }
-
-    public void setWeightText(String weightText) {
-        this.weightText = weightText;
-    }
-
-    public String getRankText() {
-        return rankText;
-    }
-
-    public void setRankText(String rankText) {
-        this.rankText = rankText;
-    }
-
-    public String getLoginRegion() {
-        return loginRegion;
-    }
-
-    public void setLoginRegion(String loginRegion) {
-        this.loginRegion = loginRegion;
-    }
-
-    public String getWeaponSkinText() {
-        return weaponSkinText;
-    }
-
-    public void setWeaponSkinText(String weaponSkinText) {
-        this.weaponSkinText = weaponSkinText;
-    }
-
-    public String getCharacterSkinText() {
-        return characterSkinText;
-    }
-
-    public void setCharacterSkinText(String characterSkinText) {
-        this.characterSkinText = characterSkinText;
-    }
-
-    public String getCoverImageUrl() {
-        return coverImageUrl;
-    }
-
-    public void setCoverImageUrl(String coverImageUrl) {
-        this.coverImageUrl = coverImageUrl;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
+    private String status;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
-    public LocalDateTime getDeletedAt() {
-        return deletedAt;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setDeletedAt(LocalDateTime deletedAt) {
-        this.deletedAt = deletedAt;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
+    public Long getOwnerId() { return ownerId; }
+    public void setOwnerId(Long ownerId) { this.ownerId = ownerId; }
+
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+
+    public String getTagText() { return tagText; }
+    public void setTagText(String tagText) { this.tagText = tagText; }
+
+    public BigDecimal getPrice() { return price; }
+    public void setPrice(BigDecimal price) { this.price = price; }
+
+    public BigDecimal getDeposit() { return deposit; }
+    public void setDeposit(BigDecimal deposit) { this.deposit = deposit; }
+
+    public Integer getRentalDays() { return rentalDays; }
+    public void setRentalDays(Integer rentalDays) { this.rentalDays = rentalDays; }
+
+    public Long getCoinAmount() { return coinAmount; }
+    public void setCoinAmount(Long coinAmount) { this.coinAmount = coinAmount; }
+
+    public String getLoginMethod() { return loginMethod; }
+    public void setLoginMethod(String loginMethod) { this.loginMethod = loginMethod; }
+
+    public String getInsuranceBox() { return insuranceBox; }
+    public void setInsuranceBox(String insuranceBox) { this.insuranceBox = insuranceBox; }
+
+    public Integer getStaminaLevel() { return staminaLevel; }
+    public void setStaminaLevel(Integer staminaLevel) { this.staminaLevel = staminaLevel; }
+
+    public Integer getWeightLevel() { return weightLevel; }
+    public void setWeightLevel(Integer weightLevel) { this.weightLevel = weightLevel; }
+
+    public String getRankText() { return rankText; }
+    public void setRankText(String rankText) { this.rankText = rankText; }
+
+    public BigDecimal getKd() { return kd; }
+    public void setKd(BigDecimal kd) { this.kd = kd; }
+
+    public Integer getDivingLevel() { return divingLevel; }
+    public void setDivingLevel(Integer divingLevel) { this.divingLevel = divingLevel; }
+
+    public String getRatioText() { return ratioText; }
+    public void setRatioText(String ratioText) { this.ratioText = ratioText; }
+
+    public String getLoginRegion() { return loginRegion; }
+    public void setLoginRegion(String loginRegion) { this.loginRegion = loginRegion; }
+
+    public String getTradeTimeText() { return tradeTimeText; }
+    public void setTradeTimeText(String tradeTimeText) { this.tradeTimeText = tradeTimeText; }
+
+    public String getKnifeSkinText() { return knifeSkinText; }
+    public void setKnifeSkinText(String knifeSkinText) { this.knifeSkinText = knifeSkinText; }
+
+    public String getWeaponSkinText() { return weaponSkinText; }
+    public void setWeaponSkinText(String weaponSkinText) { this.weaponSkinText = weaponSkinText; }
+
+    public String getCharacterSkinText() { return characterSkinText; }
+    public void setCharacterSkinText(String characterSkinText) { this.characterSkinText = characterSkinText; }
+
+    public Integer getLevel() { return level; }
+    public void setLevel(Integer level) { this.level = level; }
+
+    public Integer getHelmetCount() { return helmetCount; }
+    public void setHelmetCount(Integer helmetCount) { this.helmetCount = helmetCount; }
+
+    public Integer getArmorCount() { return armorCount; }
+    public void setArmorCount(Integer armorCount) { this.armorCount = armorCount; }
+
+    public Integer getAwmAmmoCount() { return awmAmmoCount; }
+    public void setAwmAmmoCount(Integer awmAmmoCount) { this.awmAmmoCount = awmAmmoCount; }
+
+    public Integer getNineGridTrialCardCount() { return nineGridTrialCardCount; }
+    public void setNineGridTrialCardCount(Integer nineGridTrialCardCount) { this.nineGridTrialCardCount = nineGridTrialCardCount; }
+
+    public String getRecentBanRecord() { return recentBanRecord; }
+    public void setRecentBanRecord(String recentBanRecord) { this.recentBanRecord = recentBanRecord; }
+
+    public String getCoverImageUrl() { return coverImageUrl; }
+    public void setCoverImageUrl(String coverImageUrl) { this.coverImageUrl = coverImageUrl; }
+
+    public String getWarehouseValueText() { return warehouseValueText; }
+    public void setWarehouseValueText(String warehouseValueText) { this.warehouseValueText = warehouseValueText; }
+
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public LocalDateTime getDeletedAt() { return deletedAt; }
+    public void setDeletedAt(LocalDateTime deletedAt) { this.deletedAt = deletedAt; }
 }

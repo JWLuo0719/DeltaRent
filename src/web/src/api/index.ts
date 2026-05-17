@@ -16,6 +16,7 @@ import type {
   UserProfile,
   UpdateProfilePayload,
   ChangePasswordPayload,
+  RentalPublishPayload,
   SubmitAppealPayload,
   PageResult,
   AdminUser,
@@ -128,6 +129,13 @@ export function updateAdminRole(roleCode: string, data: RolePayload) {
 
 export function createRental(data: Partial<RentalProduct>) {
   return http.post<ApiResponse<RentalProduct>>('/rentals', data);
+}
+
+export function publishRental(data: RentalPublishPayload) {
+  return http.post<ApiResponse<RentalProduct>>('/rentals', {
+    ...data,
+    status: 'MAINTENANCE'
+  });
 }
 
 export function updateRental(id: number, data: Partial<RentalProduct>) {

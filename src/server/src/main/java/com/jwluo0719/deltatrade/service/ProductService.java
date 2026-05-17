@@ -44,7 +44,9 @@ public class ProductService {
                     .filter(product -> containsIgnoreCase(product.getName(), normalized)
                             || containsIgnoreCase(product.getCategory(), normalized)
                             || containsIgnoreCase(product.getTagText(), normalized)
-                            || containsIgnoreCase(product.getEquipmentLevelText(), normalized))
+                            || containsIgnoreCase(product.getRankText(), normalized)
+                            || containsIgnoreCase(product.getKnifeSkinText(), normalized)
+                            || containsIgnoreCase(product.getCharacterSkinText(), normalized))
                     .collect(Collectors.toList());
         }
 
@@ -56,7 +58,7 @@ public class ProductService {
 
         if (level != null && !level.isBlank()) {
             products = products.stream()
-                    .filter(product -> matchesLevel(product.getEquipmentLevelText(), level))
+                    .filter(product -> matchesLevel(product.getWarehouseValueText(), level))
                     .collect(Collectors.toList());
         }
 
@@ -85,11 +87,11 @@ public class ProductService {
 
         if ("price_asc".equalsIgnoreCase(sortBy)) {
             products = products.stream()
-                    .sorted((left, right) -> left.getHourPrice().compareTo(right.getHourPrice()))
+                    .sorted((left, right) -> left.getPrice().compareTo(right.getPrice()))
                     .collect(Collectors.toList());
         } else if ("price_desc".equalsIgnoreCase(sortBy)) {
             products = products.stream()
-                    .sorted((left, right) -> right.getHourPrice().compareTo(left.getHourPrice()))
+                    .sorted((left, right) -> right.getPrice().compareTo(left.getPrice()))
                     .collect(Collectors.toList());
         }
 
@@ -119,10 +121,10 @@ public class ProductService {
         if (product.getName() == null || product.getName().isBlank()) {
             throw new IllegalArgumentException("账号名称不能为空");
         }
-        if (product.getHourPrice() == null || product.getHourPrice().compareTo(BigDecimal.ZERO) <= 0) {
+        if (product.getPrice() == null || product.getPrice().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("价格必须大于 0");
         }
-        if (product.getStatus() == null) {
+        if (product.getStatus() == null || product.getStatus().isBlank()) {
             product.setStatus("AVAILABLE");
         }
         productMapper.insert(product);
@@ -131,7 +133,9 @@ public class ProductService {
 
     public void update(RentalProduct product) {
         RentalProduct exist = productMapper.findById(product.getId());
-        if (exist == null) throw new IllegalArgumentException("账号不存在");
+        if (exist == null) {
+            throw new IllegalArgumentException("账号不存在");
+        }
         productMapper.update(product);
     }
 

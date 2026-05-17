@@ -81,10 +81,9 @@ class ProductServiceTest {
         product.setName(name);
         product.setCategory(category);
         product.setTagText(tags);
-        product.setHourPrice(new BigDecimal(price));
+        product.setPrice(new BigDecimal(price));
         product.setCoinAmount(1_000_000L);
-        product.setEquipmentLevelText(level);
-        product.setWarehouseValueText("Demo warehouse");
+        product.setWarehouseValueText(level);
         product.setStatus(status);
         product.setDescription("Demo product");
         return product;

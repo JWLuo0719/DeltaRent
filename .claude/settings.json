@@ -23,7 +23,10 @@
       "Bash(curl -s -X POST http://localhost:8080/api/auth/login -H \"Content-Type: application/json\" -d '{\"phone\":\"13999990002\",\"password\":\"test123456\"}')",
       "Bash(taskkill //F //PID 37492)",
       "Bash(curl -s -X POST http://localhost:8080/api/auth/register -H \"Content-Type: application/json\" -d '{\"phone\":\"13999990003\",\"password\":\"test123456\"}')",
-      "Bash(curl -s -X POST http://localhost:8080/api/auth/login -H \"Content-Type: application/json\" -d '{\"phone\":\"13999990003\",\"password\":\"test123456\"}')"
+      "Bash(curl -s -X POST http://localhost:8080/api/auth/login -H \"Content-Type: application/json\" -d '{\"phone\":\"13999990003\",\"password\":\"test123456\"}')",
+      "Bash(python -c ' *)",
+      "Bash(cat vite.config.ts)",
+      "Bash(cat vite.config.js)"
     ],
     "additionalDirectories": [
       "D:\\",

@@ -228,7 +228,7 @@ onMounted(loadOrder);
 }
 
 .status-WAITING_CONFIRM { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
-.status-IN_PROGRESS { background: rgba(96, 165, 250, 0.15); color: #60a5fa; }
+.status-IN_PROGRESS { background: rgba(255, 196, 32, 0.15); color: #c57a00; }
 .status-COMPLETED { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
 .status-CANCELLED { background: rgba(100, 116, 139, 0.15); color: #94a3b8; }
 .status-AFTER_SALE { background: rgba(239, 68, 68, 0.15); color: #f87171; }
@@ -293,23 +293,23 @@ onMounted(loadOrder);
   top: 16px;
   bottom: 0;
   width: 1px;
-  background: rgba(96, 165, 250, 0.15);
+  background: rgba(255, 196, 32, 0.15);
 }
 
 .timeline-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: rgba(96, 165, 250, 0.3);
-  border: 2px solid rgba(96, 165, 250, 0.4);
+  background: rgba(255, 196, 32, 0.3);
+  border: 2px solid rgba(255, 196, 32, 0.4);
   flex-shrink: 0;
   margin-top: 4px;
 }
 
 .timeline-dot.latest {
-  background: #60a5fa;
-  border-color: #60a5fa;
-  box-shadow: 0 0 8px rgba(96, 165, 250, 0.5);
+  background: #f59e0b;
+  border-color: #f59e0b;
+  box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
 }
 
 .timeline-body {

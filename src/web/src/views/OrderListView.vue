@@ -5,14 +5,22 @@
     </div>
 
     <div class="filter-bar">
-      <el-select v-model="filterStatus" placeholder="订单状态" clearable @change="loadOrders">
-        <el-option label="全部" value="" />
+      <div class="filter-label">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M3 5h14M7 10h6M9 15h2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <span>筛选</span>
+      </div>
+      <el-select v-model="filterStatus" placeholder="订单状态" clearable @change="loadOrders" class="filter-select">
+        <el-option label="全部状态" value="" />
         <el-option label="待确认" value="WAITING_CONFIRM" />
         <el-option label="进行中" value="IN_PROGRESS" />
         <el-option label="已完成" value="COMPLETED" />
         <el-option label="已取消" value="CANCELLED" />
         <el-option label="售后中" value="AFTER_SALE" />
       </el-select>
+      <span class="filter-count" v-if="filterStatus">
+        当前：{{ statusMap[filterStatus] || filterStatus }}
+        <button class="clear-btn" @click="filterStatus = ''; loadOrders()">清除</button>
+      </span>
     </div>
 
     <div v-if="loading" class="order-card">
@@ -145,6 +153,53 @@ onMounted(loadOrders);
   border-radius: 20px;
   padding: 14px 20px;
   margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #9b5d00;
+  flex-shrink: 0;
+}
+
+.filter-label svg {
+  width: 16px;
+  height: 16px;
+  color: #c57a00;
+}
+
+.filter-select {
+  width: 200px;
+}
+
+.filter-count {
+  font-size: 12px;
+  color: #9b5d00;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clear-btn {
+  background: rgba(255, 196, 32, 0.12);
+  border: 1px solid rgba(255, 196, 32, 0.25);
+  color: #c57a00;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.clear-btn:hover {
+  background: rgba(255, 196, 32, 0.25);
 }
 
 .order-list {
@@ -189,7 +244,7 @@ onMounted(loadOrders);
 }
 
 .status-WAITING_CONFIRM { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
-.status-IN_PROGRESS { background: rgba(96, 165, 250, 0.15); color: #60a5fa; }
+.status-IN_PROGRESS { background: rgba(255, 196, 32, 0.15); color: #c57a00; }
 .status-COMPLETED { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
 .status-CANCELLED { background: rgba(100, 116, 139, 0.15); color: #94a3b8; }
 .status-AFTER_SALE { background: rgba(239, 68, 68, 0.15); color: #f87171; }
@@ -228,9 +283,9 @@ onMounted(loadOrders);
 .empty-desc { font-size: 14px; color: #64748b; margin-bottom: 20px; }
 
 .empty-btn {
-  background: rgba(96, 165, 250, 0.1) !important;
-  border: 1px solid rgba(96, 165, 250, 0.25) !important;
-  color: #60a5fa !important;
+  background: rgba(255, 196, 32, 0.1) !important;
+  border: 1px solid rgba(255, 196, 32, 0.25) !important;
+  color: #c57a00 !important;
 }
 
 .pagination-bar {
@@ -242,13 +297,31 @@ onMounted(loadOrders);
 :deep(.el-input__wrapper) {
   background: #fff !important;
   box-shadow: 0 0 0 1px #dbe3ef inset !important;
+  border-radius: 10px !important;
 }
 
 :deep(.el-input__inner) { color: #1f2937 !important; }
 
-:deep(.el-pagination button) { background: rgba(255,255,255,0.05) !important; border-color: rgba(96,165,250,0.15) !important; color: #94a3b8 !important; }
-:deep(.el-pagination button:hover) { background: rgba(96,165,250,0.15) !important; color: #60a5fa !important; }
-:deep(.el-pager li) { background: rgba(255,255,255,0.05) !important; border-color: rgba(96,165,250,0.15) !important; color: #94a3b8 !important; }
-:deep(.el-pager li:hover) { color: #60a5fa !important; }
-:deep(.el-pager li.is-active) { background: #1e40af !important; border-color: #1e40af !important; color: #fff !important; }
+:deep(.el-select__wrapper) {
+  background: #fff !important;
+  border-radius: 10px !important;
+  box-shadow: 0 0 0 1px #e2d5a8 inset !important;
+  padding: 8px 12px !important;
+}
+
+:deep(.el-select__placeholder) {
+  color: #94a3b8 !important;
+  font-size: 13px !important;
+}
+
+:deep(.el-select__selected-item) {
+  font-size: 13px !important;
+  color: #5a3c00 !important;
+}
+
+:deep(.el-pagination button) { background: rgba(255,255,255,0.05) !important; border-color: rgba(255,196,32,0.15) !important; color: #94a3b8 !important; }
+:deep(.el-pagination button:hover) { background: rgba(255,196,32,0.15) !important; color: #c57a00 !important; }
+:deep(.el-pager li) { background: rgba(255,255,255,0.05) !important; border-color: rgba(255,196,32,0.15) !important; color: #94a3b8 !important; }
+:deep(.el-pager li:hover) { color: #c57a00 !important; }
+:deep(.el-pager li.is-active) { background: linear-gradient(135deg, #ffe057 0%, #ffc420 100%) !important; border-color: #ffc420 !important; color: #5a3c00 !important; }
 </style>
