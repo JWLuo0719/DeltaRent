@@ -38,12 +38,12 @@ public class OrderService {
             throw new IllegalArgumentException("该账号已有进行中的订单，请勿重复提交");
         }
 
-        BigDecimal amount = product.getHourPrice().multiply(BigDecimal.valueOf(rentHours));
+        BigDecimal amount = product.getPrice().multiply(BigDecimal.valueOf(rentHours));
         RentalOrder order = new RentalOrder();
         order.setOrderNo("DR" + System.currentTimeMillis());
         order.setUserId(userId);
         order.setProductId(productId);
-        order.setUnitPrice(product.getHourPrice());
+        order.setUnitPrice(product.getPrice());
         order.setRentHours(rentHours);
         order.setOrderAmount(amount);
         order.setContactInfo(contactInfo != null ? contactInfo : "");

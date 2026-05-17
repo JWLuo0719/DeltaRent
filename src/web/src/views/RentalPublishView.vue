@@ -160,7 +160,6 @@ const createEmptyForm = (): RentalPublishPayload => ({
   coinAmount: 0,
   deposit: 0,
   rentalDays: 7,
-  equipmentLevelText: '',
   warehouseValueText: '',
   loginMethod: '',
   ratioText: '',
@@ -207,7 +206,6 @@ async function submitPublish() {
   try {
     const response = await publishRental({
       ...form,
-      equipmentLevelText: form.rankText || '',
       warehouseValueText: form.warehouseValueText || '',
       category: form.category || '玩家上架'
     });

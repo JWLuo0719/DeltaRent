@@ -108,25 +108,35 @@ public class RentalController {
         product.setName(String.valueOf(payload.getOrDefault("name", "")));
         product.setCategory(String.valueOf(payload.getOrDefault("category", "")));
         product.setTagText(String.valueOf(payload.getOrDefault("tagText", "")));
-        product.setHourPrice(new BigDecimal(String.valueOf(payload.getOrDefault("hourPrice", "0"))));
+        product.setPrice(new BigDecimal(String.valueOf(payload.getOrDefault("price", payload.getOrDefault("hourPrice", "0")))));
         product.setDeposit(new BigDecimal(String.valueOf(payload.getOrDefault("deposit", "0"))));
 
-        Object coinAmountVal = payload.getOrDefault("coinAmount", payload.getOrDefault("coinAmountText", 0));
+        Object coinAmountVal = payload.getOrDefault("coinAmount", 0);
         product.setCoinAmount(Long.parseLong(String.valueOf(coinAmountVal)));
 
         Object rentalDaysVal = payload.getOrDefault("rentalDays", 0);
         product.setRentalDays(Integer.parseInt(String.valueOf(rentalDaysVal)));
 
-        product.setEquipmentLevelText(String.valueOf(payload.getOrDefault("equipmentLevelText", "")));
         product.setWarehouseValueText(String.valueOf(payload.getOrDefault("warehouseValueText", "")));
         product.setLoginMethod(String.valueOf(payload.getOrDefault("loginMethod", "")));
         product.setRatioText(String.valueOf(payload.getOrDefault("ratioText", "")));
-        product.setInsuranceBoxText(String.valueOf(payload.getOrDefault("insuranceBoxText", "")));
-        product.setStaminaText(String.valueOf(payload.getOrDefault("staminaText", "")));
-        product.setWeightText(String.valueOf(payload.getOrDefault("weightText", "")));
+        product.setInsuranceBox(String.valueOf(payload.getOrDefault("insuranceBox", payload.getOrDefault("insuranceBoxText", ""))));
+
+        Object staminaVal = payload.getOrDefault("staminaLevel", payload.getOrDefault("staminaText", ""));
+        product.setStaminaLevel(parseLevel(String.valueOf(staminaVal)));
+
+        Object weightVal = payload.getOrDefault("weightLevel", payload.getOrDefault("weightText", ""));
+        product.setWeightLevel(parseLevel(String.valueOf(weightVal)));
+
         product.setRankText(String.valueOf(payload.getOrDefault("rankText", "")));
-        product.setKdText(String.valueOf(payload.getOrDefault("kdText", "")));
-        product.setDivingLevelText(String.valueOf(payload.getOrDefault("divingLevelText", "")));
+
+        Object kdVal = payload.getOrDefault("kd", payload.getOrDefault("kdText", ""));
+        String kdStr = String.valueOf(kdVal).trim();
+        product.setKd(kdStr.isEmpty() ? null : new BigDecimal(kdStr));
+
+        Object divingVal = payload.getOrDefault("divingLevel", payload.getOrDefault("divingLevelText", ""));
+        product.setDivingLevel(parseLevel(String.valueOf(divingVal)));
+
         product.setLoginRegion(String.valueOf(payload.getOrDefault("loginRegion", "")));
         product.setTradeTimeText(String.valueOf(payload.getOrDefault("tradeTimeText", "")));
         product.setKnifeSkinText(String.valueOf(payload.getOrDefault("knifeSkinText", "")));
@@ -138,26 +148,42 @@ public class RentalController {
         return product;
     }
 
+    private Integer parseLevel(String val) {
+        if (val == null || val.isBlank()) return null;
+        String digits = val.replaceAll("[^0-9]", "");
+        if (digits.isEmpty()) return null;
+        return Integer.parseInt(digits);
+    }
+
     private Map<String, Object> toView(RentalProduct product) {
         Map<String, Object> item = new LinkedHashMap<>();
         item.put("id", product.getId());
         item.put("name", product.getName());
+        item.put("ownerId", product.getOwnerId());
         item.put("category", product.getCategory());
         item.put("tagText", product.getTagText());
-        item.put("hourPrice", product.getHourPrice());
+        item.put("hourPrice", product.getPrice());
+        item.put("price", product.getPrice());
         item.put("coinAmount", product.getCoinAmount());
         item.put("deposit", product.getDeposit());
         item.put("rentalDays", product.getRentalDays());
-        item.put("equipmentLevelText", product.getEquipmentLevelText());
         item.put("warehouseValueText", product.getWarehouseValueText());
         item.put("loginMethod", product.getLoginMethod());
         item.put("ratioText", product.getRatioText());
-        item.put("insuranceBoxText", product.getInsuranceBoxText());
-        item.put("staminaText", product.getStaminaText());
-        item.put("weightText", product.getWeightText());
+        item.put("insuranceBoxText", product.getInsuranceBox());
+        item.put("insuranceBox", product.getInsuranceBox());
+        String staminaStr = product.getStaminaLevel() != null ? product.getStaminaLevel() + "级" : "";
+        String weightStr = product.getWeightLevel() != null ? product.getWeightLevel() + "级" : "";
+        item.put("staminaText", staminaStr);
+        item.put("weightText", weightStr);
+        item.put("staminaLevel", product.getStaminaLevel());
+        item.put("weightLevel", product.getWeightLevel());
         item.put("rankText", product.getRankText());
-        item.put("kdText", product.getKdText());
-        item.put("divingLevelText", product.getDivingLevelText());
+        item.put("kdText", product.getKd() != null ? product.getKd().toString() : "");
+        item.put("kd", product.getKd());
+        String divingStr = product.getDivingLevel() != null ? product.getDivingLevel() + "级" : "";
+        item.put("divingLevelText", divingStr);
+        item.put("divingLevel", product.getDivingLevel());
         item.put("loginRegion", product.getLoginRegion());
         item.put("tradeTimeText", product.getTradeTimeText());
         item.put("knifeSkinText", product.getKnifeSkinText());
@@ -166,19 +192,11 @@ public class RentalController {
         item.put("coverImageUrl", product.getCoverImageUrl());
         item.put("status", product.getStatus());
         item.put("description", product.getDescription());
-
         item.put("tag", product.getTagText());
-        item.put("price", product.getHourPrice() + " / 小时");
-        item.put("equipmentLevel", product.getEquipmentLevelText());
-        item.put("warehouseValue", product.getWarehouseValueText());
-        item.put("ratio", product.getRatioText());
-        item.put("insuranceBox", product.getInsuranceBoxText());
-        item.put("stamina", product.getStaminaText());
-        item.put("weight", product.getWeightText());
         item.put("rank", product.getRankText());
         item.put("isHot", "AVAILABLE".equals(product.getStatus())
-                && product.getHourPrice() != null
-                && product.getHourPrice().compareTo(new BigDecimal("15")) >= 0);
+                && product.getPrice() != null
+                && product.getPrice().compareTo(new BigDecimal("1000")) >= 0);
         return item;
     }
 }

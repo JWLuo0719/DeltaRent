@@ -15,83 +15,63 @@ import java.util.List;
 public interface RentalProductMapper {
 
     @Select("""
-            select id, name, category, tag_text, hour_price, coin_amount,
-                   equipment_level_text, warehouse_value_text, login_method,
-                   ratio_text, insurance_box_text, stamina_text, weight_text,
-                   rank_text, kd_text, diving_level_text, login_region,
-                   trade_time_text, rental_days, deposit, knife_skin_text,
+            select id, name, owner_id, category, tag_text, price, deposit,
+                   rental_days, coin_amount, login_method, insurance_box,
+                   stamina_level, weight_level, rank_text, kd, diving_level,
+                   ratio_text, login_region, trade_time_text, knife_skin_text,
                    weapon_skin_text, character_skin_text, cover_image_url,
-                   status, description
-            from rental_product
-            order by id desc
+                   warehouse_value_text, description, status, created_at, updated_at
+            from rental_product where deleted_at is null order by id desc
             """)
     List<RentalProduct> findAll();
 
     @Select("""
-            select id, name, category, tag_text, hour_price, coin_amount,
-                   equipment_level_text, warehouse_value_text, login_method,
-                   ratio_text, insurance_box_text, stamina_text, weight_text,
-                   rank_text, kd_text, diving_level_text, login_region,
-                   trade_time_text, rental_days, deposit, knife_skin_text,
+            select id, name, owner_id, category, tag_text, price, deposit,
+                   rental_days, coin_amount, login_method, insurance_box,
+                   stamina_level, weight_level, rank_text, kd, diving_level,
+                   ratio_text, login_region, trade_time_text, knife_skin_text,
                    weapon_skin_text, character_skin_text, cover_image_url,
-                   status, description
-            from rental_product
-            where id = #{id}
+                   warehouse_value_text, description, status, created_at, updated_at
+            from rental_product where id = #{id} and deleted_at is null
             """)
     RentalProduct findById(Long id);
 
-    @Select("select count(*) from rental_product where status = 'AVAILABLE'")
+    @Select("select count(*) from rental_product where status = 'AVAILABLE' and deleted_at is null")
     long countAvailable();
 
     @Insert("""
             insert into rental_product(
-                name, category, tag_text, hour_price, coin_amount,
-                equipment_level_text, warehouse_value_text, login_method,
-                ratio_text, insurance_box_text, stamina_text, weight_text,
-                rank_text, kd_text, diving_level_text, login_region,
-                trade_time_text, rental_days, deposit, knife_skin_text,
+                name, owner_id, category, tag_text, price, deposit,
+                rental_days, coin_amount, login_method, insurance_box,
+                stamina_level, weight_level, rank_text, kd, diving_level,
+                ratio_text, login_region, trade_time_text, knife_skin_text,
                 weapon_skin_text, character_skin_text, cover_image_url,
-                status, description
+                warehouse_value_text, description, status
             ) values(
-                #{name}, #{category}, #{tagText}, #{hourPrice}, #{coinAmount},
-                #{equipmentLevelText}, #{warehouseValueText}, #{loginMethod},
-                #{ratioText}, #{insuranceBoxText}, #{staminaText}, #{weightText},
-                #{rankText}, #{kdText}, #{divingLevelText}, #{loginRegion},
-                #{tradeTimeText}, #{rentalDays}, #{deposit}, #{knifeSkinText},
+                #{name}, #{ownerId}, #{category}, #{tagText}, #{price}, #{deposit},
+                #{rentalDays}, #{coinAmount}, #{loginMethod}, #{insuranceBox},
+                #{staminaLevel}, #{weightLevel}, #{rankText}, #{kd}, #{divingLevel},
+                #{ratioText}, #{loginRegion}, #{tradeTimeText}, #{knifeSkinText},
                 #{weaponSkinText}, #{characterSkinText}, #{coverImageUrl},
-                #{status}, #{description}
+                #{warehouseValueText}, #{description}, #{status}
             )
             """)
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(RentalProduct product);
 
     @Update("""
-            update rental_product
-            set name = #{name},
-                category = #{category},
-                tag_text = #{tagText},
-                hour_price = #{hourPrice},
-                coin_amount = #{coinAmount},
-                equipment_level_text = #{equipmentLevelText},
-                warehouse_value_text = #{warehouseValueText},
-                login_method = #{loginMethod},
-                ratio_text = #{ratioText},
-                insurance_box_text = #{insuranceBoxText},
-                stamina_text = #{staminaText},
-                weight_text = #{weightText},
-                rank_text = #{rankText},
-                kd_text = #{kdText},
-                diving_level_text = #{divingLevelText},
-                login_region = #{loginRegion},
-                trade_time_text = #{tradeTimeText},
-                rental_days = #{rentalDays},
-                deposit = #{deposit},
-                knife_skin_text = #{knifeSkinText},
-                weapon_skin_text = #{weaponSkinText},
-                character_skin_text = #{characterSkinText},
-                cover_image_url = #{coverImageUrl},
-                status = #{status},
-                description = #{description}
+            update rental_product set
+                name = #{name}, owner_id = #{ownerId}, category = #{category},
+                tag_text = #{tagText}, price = #{price}, deposit = #{deposit},
+                rental_days = #{rentalDays}, coin_amount = #{coinAmount},
+                login_method = #{loginMethod}, insurance_box = #{insuranceBox},
+                stamina_level = #{staminaLevel}, weight_level = #{weightLevel},
+                rank_text = #{rankText}, kd = #{kd}, diving_level = #{divingLevel},
+                ratio_text = #{ratioText}, login_region = #{loginRegion},
+                trade_time_text = #{tradeTimeText}, knife_skin_text = #{knifeSkinText},
+                weapon_skin_text = #{weaponSkinText}, character_skin_text = #{characterSkinText},
+                cover_image_url = #{coverImageUrl}, warehouse_value_text = #{warehouseValueText},
+                description = #{description}, status = #{status}
             where id = #{id}
             """)
     int update(RentalProduct product);

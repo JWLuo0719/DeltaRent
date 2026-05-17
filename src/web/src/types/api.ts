@@ -26,35 +26,38 @@ export interface PortalSummary {
 export interface RentalProduct {
   id: number;
   name: string;
+  ownerId?: number;
   category: string;
   tagText: string;
   hourPrice: number;
+  price?: number;
   coinAmount: number;
   deposit?: number;
   rentalDays?: number;
-  equipmentLevelText: string;
   warehouseValueText: string;
   loginMethod?: string;
   ratioText?: string;
   insuranceBoxText?: string;
+  insuranceBox?: string;
   staminaText?: string;
+  staminaLevel?: number;
   weightText?: string;
+  weightLevel?: number;
   rankText?: string;
   kdText?: string;
+  kd?: number;
   divingLevelText?: string;
+  divingLevel?: number;
   loginRegion?: string;
   tradeTimeText?: string;
   knifeSkinText?: string;
   weaponSkinText?: string;
   characterSkinText?: string;
   coverImageUrl?: string;
-  status: 'AVAILABLE' | 'RENTED' | 'MAINTENANCE' | string;
+  status: 'AVAILABLE' | 'RENTED' | 'MAINTENANCE' | 'PENDING' | 'OFF_SHELF' | string;
   description: string;
   isHot?: boolean;
   tag?: string;
-  price?: string;
-  equipmentLevel?: string;
-  warehouseValue?: string;
 }
 
 export interface RentalListResult {
@@ -184,7 +187,6 @@ export interface RentalPublishPayload {
   coinAmount: number;
   deposit?: number;
   rentalDays?: number;
-  equipmentLevelText: string;
   warehouseValueText: string;
   loginMethod?: string;
   ratioText?: string;

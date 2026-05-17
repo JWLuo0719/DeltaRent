@@ -55,8 +55,8 @@
             </div>
             <div class="product-name">{{ p.name }}</div>
             <div class="product-attrs">
-              <div class="attr-row"><span class="attr-k">装备等级</span><span class="attr-v">{{ p.equipmentLevel }}</span></div>
-              <div class="attr-row"><span class="attr-k">库存价值</span><span class="attr-v">{{ p.warehouseValue }}</span></div>
+              <div class="attr-row"><span class="attr-k">段位</span><span class="attr-v">{{ p.rankText }}</span></div>
+              <div class="attr-row"><span class="attr-k">库存价值</span><span class="attr-v">{{ p.warehouseValueText }}</span></div>
               <div class="attr-row"><span class="attr-k">哈夫币</span><span class="attr-v">{{ formatCoinAmount(p.coinAmount) }}</span></div>
             </div>
             <div class="product-price-row">
