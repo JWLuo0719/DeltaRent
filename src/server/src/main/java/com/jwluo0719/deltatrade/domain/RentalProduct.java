@@ -27,6 +27,12 @@ public class RentalProduct {
     private String knifeSkinText;
     private String weaponSkinText;
     private String characterSkinText;
+    private Integer level;
+    private Integer helmetCount;
+    private Integer armorCount;
+    private Integer awmAmmoCount;
+    private Integer nineGridTrialCardCount;
+    private String recentBanRecord;
     private String coverImageUrl;
     private String warehouseValueText;
     private String description;
@@ -100,6 +106,24 @@ public class RentalProduct {
 
     public String getCharacterSkinText() { return characterSkinText; }
     public void setCharacterSkinText(String characterSkinText) { this.characterSkinText = characterSkinText; }
+
+    public Integer getLevel() { return level; }
+    public void setLevel(Integer level) { this.level = level; }
+
+    public Integer getHelmetCount() { return helmetCount; }
+    public void setHelmetCount(Integer helmetCount) { this.helmetCount = helmetCount; }
+
+    public Integer getArmorCount() { return armorCount; }
+    public void setArmorCount(Integer armorCount) { this.armorCount = armorCount; }
+
+    public Integer getAwmAmmoCount() { return awmAmmoCount; }
+    public void setAwmAmmoCount(Integer awmAmmoCount) { this.awmAmmoCount = awmAmmoCount; }
+
+    public Integer getNineGridTrialCardCount() { return nineGridTrialCardCount; }
+    public void setNineGridTrialCardCount(Integer nineGridTrialCardCount) { this.nineGridTrialCardCount = nineGridTrialCardCount; }
+
+    public String getRecentBanRecord() { return recentBanRecord; }
+    public void setRecentBanRecord(String recentBanRecord) { this.recentBanRecord = recentBanRecord; }
 
     public String getCoverImageUrl() { return coverImageUrl; }
     public void setCoverImageUrl(String coverImageUrl) { this.coverImageUrl = coverImageUrl; }

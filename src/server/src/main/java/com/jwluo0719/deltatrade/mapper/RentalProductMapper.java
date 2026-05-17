@@ -20,6 +20,8 @@ public interface RentalProductMapper {
                    stamina_level, weight_level, rank_text, kd, diving_level,
                    ratio_text, login_region, trade_time_text, knife_skin_text,
                    weapon_skin_text, character_skin_text, cover_image_url,
+                   level, helmet_count, armor_count, awm_ammo_count,
+                   nine_grid_trial_card_count, recent_ban_record,
                    warehouse_value_text, description, status, created_at, updated_at
             from rental_product where deleted_at is null order by id desc
             """)
@@ -31,6 +33,8 @@ public interface RentalProductMapper {
                    stamina_level, weight_level, rank_text, kd, diving_level,
                    ratio_text, login_region, trade_time_text, knife_skin_text,
                    weapon_skin_text, character_skin_text, cover_image_url,
+                   level, helmet_count, armor_count, awm_ammo_count,
+                   nine_grid_trial_card_count, recent_ban_record,
                    warehouse_value_text, description, status, created_at, updated_at
             from rental_product where id = #{id} and deleted_at is null
             """)
@@ -46,6 +50,8 @@ public interface RentalProductMapper {
                 stamina_level, weight_level, rank_text, kd, diving_level,
                 ratio_text, login_region, trade_time_text, knife_skin_text,
                 weapon_skin_text, character_skin_text, cover_image_url,
+                level, helmet_count, armor_count, awm_ammo_count,
+                nine_grid_trial_card_count, recent_ban_record,
                 warehouse_value_text, description, status
             ) values(
                 #{name}, #{ownerId}, #{category}, #{tagText}, #{price}, #{deposit},
@@ -53,6 +59,8 @@ public interface RentalProductMapper {
                 #{staminaLevel}, #{weightLevel}, #{rankText}, #{kd}, #{divingLevel},
                 #{ratioText}, #{loginRegion}, #{tradeTimeText}, #{knifeSkinText},
                 #{weaponSkinText}, #{characterSkinText}, #{coverImageUrl},
+                #{level}, #{helmetCount}, #{armorCount}, #{awmAmmoCount},
+                #{nineGridTrialCardCount}, #{recentBanRecord},
                 #{warehouseValueText}, #{description}, #{status}
             )
             """)
@@ -70,6 +78,9 @@ public interface RentalProductMapper {
                 ratio_text = #{ratioText}, login_region = #{loginRegion},
                 trade_time_text = #{tradeTimeText}, knife_skin_text = #{knifeSkinText},
                 weapon_skin_text = #{weaponSkinText}, character_skin_text = #{characterSkinText},
+                level = #{level}, helmet_count = #{helmetCount}, armor_count = #{armorCount},
+                awm_ammo_count = #{awmAmmoCount}, nine_grid_trial_card_count = #{nineGridTrialCardCount},
+                recent_ban_record = #{recentBanRecord},
                 cover_image_url = #{coverImageUrl}, warehouse_value_text = #{warehouseValueText},
                 description = #{description}, status = #{status}
             where id = #{id}

@@ -84,13 +84,14 @@
           <div class="sort-tabs">
             <button
               v-for="sort in sortOptions"
-              :key="sort.value"
+              :key="sort.key"
               class="sort-tab"
-              :class="{ active: sortBy === sort.value }"
+              :class="{ active: isSortActive(sort.key) }"
               type="button"
-              @click="sortBy = sort.value"
+              @click="toggleSort(sort.key)"
             >
               {{ sort.label }}
+              <span v-if="sort.key !== 'default'" class="sort-arrow">{{ getSortArrow(sort.key) }}</span>
             </button>
           </div>
 
@@ -110,43 +111,43 @@
             clearable
             class="filter-item filter-search"
           />
-          <el-select v-model="selectedRank" clearable placeholder="段位" class="filter-item">
-            <el-option v-for="item in RANK_OPTIONS" :key="item" :label="item" :value="item" />
-          </el-select>
           <el-select v-model="selectedPriceRange" clearable placeholder="价格" class="filter-item">
             <el-option v-for="item in PRICE_RANGE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
-          <el-select v-model="selectedCoinRange" clearable placeholder="哈夫币" class="filter-item">
-            <el-option v-for="item in COIN_RANGE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
+          <el-select v-model="selectedStatus" clearable placeholder="状态" class="filter-item">
+            <el-option label="可租" value="AVAILABLE" />
+            <el-option label="待审核 / 维护" value="MAINTENANCE" />
+            <el-option label="已租出" value="RENTED" />
           </el-select>
         </div>
 
         <div class="filter-row">
-          <el-select v-model="selectedLoginMethod" clearable placeholder="上号方式" class="filter-item">
-            <el-option v-for="item in LOGIN_METHOD_OPTIONS" :key="item" :label="item" :value="item" />
+          <el-select v-model="selectedCoinRange" clearable placeholder="哈夫币" class="filter-item">
+            <el-option v-for="item in COIN_RANGE_OPTIONS" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
           <el-select v-model="selectedInsuranceBox" clearable placeholder="保险箱" class="filter-item">
             <el-option v-for="item in INSURANCE_OPTIONS" :key="item" :label="item" :value="item" />
           </el-select>
+          <el-select v-model="selectedRank" clearable placeholder="段位" class="filter-item">
+            <el-option v-for="item in RANK_OPTIONS" :key="item" :label="item" :value="item" />
+          </el-select>
+          <el-select v-model="selectedLoginMethod" clearable placeholder="上号方式" class="filter-item">
+            <el-option v-for="item in LOGIN_METHOD_OPTIONS" :key="item" :label="item" :value="item" />
+          </el-select>
+        </div>
+
+        <div class="filter-row">
           <el-select v-model="selectedKnifeSkin" clearable placeholder="刀皮" class="filter-item">
             <el-option v-for="item in KNIFE_SKIN_OPTIONS" :key="item" :label="item" :value="item" />
           </el-select>
           <el-select v-model="selectedOperatorSkin" clearable placeholder="红皮" class="filter-item">
             <el-option v-for="item in OPERATOR_SKIN_OPTIONS" :key="item" :label="item" :value="item" />
           </el-select>
-        </div>
-
-        <div class="filter-row">
           <el-select v-model="selectedStamina" clearable placeholder="体力" class="filter-item">
             <el-option v-for="item in STAMINA_WEIGHT_OPTIONS" :key="item" :label="item" :value="item" />
           </el-select>
           <el-select v-model="selectedWeight" clearable placeholder="负重" class="filter-item">
             <el-option v-for="item in STAMINA_WEIGHT_OPTIONS" :key="item" :label="item" :value="item" />
-          </el-select>
-          <el-select v-model="selectedStatus" clearable placeholder="状态" class="filter-item">
-            <el-option label="可租" value="AVAILABLE" />
-            <el-option label="待审核 / 维护" value="MAINTENANCE" />
-            <el-option label="已租出" value="RENTED" />
           </el-select>
         </div>
       </section>
@@ -196,37 +197,14 @@
               </p>
 
               <div class="metric-grid">
-                <div class="metric-box metric-highlight">
-                  <strong>{{ formatCoinDisplay(product.coinAmount) }}</strong>
-                  <span>哈夫币数量</span>
-                </div>
-                <div class="metric-box metric-highlight">
-                  <strong>{{ product.ratioText || '-' }}</strong>
-                  <span>比例</span>
-                </div>
-                <div class="metric-box">
-                  <strong>{{ product.insuranceBoxText || '-' }}</strong>
-                  <span>保险箱</span>
-                </div>
-                <div class="metric-box">
-                  <strong>{{ formatStaminaWeight(product) }}</strong>
-                  <span>体力负重</span>
-                </div>
-                <div class="metric-box">
-                  <strong>{{ product.rankText || '-' }}</strong>
-                  <span>段位</span>
-                </div>
-                <div class="metric-box">
-                  <strong>{{ product.kdText || '-' }}</strong>
-                  <span>KD</span>
-                </div>
-                <div class="metric-box">
-                  <strong>{{ product.divingLevelText || '-' }}</strong>
-                  <span>潜水等级</span>
-                </div>
-                <div class="metric-box">
-                  <strong>{{ product.knifeSkinText || product.characterSkinText || '-' }}</strong>
-                  <span>刀皮 / 红皮</span>
+                <div
+                  v-for="metric in accountMetrics(product)"
+                  :key="metric.label"
+                  class="metric-box"
+                  :class="{ 'metric-highlight': metric.highlight }"
+                >
+                  <strong>{{ metric.value }}</strong>
+                  <span>{{ metric.label }}</span>
                 </div>
               </div>
             </div>
@@ -261,10 +239,9 @@
               <h3>{{ product.name }}</h3>
               <p>{{ product.loginMethod || '未填写上号方式' }} ｜ 租期 {{ product.rentalDays || 7 }}天</p>
               <div class="grid-metrics">
-                <span>{{ formatCoinDisplay(product.coinAmount) }}</span>
-                <span>{{ product.rankText || '-' }}</span>
-                <span>{{ product.insuranceBoxText || '-' }}</span>
-                <span>{{ formatStaminaWeight(product) }}</span>
+                <span v-for="metric in accountMetrics(product)" :key="metric.label">
+                  {{ metric.value }} {{ metric.label }}
+                </span>
               </div>
               <div class="grid-footer">
                 <strong>{{ formatMoney(product.hourPrice) }}</strong>
@@ -377,37 +354,14 @@
                 <h2>{{ selectedProduct.name }}</h2>
                 <p>{{ selectedProduct.loginMethod || '未填写上号方式' }} ｜ {{ selectedProduct.tradeTimeText || '待补充方便交易时间' }} ｜ 租期：{{ selectedProduct.rentalDays || 7 }}天</p>
                 <div class="detail-grid">
-                  <div class="metric-box metric-highlight">
-                    <strong>{{ formatCoinDisplay(selectedProduct.coinAmount) }}</strong>
-                    <span>哈夫币</span>
-                  </div>
-                  <div class="metric-box metric-highlight">
-                    <strong>{{ selectedProduct.ratioText || '-' }}</strong>
-                    <span>比例</span>
-                  </div>
-                  <div class="metric-box">
-                    <strong>{{ selectedProduct.insuranceBoxText || '-' }}</strong>
-                    <span>保险箱</span>
-                  </div>
-                  <div class="metric-box">
-                    <strong>{{ formatStaminaWeight(selectedProduct) }}</strong>
-                    <span>体力负重</span>
-                  </div>
-                  <div class="metric-box">
-                    <strong>{{ selectedProduct.rankText || '-' }}</strong>
-                    <span>段位</span>
-                  </div>
-                  <div class="metric-box">
-                    <strong>{{ selectedProduct.kdText || '-' }}</strong>
-                    <span>KD</span>
-                  </div>
-                  <div class="metric-box">
-                    <strong>{{ selectedProduct.divingLevelText || '-' }}</strong>
-                    <span>潜水等级</span>
-                  </div>
-                  <div class="metric-box">
-                    <strong>{{ selectedProduct.knifeSkinText || '-' }}</strong>
-                    <span>刀皮</span>
+                  <div
+                    v-for="metric in accountMetrics(selectedProduct)"
+                    :key="metric.label"
+                    class="metric-box"
+                    :class="{ 'metric-highlight': metric.highlight }"
+                  >
+                    <strong>{{ metric.value }}</strong>
+                    <span>{{ metric.label }}</span>
                   </div>
                 </div>
               </div>
@@ -482,7 +436,8 @@ import {
 } from '@/constants/rental';
 
 type DisplayMode = 'list' | 'grid';
-type SortValue = 'default' | 'price_asc' | 'price_desc' | 'ratio_asc';
+type SortKey = 'default' | 'price' | 'ratio';
+type SortValue = 'default' | 'price_asc' | 'price_desc' | 'ratio_asc' | 'ratio_desc';
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -575,10 +530,9 @@ const zoneCards = computed(() => QUICK_ZONE_OPTIONS.map(zone => ({
 })));
 
 const sortOptions = [
-  { label: '默认排序', value: 'default' as SortValue },
-  { label: '价格升序', value: 'price_asc' as SortValue },
-  { label: '价格降序', value: 'price_desc' as SortValue },
-  { label: '比例排序', value: 'ratio_asc' as SortValue }
+  { label: '默认排序', key: 'default' as SortKey },
+  { label: '价格排序', key: 'price' as SortKey },
+  { label: '比例排序', key: 'ratio' as SortKey }
 ];
 
 const totalLoaded = computed(() => rawProducts.value.length);
@@ -665,6 +619,8 @@ const filteredProducts = computed(() => {
     list = list.slice().sort((a, b) => Number(b.hourPrice || 0) - Number(a.hourPrice || 0));
   } else if (sortBy.value === 'ratio_asc') {
     list = list.slice().sort((a, b) => parseRatio(a.ratioText) - parseRatio(b.ratioText));
+  } else if (sortBy.value === 'ratio_desc') {
+    list = list.slice().sort((a, b) => parseRatio(b.ratioText) - parseRatio(a.ratioText));
   }
 
   return list;
@@ -742,6 +698,52 @@ function formatStaminaWeight(item: RentalProduct) {
   return `${stamina}/${weight}`;
 }
 
+function formatHeadArmor(item: RentalProduct) {
+  return `${item.helmetCount ?? 0}/${item.armorCount ?? 0}`;
+}
+
+function formatRankKd(item: RentalProduct) {
+  return `${item.rankText || '-'}/${item.kdText || '-'}`;
+}
+
+function accountMetrics(item: RentalProduct) {
+  return [
+    { label: '哈夫币数量', value: formatCoinDisplay(item.coinAmount), highlight: true },
+    { label: '比例', value: item.ratioText || '-', highlight: true },
+    { label: '保险箱', value: item.insuranceBoxText || '-', highlight: false },
+    { label: '特勤处', value: formatStaminaWeight(item), highlight: false },
+    { label: '头/甲', value: formatHeadArmor(item), highlight: false },
+    { label: 'AWM子弹', value: String(item.awmAmmoCount ?? 0), highlight: false },
+    { label: '等级', value: String(item.level ?? '-'), highlight: false },
+    { label: '段位/kd', value: formatRankKd(item), highlight: false }
+  ];
+}
+
+function isSortActive(key: SortKey) {
+  if (key === 'default') return sortBy.value === 'default';
+  return sortBy.value.startsWith(`${key}_`);
+}
+
+function getSortArrow(key: Exclude<SortKey, 'default'>) {
+  if (sortBy.value === `${key}_asc`) return '↑';
+  if (sortBy.value === `${key}_desc`) return '↓';
+  return '↕';
+}
+
+function toggleSort(key: SortKey) {
+  if (key === 'default') {
+    sortBy.value = 'default';
+    return;
+  }
+
+  if (sortBy.value === `${key}_asc`) {
+    sortBy.value = `${key}_desc`;
+    return;
+  }
+
+  sortBy.value = `${key}_asc`;
+}
+
 function applyZone(zone: string) {
   activeZone.value = zone;
 }
@@ -758,6 +760,7 @@ function clearFilters() {
   selectedPriceRange.value = '';
   selectedRank.value = '';
   selectedStatus.value = '';
+  sortBy.value = 'default';
   resetAdvancedFilters();
   currentPage.value = 1;
 }
@@ -1136,7 +1139,7 @@ export default { name: 'RentalListView' };
 }
 
 .filter-search {
-  flex: 1 1 160px;
+  flex: 1.6 1 320px;
   min-width: 160px;
 }
 
@@ -1167,6 +1170,12 @@ export default { name: 'RentalListView' };
   background: #fff0d0;
   border-color: #ffd46b;
   color: #9b5d00;
+}
+
+.sort-arrow {
+  margin-left: 6px;
+  font-size: 12px;
+  line-height: 1;
 }
 
 .filter-row.multi {

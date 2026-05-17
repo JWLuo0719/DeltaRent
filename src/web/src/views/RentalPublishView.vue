@@ -12,9 +12,15 @@
       <section class="publish-panel">
         <el-form label-position="top">
           <div class="grid-2">
-            <el-form-item label="账号标题">
-              <el-input v-model="form.name" placeholder="例如：黑鹰 暗星 4格6体7负" />
+            <el-form-item label="账号标题 / 仓库简介">
+              <el-input
+                v-model="form.name"
+                placeholder="例如：纯币 1.83亿｜比例 1:38｜4格｜7体6负｜六头1六甲6｜AWM子弹10"
+              />
             </el-form-item>
+          </div>
+
+          <div class="grid-2">
             <el-form-item label="登录方式">
               <el-select v-model="form.loginMethod" placeholder="请选择登录方式">
                 <el-option v-for="item in LOGIN_METHOD_OPTIONS" :key="item" :label="item" :value="item" />
@@ -26,12 +32,18 @@
             <el-form-item label="哈夫币数额(万)">
               <el-input-number v-model="form.coinAmount" :min="0" class="full-width" />
             </el-form-item>
-            <el-form-item label="租金">
-              <el-input-number v-model="form.hourPrice" :min="0" :precision="2" class="full-width" />
+            <el-form-item label="比例">
+              <el-input-number v-model="ratioValue" :min="1" :precision="0" class="full-width" />
+              <p class="field-tip">固定为 1：{{ ratioValue || 'xx' }}，表示 1 元人民币 = {{ ratioValue || 'xx' }} 万哈夫币</p>
             </el-form-item>
             <el-form-item label="押金">
-              <el-input-number v-model="form.deposit" :min="0" :precision="2" class="full-width" />
+              <el-input-number v-model="form.deposit" :min="0" :precision="0" :step="1" step-strictly class="full-width" />
             </el-form-item>
+          </div>
+
+          <div class="rent-preview">
+            <span>自动计算租金：¥{{ form.hourPrice || 0 }}</span>
+            <span>扣除 5% 手续费后到手：¥{{ netRent }}</span>
           </div>
 
           <div class="grid-3">
@@ -69,8 +81,8 @@
           </div>
 
           <div class="grid-3">
-            <el-form-item label="比例">
-              <el-input v-model="form.ratioText" placeholder="例如 1:35" />
+            <el-form-item label="等级">
+              <el-input-number v-model="form.level" :min="0" class="full-width" />
             </el-form-item>
             <el-form-item label="方便交易时间">
               <el-input v-model="form.tradeTimeText" placeholder="例如 00:00-24:00" />
@@ -84,12 +96,12 @@
 
           <div class="grid-3">
             <el-form-item label="刀皮">
-              <el-select v-model="form.knifeSkinText" placeholder="请选择刀皮">
+              <el-select v-model="selectedKnifeSkins" multiple collapse-tags collapse-tags-tooltip placeholder="请选择刀皮">
                 <el-option v-for="item in KNIFE_SKIN_OPTIONS" :key="item" :label="item" :value="item" />
               </el-select>
             </el-form-item>
             <el-form-item label="干员红皮">
-              <el-select v-model="form.characterSkinText" placeholder="请选择红皮">
+              <el-select v-model="selectedOperatorSkins" multiple collapse-tags collapse-tags-tooltip placeholder="请选择红皮">
                 <el-option v-for="item in OPERATOR_SKIN_OPTIONS" :key="item" :label="item" :value="item" />
               </el-select>
             </el-form-item>
@@ -99,26 +111,34 @@
           </div>
 
           <div class="grid-2">
-            <el-form-item label="武器皮肤 / 额外资源">
-              <el-input v-model="form.weaponSkinText" placeholder="例如 AWM子弹、六甲、六头" />
-            </el-form-item>
             <el-form-item label="封面图 URL">
               <el-input v-model="form.coverImageUrl" placeholder="暂用图片链接，后续可替换上传" />
             </el-form-item>
           </div>
 
-          <div class="grid-2">
-            <el-form-item label="分类">
-              <el-input v-model="form.category" placeholder="例如 黑鹰专区 / 纯币专区 / 红皮专区" />
+          <div class="grid-3">
+            <el-form-item label="六头数量">
+              <el-input-number v-model="form.helmetCount" :min="0" class="full-width" />
             </el-form-item>
-            <el-form-item label="标签">
-              <el-input v-model="form.tagText" placeholder="多个标签用英文逗号分隔" />
+            <el-form-item label="六甲数量">
+              <el-input-number v-model="form.armorCount" :min="0" class="full-width" />
+            </el-form-item>
+            <el-form-item label="AWM子弹">
+              <el-input-number v-model="form.awmAmmoCount" :min="0" class="full-width" />
             </el-form-item>
           </div>
 
-          <el-form-item label="仓库价值 / 简介">
-            <el-input v-model="form.warehouseValueText" placeholder="例如 纯币 9800万，4格，6体7负" />
-          </el-form-item>
+          <div class="grid-2">
+            <el-form-item label="9格体验卡数量">
+              <el-input-number v-model="form.nineGridTrialCardCount" :min="0" class="full-width" />
+            </el-form-item>
+            <el-form-item label="近90天有无封禁记录">
+              <el-select v-model="form.recentBanRecord" placeholder="请选择">
+                <el-option label="无" value="无" />
+                <el-option label="有" value="有" />
+              </el-select>
+            </el-form-item>
+          </div>
 
           <el-form-item label="备注描述">
             <el-input v-model="form.description" type="textarea" :rows="4" placeholder="补充说明账号亮点、资源细节、注意事项" />
@@ -135,7 +155,8 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { publishRental } from '@/api';
 import {
@@ -151,6 +172,10 @@ import {
 import type { RentalPublishPayload } from '@/types/api';
 
 const submitting = ref(false);
+const router = useRouter();
+const selectedKnifeSkins = ref<string[]>([]);
+const selectedOperatorSkins = ref<string[]>([]);
+const ratioValue = ref<number | undefined>();
 
 const createEmptyForm = (): RentalPublishPayload => ({
   name: '',
@@ -169,36 +194,65 @@ const createEmptyForm = (): RentalPublishPayload => ({
   rankText: '',
   kdText: '',
   divingLevelText: '',
+  level: 0,
   loginRegion: '',
   tradeTimeText: '',
   knifeSkinText: '',
   weaponSkinText: '',
   characterSkinText: '',
+  helmetCount: 0,
+  armorCount: 0,
+  awmAmmoCount: 0,
+  nineGridTrialCardCount: 0,
+  recentBanRecord: '',
   coverImageUrl: '',
   description: ''
 });
 
 const form = reactive<RentalPublishPayload>(createEmptyForm());
+const netRent = computed(() => Number((Number(form.hourPrice || 0) * 0.95).toFixed(2)));
+
+watch(() => [form.coinAmount, ratioValue.value] as const, syncRentFromRatio);
+
+watch(selectedKnifeSkins, value => {
+  form.knifeSkinText = value.join(',');
+});
+
+watch(selectedOperatorSkins, value => {
+  form.characterSkinText = value.join(',');
+});
 
 function resetForm() {
   Object.assign(form, createEmptyForm());
+  selectedKnifeSkins.value = [];
+  selectedOperatorSkins.value = [];
+  ratioValue.value = undefined;
+}
+
+function syncRentFromRatio() {
+  const ratio = Number(ratioValue.value || 0);
+  const coinAmount = Number(form.coinAmount || 0);
+  if (!ratio || !coinAmount) return;
+  form.ratioText = `1:${ratio}`;
+  form.hourPrice = Number((coinAmount / ratio).toFixed(2));
 }
 
 async function submitPublish() {
   if (!form.name.trim()) {
-    ElMessage.warning('请先填写账号标题');
+    ElMessage.warning('请先填写账号标题 / 仓库简介');
     return;
   }
   if (!form.loginMethod) {
     ElMessage.warning('请选择登录方式');
     return;
   }
-  if (!form.hourPrice || form.hourPrice <= 0) {
-    ElMessage.warning('请填写正确的租金');
-    return;
-  }
   if (!form.coinAmount || form.coinAmount <= 0) {
     ElMessage.warning('请填写哈夫币数额');
+    return;
+  }
+  syncRentFromRatio();
+  if (!ratioValue.value || !form.hourPrice || form.hourPrice <= 0) {
+    ElMessage.warning('请填写正确的比例');
     return;
   }
 
@@ -206,12 +260,15 @@ async function submitPublish() {
   try {
     const response = await publishRental({
       ...form,
-      warehouseValueText: form.warehouseValueText || '',
+      ratioText: `1:${ratioValue.value}`,
+      deposit: Math.trunc(Number(form.deposit || 0)),
+      warehouseValueText: form.name.trim(),
       category: form.category || '玩家上架'
     });
     if (response.data.success) {
       ElMessage.success('提交成功，已进入待审核状态');
       resetForm();
+      router.push('/rentals');
       return;
     }
     ElMessage.error(response.data.message || '提交失败');
@@ -291,6 +348,27 @@ async function submitPublish() {
 
 .full-width {
   width: 100%;
+}
+
+.rent-preview {
+  display: flex;
+  justify-content: flex-end;
+  gap: 18px;
+  margin: -4px 0 14px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.rent-preview span:first-child {
+  color: #f05b2c;
+  font-weight: 800;
+}
+
+.field-tip {
+  margin: 6px 0 0;
+  color: #f59e0b;
+  font-size: 12px;
+  line-height: 1.5;
 }
 
 .actions {

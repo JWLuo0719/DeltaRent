@@ -53,6 +53,12 @@ export interface RentalProduct {
   knifeSkinText?: string;
   weaponSkinText?: string;
   characterSkinText?: string;
+  level?: number;
+  helmetCount?: number;
+  armorCount?: number;
+  awmAmmoCount?: number;
+  nineGridTrialCardCount?: number;
+  recentBanRecord?: string;
   coverImageUrl?: string;
   status: 'AVAILABLE' | 'RENTED' | 'MAINTENANCE' | 'PENDING' | 'OFF_SHELF' | string;
   description: string;
@@ -201,6 +207,12 @@ export interface RentalPublishPayload {
   knifeSkinText?: string;
   weaponSkinText?: string;
   characterSkinText?: string;
+  level?: number;
+  helmetCount?: number;
+  armorCount?: number;
+  awmAmmoCount?: number;
+  nineGridTrialCardCount?: number;
+  recentBanRecord?: string;
   coverImageUrl?: string;
   description: string;
 }

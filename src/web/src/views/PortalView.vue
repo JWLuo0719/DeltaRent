@@ -532,7 +532,7 @@ export default { name: 'PortalView' };
   padding: 72px 48px 56px;
   background: linear-gradient(145deg, rgba(255, 243, 201, 0.96) 0%, rgba(255, 223, 122, 0.88) 100%);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(242, 201, 76, 0.28);
+  border: 0;
   margin-bottom: 24px;
   text-align: center;
 }

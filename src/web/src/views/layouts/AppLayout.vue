@@ -28,7 +28,7 @@
       </div>
     </header>
 
-    <main class="layout-main" :class="{ 'layout-main-rental': isRentalPage }">
+    <main class="layout-main" :class="{ 'layout-main-rental': isRentalPage, 'layout-main-home': isHomePage }">
       <router-view v-slot="{ Component }">
         <Transition name="page-fade" mode="out-in">
           <component :is="Component" :key="route.fullPath" />
@@ -49,6 +49,7 @@ const route = useRoute();
 const router = useRouter();
 
 const canShowAdmin = computed(() => auth.user?.role === 'ADMIN' || auth.user?.role === 'CS');
+const isHomePage = computed(() => route.name === 'home');
 const isRentalPage = computed(() => route.name === 'rentals' || route.name === 'rental-publish');
 
 const roleText = computed(() => {
@@ -203,6 +204,10 @@ function handleLogout() {
   padding: 0;
 }
 
+.layout-main-home {
+  padding-top: 0;
+}
+
 @media (max-width: 980px) {
   .top-nav {
     height: auto;
@@ -230,6 +235,10 @@ function handleLogout() {
 
   .layout-main-rental {
     padding: 0;
+  }
+
+  .layout-main-home {
+    padding-top: 0;
   }
 }
 </style>

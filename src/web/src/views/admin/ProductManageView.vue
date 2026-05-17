@@ -64,7 +64,7 @@
             <el-input-number v-model="form.hourPrice" :min="0" :precision="2" class="full-width" />
           </el-form-item>
           <el-form-item label="押金">
-            <el-input-number v-model="form.deposit" :min="0" :precision="2" class="full-width" />
+            <el-input-number v-model="form.deposit" :min="0" :precision="0" :step="1" step-strictly class="full-width" />
           </el-form-item>
         </div>
 
@@ -276,7 +276,7 @@ async function submitProduct() {
       tagText: form.tagText?.trim(),
       hourPrice: form.hourPrice,
       coinAmount: form.coinAmount,
-      deposit: form.deposit,
+      deposit: Math.trunc(Number(form.deposit || 0)),
       rentalDays: form.rentalDays,
       warehouseValueText: form.warehouseValueText?.trim(),
       loginMethod: form.loginMethod,

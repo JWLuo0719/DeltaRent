@@ -109,7 +109,7 @@ public class RentalController {
         product.setCategory(String.valueOf(payload.getOrDefault("category", "")));
         product.setTagText(String.valueOf(payload.getOrDefault("tagText", "")));
         product.setPrice(new BigDecimal(String.valueOf(payload.getOrDefault("price", payload.getOrDefault("hourPrice", "0")))));
-        product.setDeposit(new BigDecimal(String.valueOf(payload.getOrDefault("deposit", "0"))));
+        product.setDeposit(new BigDecimal(String.valueOf(parseInteger(payload.getOrDefault("deposit", 0)))));
 
         Object coinAmountVal = payload.getOrDefault("coinAmount", 0);
         product.setCoinAmount(Long.parseLong(String.valueOf(coinAmountVal)));
@@ -142,10 +142,23 @@ public class RentalController {
         product.setKnifeSkinText(String.valueOf(payload.getOrDefault("knifeSkinText", "")));
         product.setWeaponSkinText(String.valueOf(payload.getOrDefault("weaponSkinText", "")));
         product.setCharacterSkinText(String.valueOf(payload.getOrDefault("characterSkinText", "")));
+        product.setLevel(parseInteger(payload.get("level")));
+        product.setHelmetCount(parseInteger(payload.get("helmetCount")));
+        product.setArmorCount(parseInteger(payload.get("armorCount")));
+        product.setAwmAmmoCount(parseInteger(payload.get("awmAmmoCount")));
+        product.setNineGridTrialCardCount(parseInteger(payload.get("nineGridTrialCardCount")));
+        product.setRecentBanRecord(String.valueOf(payload.getOrDefault("recentBanRecord", "")));
         product.setCoverImageUrl(String.valueOf(payload.getOrDefault("coverImageUrl", "")));
         product.setStatus(String.valueOf(payload.getOrDefault("status", "AVAILABLE")));
         product.setDescription(String.valueOf(payload.getOrDefault("description", "")));
         return product;
+    }
+
+    private Integer parseInteger(Object val) {
+        if (val == null) return null;
+        String raw = String.valueOf(val).trim();
+        if (raw.isEmpty()) return null;
+        return Integer.parseInt(raw);
     }
 
     private Integer parseLevel(String val) {
@@ -189,6 +202,12 @@ public class RentalController {
         item.put("knifeSkinText", product.getKnifeSkinText());
         item.put("weaponSkinText", product.getWeaponSkinText());
         item.put("characterSkinText", product.getCharacterSkinText());
+        item.put("level", product.getLevel());
+        item.put("helmetCount", product.getHelmetCount());
+        item.put("armorCount", product.getArmorCount());
+        item.put("awmAmmoCount", product.getAwmAmmoCount());
+        item.put("nineGridTrialCardCount", product.getNineGridTrialCardCount());
+        item.put("recentBanRecord", product.getRecentBanRecord());
         item.put("coverImageUrl", product.getCoverImageUrl());
         item.put("status", product.getStatus());
         item.put("description", product.getDescription());
