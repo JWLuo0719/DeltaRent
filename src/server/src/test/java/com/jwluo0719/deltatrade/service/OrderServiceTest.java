@@ -98,9 +98,8 @@ class OrderServiceTest {
         product.setName(name);
         product.setCategory("demo");
         product.setTagText("Full warehouse");
-        product.setHourPrice(new BigDecimal(price));
+        product.setPrice(new BigDecimal(price));
         product.setCoinAmount(1_000_000L);
-        product.setEquipmentLevelText("Advanced equipment set");
         product.setWarehouseValueText("High-value warehouse");
         product.setStatus(status);
         return product;

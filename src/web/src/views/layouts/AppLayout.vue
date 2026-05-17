@@ -9,6 +9,7 @@
       <nav class="nav-links">
         <router-link to="/home" class="nav-link">首页</router-link>
         <router-link to="/rentals" class="nav-link">租号大厅</router-link>
+        <router-link v-if="auth.isLoggedIn" to="/rentals/publish" class="nav-link">我要上架</router-link>
         <router-link v-if="auth.isLoggedIn" to="/orders" class="nav-link">我的订单</router-link>
         <router-link v-if="auth.isLoggedIn" to="/profile" class="nav-link">个人中心</router-link>
         <router-link v-if="canShowAdmin" to="/admin" class="nav-link admin-link">后台管理</router-link>
@@ -48,7 +49,7 @@ const route = useRoute();
 const router = useRouter();
 
 const canShowAdmin = computed(() => auth.user?.role === 'ADMIN' || auth.user?.role === 'CS');
-const isRentalPage = computed(() => route.name === 'rentals');
+const isRentalPage = computed(() => route.name === 'rentals' || route.name === 'rental-publish');
 
 const roleText = computed(() => {
   const map: Record<string, string> = {
@@ -178,10 +179,6 @@ function handleLogout() {
 }
 
 .admin-link {
-  color: #f4c44e;
-}
-
-.top-nav-rental .admin-link {
   color: #c57a00;
 }
 
@@ -196,7 +193,6 @@ function handleLogout() {
 .user-name {
   font-size: 14px;
   color: #5d6676;
-  transition: color 0.25s ease;
 }
 
 .layout-main {
