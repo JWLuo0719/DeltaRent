@@ -193,12 +193,12 @@
             <div class="row-main">
               <h3>{{ product.name }}</h3>
               <p class="sub-line">
-                {{ product.loginMethod || '未填写上号方式' }} ｜ {{ product.tradeTimeText || '待补充方便交易时间' }} ｜ 租期：{{ product.rentalDays || 7 }}天
+                {{ product.loginMethod || '未填写上号方式' }} ｜ {{ product.tradeTimeText || '待补充方便交易时间' }} ｜ {{ product.loginRegion || '未填写登录地区' }}
               </p>
 
               <div class="metric-grid">
                 <div
-                  v-for="metric in accountMetrics(product)"
+                  v-for="metric in listAccountMetrics(product)"
                   :key="metric.label"
                   class="metric-box"
                   :class="{ 'metric-highlight': metric.highlight }"
@@ -237,7 +237,7 @@
             </div>
             <div class="grid-body">
               <h3>{{ product.name }}</h3>
-              <p>{{ product.loginMethod || '未填写上号方式' }} ｜ 租期 {{ product.rentalDays || 7 }}天</p>
+              <p>{{ product.loginMethod || '未填写上号方式' }} ｜ {{ product.loginRegion || '未填写登录地区' }}</p>
               <div class="grid-metrics">
                 <span v-for="metric in accountMetrics(product)" :key="metric.label">
                   {{ metric.value }} {{ metric.label }}
@@ -338,65 +338,142 @@
         </div>
       </el-dialog>
 
-      <el-dialog v-model="drawerVisible" width="900px" align-center :show-close="false">
+      <el-dialog v-model="drawerVisible" width="1180px" align-center :show-close="false" class="rental-detail-dialog">
         <template v-if="selectedProduct">
           <div class="dialog-panel detail-panel">
             <button class="close-btn fixed" type="button" @click="drawerVisible = false">×</button>
-            <div class="detail-top">
-              <div class="detail-cover">
+            <div class="detail-hero">
+              <div class="detail-cover detail-cover-large">
                 <img v-if="showCover(selectedProduct)" :src="selectedProduct.coverImageUrl" alt="" @error="handleCoverError(selectedProduct)" />
                 <div v-else class="cover-fallback">
                   <span>{{ selectedProduct.rankText || '三角洲' }}</span>
                   <strong>{{ selectedProduct.insuranceBoxText || '账号' }}</strong>
                 </div>
               </div>
-              <div class="detail-main">
+              <div class="detail-summary">
+                <div class="detail-kicker">账号详情 #{{ selectedProduct.id }}</div>
                 <h2>{{ selectedProduct.name }}</h2>
-                <p>{{ selectedProduct.loginMethod || '未填写上号方式' }} ｜ {{ selectedProduct.tradeTimeText || '待补充方便交易时间' }} ｜ 租期：{{ selectedProduct.rentalDays || 7 }}天</p>
-                <div class="detail-grid">
-                  <div
-                    v-for="metric in accountMetrics(selectedProduct)"
-                    :key="metric.label"
-                    class="metric-box"
-                    :class="{ 'metric-highlight': metric.highlight }"
-                  >
-                    <strong>{{ metric.value }}</strong>
-                    <span>{{ metric.label }}</span>
+                <div class="detail-warning-list">
+                  <p>平台严禁向未成年人提供游戏账号租借服务，请勿将账号密码分享给未成年人！</p>
+                  <p>不得使用或浏览器外挂等第三方软件，若违反平台规则将进行处罚。</p>
+                </div>
+                <div class="detail-meta-grid">
+                  <div v-for="row in detailMetaRows(selectedProduct)" :key="row.label" class="detail-meta-item">
+                    <span>{{ row.label }}</span>
+                    <strong>{{ row.value }}</strong>
+                  </div>
+                </div>
+                <div class="skin-preview-row">
+                  <span v-for="tag in accountTags(selectedProduct)" :key="tag">{{ tag }}</span>
+                </div>
+                <div class="detail-actions detail-actions-hero">
+                  <div class="price-inline">
+                    <span>押金：{{ formatMoney(selectedProduct.deposit) }}</span>
+                    <strong>租金：{{ formatMoney(selectedProduct.hourPrice) }}</strong>
+                  </div>
+                  <div class="action-block">
+                    <button class="rent-btn" type="button" @click="auth.isLoggedIn ? goToOrder() : goToLogin()">
+                      {{ auth.isLoggedIn ? '联系客服租用' : '登录后租用' }}
+                    </button>
+                    <button class="ghost-btn" type="button" @click="notices[0] && openNotice(notices[0])">查看大厅公告</button>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="detail-resource-grid">
-              <div class="resource-item">
-                <span>红皮</span>
-                <strong>{{ selectedProduct.characterSkinText || '-' }}</strong>
+            <section class="detail-section owner-note">
+              <div>
+                <span class="section-eyebrow">号主备注</span>
+                <h3>{{ selectedProduct.warehouseValueText || selectedProduct.name }}</h3>
               </div>
-              <div class="resource-item">
-                <span>武器皮肤 / 资源</span>
-                <strong>{{ selectedProduct.weaponSkinText || '-' }}</strong>
-              </div>
-              <div class="resource-item">
-                <span>常用登录地区</span>
-                <strong>{{ selectedProduct.loginRegion || '-' }}</strong>
-              </div>
-              <div class="resource-item">
-                <span>仓库价值 / 简介</span>
-                <strong>{{ selectedProduct.warehouseValueText || '-' }}</strong>
-              </div>
-            </div>
+              <p>{{ selectedProduct.description || '号主暂未补充更多备注，租用前请通过客服拉群确认在线时间和仓库物品使用规则。' }}</p>
+            </section>
 
-            <div class="detail-actions">
-              <div class="price-inline">
-                <span>押金：{{ formatMoney(selectedProduct.deposit) }}</span>
-                <strong>租金：{{ formatMoney(selectedProduct.hourPrice) }} / {{ selectedProduct.rentalDays || 7 }}天</strong>
+            <section class="detail-section">
+              <div class="section-title-row">
+                <div>
+                  <span class="section-eyebrow">Account Metrics</span>
+                  <h3>账号信息</h3>
+                </div>
+                <span class="status-pill">{{ statusText(selectedProduct.status) }}</span>
               </div>
-              <div class="action-block">
-                <button class="rent-btn" type="button" @click="auth.isLoggedIn ? goToOrder() : goToLogin()">
-                  {{ auth.isLoggedIn ? '联系客服租用' : '登录后租用' }}
-                </button>
+              <div class="detail-grid">
+                <div
+                  v-for="metric in accountMetrics(selectedProduct)"
+                  :key="metric.label"
+                  class="metric-box"
+                  :class="{ 'metric-highlight': metric.highlight }"
+                >
+                  <strong>{{ metric.value }}</strong>
+                  <span>{{ metric.label }}</span>
+                </div>
               </div>
-            </div>
+            </section>
+
+            <section class="detail-section">
+              <div class="section-title-row">
+                <div>
+                  <span class="section-eyebrow">Skin Tags</span>
+                  <h3>皮肤信息</h3>
+                </div>
+                <span>{{ skinTags(selectedProduct).length }} 个外观标签</span>
+              </div>
+              <div class="skin-group-list">
+                <div v-for="group in skinGroups(selectedProduct)" :key="group.title" class="skin-group">
+                  <span>{{ group.title }}</span>
+                  <div>
+                    <template v-if="group.tags.length">
+                      <b v-for="tag in group.tags" :key="tag">{{ tag }}</b>
+                    </template>
+                    <strong v-else>暂无</strong>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="detail-section">
+              <div class="section-title-row">
+                <div>
+                  <span class="section-eyebrow">Screenshots</span>
+                  <h3>账号截图</h3>
+                </div>
+                <span>截图用于验号参考，实际以客服拉群核验为准</span>
+              </div>
+              <div v-if="screenshotUrls(selectedProduct).length" class="screenshot-grid">
+                <img v-for="url in screenshotUrls(selectedProduct)" :key="url" :src="url" alt="账号截图" />
+              </div>
+              <div v-else class="screenshot-empty">暂无账号截图，租用前请联系号主或客服补充核验图。</div>
+            </section>
+
+            <section class="detail-section">
+              <div class="section-title-row">
+                <div>
+                  <span class="section-eyebrow">Description</span>
+                  <h3>账号描述</h3>
+                </div>
+              </div>
+              <div class="description-grid">
+                <div v-for="row in descriptionRows(selectedProduct)" :key="row.label">
+                  <span>{{ row.label }}</span>
+                  <strong>{{ row.value }}</strong>
+                </div>
+              </div>
+            </section>
+
+            <section class="detail-section notice-rules">
+              <div class="section-title-row">
+                <div>
+                  <span class="section-eyebrow">Rules</span>
+                  <h3>租号须知</h3>
+                </div>
+              </div>
+              <div class="notice-rule-list">
+                <article v-for="rule in rentalNoticeSections" :key="rule.title">
+                  <h4>{{ rule.title }}</h4>
+                  <p>{{ rule.content }}</p>
+                </article>
+              </div>
+            </section>
           </div>
         </template>
       </el-dialog>
@@ -438,6 +515,7 @@ import {
 type DisplayMode = 'list' | 'grid';
 type SortKey = 'default' | 'price' | 'ratio';
 type SortValue = 'default' | 'price_asc' | 'price_desc' | 'ratio_asc' | 'ratio_desc';
+type DetailRow = { label: string; value: string };
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -535,6 +613,49 @@ const sortOptions = [
   { label: '比例排序', key: 'ratio' as SortKey }
 ];
 
+const rentalNoticeSections = [
+  {
+    title: '1. 验号与沟通',
+    content: '拉群后请优先和号主确认在线时间、仓库物品使用规则。发现账号内容不符请在上号后20分钟内指出并保留证据，逾期默认验号通过；租号期间纠纷由平台客服依据证据处理。'
+  },
+  {
+    title: '2. 仓库物资规则',
+    content: '号主默认仅提供纯哈夫币使用，不可擅自动用纯币以外物品。默认参考：AWM子弹0.8元/发、咖啡豆4元/袋、高级子弹零件4元/个、满耐六级头1.5元、六级甲2.5元、45格红包2元/个、非45格红包1.5元/个、5级全装包5元/个、6级子弹10元/组、九格体验卡5元/天，实际以群内协商为准。'
+  },
+  {
+    title: '3. 退款与违约',
+    content: '账号租用为虚拟商品，下单后原则上不支持无理由退换。因非卖家问题申请退款，需按规则扣除违约金，最低20元，由平台方与无责方各半收取。'
+  },
+  {
+    title: '4. 活动与新增道具',
+    content: '租期内主动做活动或任务获得的道具可免费使用，但通行证奖励或活动直接赠送物品不包含在内，未经协商擅自动用按仓库物资规则赔付。'
+  },
+  {
+    title: '5. 押金退还',
+    content: '交易确认账号无问题且无经济纠纷后，押金立即退还。若租期内存在短封记录，押金延长至24小时退还；押金主要用于封禁、洗号等违规赔付。'
+  },
+  {
+    title: '6. 失联与上号配合',
+    content: '号主超过12小时失联，或人脸/上号两次以上无法在一小时内配合，可申请取消订单并按消耗金额80%结算；凌晨1点至9点不计入失联时间。'
+  },
+  {
+    title: '7. 沟通纪律',
+    content: '平台不偏袒任何一方，双方应在群内友好协商。禁止辱骂、私聊或私加好友，违反规则可能扣款、强制结单或拉黑处理。'
+  },
+  {
+    title: '8. 登录边界',
+    content: '租客不得登录出租账号的其他游戏；号主租期内原则上不得擅自登录三角洲或通过小号功能登录其他端游。未经同意顶号造成损失由责任方承担。'
+  },
+  {
+    title: '账号封禁赔付篇',
+    content: '1-30天封禁按消耗进度、免责期与超期费计算，封禁30天押金扣除上限为300元；10年封禁基本视为外挂/DMA等严重违规，订单到手金额及全额押金给号主并拉黑；租用后7天内追封、追缴，经核实由租用期间行为导致的仍需补偿。'
+  },
+  {
+    title: '免责声明',
+    content: '未成年人不得参与游戏账号租售交易。请勿脱离平台交易，否则损失平台概不负责。平台数字化商品不支持七天无理由退货及三包服务，租用默认视为已阅读并同意本须知。'
+  }
+];
+
 const totalLoaded = computed(() => rawProducts.value.length);
 const availableCount = computed(() => rawProducts.value.filter(item => item.status === 'AVAILABLE').length);
 const pendingCount = computed(() => rawProducts.value.filter(item => item.status === 'MAINTENANCE').length);
@@ -557,10 +678,10 @@ const filteredProducts = computed(() => {
     list = list.filter(item => item.insuranceBoxText === selectedInsuranceBox.value);
   }
   if (selectedKnifeSkin.value) {
-    list = list.filter(item => item.knifeSkinText === selectedKnifeSkin.value);
+    list = list.filter(item => hasTag(item.knifeSkinText, selectedKnifeSkin.value));
   }
   if (selectedOperatorSkin.value) {
-    list = list.filter(item => item.characterSkinText === selectedOperatorSkin.value);
+    list = list.filter(item => hasTag(item.characterSkinText, selectedOperatorSkin.value));
   }
   if (selectedStamina.value) {
     list = list.filter(item => item.staminaText === selectedStamina.value);
@@ -597,10 +718,10 @@ const filteredProducts = computed(() => {
     list = list.filter(item => item.divingLevelText === advancedForm.divingLevel);
   }
   if (advancedForm.knifeSkin) {
-    list = list.filter(item => item.knifeSkinText === advancedForm.knifeSkin);
+    list = list.filter(item => hasTag(item.knifeSkinText, advancedForm.knifeSkin));
   }
   if (advancedForm.operatorSkin) {
-    list = list.filter(item => item.characterSkinText === advancedForm.operatorSkin);
+    list = list.filter(item => hasTag(item.characterSkinText, advancedForm.operatorSkin));
   }
   if (advancedForm.loginRegion.trim()) {
     const region = advancedForm.loginRegion.trim().toLowerCase();
@@ -706,6 +827,35 @@ function formatRankKd(item: RentalProduct) {
   return `${item.rankText || '-'}/${item.kdText || '-'}`;
 }
 
+function splitTags(raw: string | undefined | null) {
+  return Array.from(new Set((raw || '')
+    .split(/[,\uFF0C\u3001/|\s]+/)
+    .map(tag => tag.trim())
+    .filter(Boolean)));
+}
+
+function hasTag(raw: string | undefined | null, target: string) {
+  const text = (raw || '').trim();
+  if (!text) return false;
+  const tags = splitTags(text);
+  return tags.includes(target) || text.includes(target);
+}
+
+function statusText(status: string) {
+  const map: Record<string, string> = {
+    AVAILABLE: '可租用',
+    RENTED: '已租出',
+    MAINTENANCE: '维护中',
+    PENDING: '待审核',
+    OFF_SHELF: '已下架'
+  };
+  return map[status] || status || '-';
+}
+
+function formatBanRecord(item: RentalProduct) {
+  return item.recentBanRecord || '无';
+}
+
 function accountMetrics(item: RentalProduct) {
   return [
     { label: '哈夫币数量', value: formatCoinDisplay(item.coinAmount), highlight: true },
@@ -715,8 +865,71 @@ function accountMetrics(item: RentalProduct) {
     { label: '头/甲', value: formatHeadArmor(item), highlight: false },
     { label: 'AWM子弹', value: String(item.awmAmmoCount ?? 0), highlight: false },
     { label: '等级', value: String(item.level ?? '-'), highlight: false },
-    { label: '段位/kd', value: formatRankKd(item), highlight: false }
+    { label: '段位/kd', value: formatRankKd(item), highlight: false },
+    { label: '9格体验卡', value: `${item.nineGridTrialCardCount ?? 0}张`, highlight: false },
+    { label: '近90天封禁', value: formatBanRecord(item), highlight: false }
   ];
+}
+
+function listAccountMetrics(item: RentalProduct) {
+  return accountMetrics(item).filter(metric => !['9格体验卡', '近90天封禁'].includes(metric.label));
+}
+
+function skinTags(item: RentalProduct) {
+  return [
+    ...splitTags(item.knifeSkinText),
+    ...splitTags(item.characterSkinText),
+    ...splitTags(item.weaponSkinText)
+  ];
+}
+
+function accountTags(item: RentalProduct) {
+  return Array.from(new Set([
+    item.rankText,
+    item.insuranceBoxText,
+    item.ratioText,
+    ...splitTags(item.tagText),
+    ...skinTags(item)
+  ].filter(Boolean) as string[])).slice(0, 12);
+}
+
+function skinGroups(item: RentalProduct) {
+  return [
+    { title: '刀皮', tags: splitTags(item.knifeSkinText) },
+    { title: '红皮', tags: splitTags(item.characterSkinText) },
+    { title: '武器皮肤 / 资源', tags: splitTags(item.weaponSkinText) }
+  ];
+}
+
+function detailMetaRows(item: RentalProduct): DetailRow[] {
+  return [
+    { label: '上号方式', value: item.loginMethod || '-' },
+    { label: '商品编号', value: String(item.id) },
+    { label: '登录地区', value: item.loginRegion || '-' },
+    { label: '交易时间', value: item.tradeTimeText || '-' },
+    { label: '商品类型', value: item.category || '-' },
+    { label: '近90天封禁', value: formatBanRecord(item) }
+  ];
+}
+
+function descriptionRows(item: RentalProduct): DetailRow[] {
+  return [
+    { label: '账号标题', value: item.name || '-' },
+    { label: '仓库价值 / 简介', value: item.warehouseValueText || '-' },
+    { label: '标签', value: splitTags(item.tagText).join('、') || '-' },
+    { label: '刀皮', value: splitTags(item.knifeSkinText).join('、') || '-' },
+    { label: '红皮', value: splitTags(item.characterSkinText).join('、') || '-' },
+    { label: '武器皮肤 / 额外资源', value: item.weaponSkinText || '-' },
+    { label: '常用登录地区', value: item.loginRegion || '-' },
+    { label: '号主说明', value: item.description || '-' }
+  ];
+}
+
+function screenshotUrls(item: RentalProduct) {
+  const urls = ((item as RentalProduct & { imageUrls?: string[] }).imageUrls || [])
+    .concat(showCover(item) && item.coverImageUrl ? [item.coverImageUrl] : [])
+    .filter((url): url is string => !!url);
+  return Array.from(new Set(urls)).slice(0, 6);
 }
 
 function isSortActive(key: SortKey) {
@@ -1201,13 +1414,14 @@ export default { name: 'RentalListView' };
 
 .row-card {
   display: grid;
-  grid-template-columns: 200px minmax(0, 1fr) 190px;
-  gap: 16px;
-  padding: 16px;
+  grid-template-columns: 200px minmax(0, 1fr) 168px;
+  gap: 14px;
+  padding: 14px;
   border: 1px solid #f0e7c8;
   border-radius: 22px;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(240, 255, 248, 0.86) 100%);
   cursor: pointer;
+  align-items: center;
 }
 
 .row-cover,
@@ -1216,6 +1430,12 @@ export default { name: 'RentalListView' };
   border-radius: 18px;
   overflow: hidden;
   background: #f8fafc;
+}
+
+.row-cover,
+.grid-cover {
+  aspect-ratio: 1 / 1;
+  align-self: center;
 }
 
 .row-cover img,
@@ -1250,7 +1470,8 @@ export default { name: 'RentalListView' };
 }
 
 .row-main h3 {
-  font-size: 28px;
+  font-size: 24px;
+  line-height: 1.25;
 }
 
 .sub-line,
@@ -1273,7 +1494,7 @@ export default { name: 'RentalListView' };
 }
 
 .metric-box {
-  padding: 14px 16px;
+  padding: 12px 14px;
   border-radius: 16px;
   background: #f5f7fb;
 }
@@ -1284,7 +1505,7 @@ export default { name: 'RentalListView' };
 
 .metric-box strong {
   display: block;
-  font-size: 24px;
+  font-size: 22px;
   color: #1f2937;
   white-space: nowrap;
   overflow: hidden;
@@ -1462,38 +1683,258 @@ export default { name: 'RentalListView' };
 
 .detail-panel {
   padding-top: 48px;
+  max-height: 86vh;
+  overflow-y: auto;
 }
 
-.detail-top {
+.detail-hero {
   display: grid;
-  grid-template-columns: 240px minmax(0, 1fr);
-  gap: 18px;
+  grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
+  gap: 22px;
+  align-items: stretch;
 }
 
-.detail-resource-grid {
+.detail-cover-large {
+  min-height: 330px;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06);
+}
+
+.detail-cover-large .cover-fallback {
+  min-height: 330px;
+}
+
+.detail-summary {
+  min-width: 0;
+  padding: 4px 0;
+}
+
+.detail-kicker,
+.section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  color: #b77900;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.detail-summary h2 {
+  margin: 8px 0 12px;
+  color: #1f2937;
+  font-size: 34px;
+  line-height: 1.18;
+}
+
+.detail-warning-list {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 18px;
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
-.resource-item {
+.detail-warning-list p {
+  margin: 0;
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: #fff7ed;
+  color: #c2410c;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.detail-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.detail-meta-item {
   border-radius: 16px;
-  padding: 14px 16px;
+  padding: 12px 14px;
   background: #f8fafc;
 }
 
-.resource-item span {
+.detail-meta-item span,
+.section-title-row > span,
+.skin-group > span,
+.description-grid span {
   display: block;
   color: #64748b;
   font-size: 12px;
 }
 
-.resource-item strong {
+.detail-meta-item strong {
+  display: block;
+  margin-top: 5px;
+  font-size: 15px;
+  color: #1f2937;
+}
+
+.skin-preview-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.skin-preview-row span,
+.status-pill,
+.skin-group b {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: #111827;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.detail-actions-hero {
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.detail-section {
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid #edf2f7;
+  border-radius: 22px;
+  background: #fff;
+}
+
+.owner-note {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 18px;
+  background: linear-gradient(135deg, #fffaf0 0%, #ffffff 100%);
+}
+
+.owner-note h3,
+.section-title-row h3 {
+  margin: 4px 0 0;
+  color: #1f2937;
+  font-size: 22px;
+}
+
+.owner-note p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.8;
+}
+
+.section-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.status-pill {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+.skin-group-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.skin-group {
+  min-height: 112px;
+  border-radius: 18px;
+  padding: 14px;
+  background: #f8fafc;
+}
+
+.skin-group div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.skin-group b {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.skin-group strong {
+  color: #94a3b8;
+}
+
+.screenshot-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.screenshot-grid img,
+.screenshot-empty {
+  width: 100%;
+  min-height: 220px;
+  border-radius: 18px;
+  background: #f8fafc;
+  object-fit: cover;
+}
+
+.screenshot-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  font-weight: 800;
+}
+
+.description-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.description-grid div {
+  border-radius: 16px;
+  padding: 14px 16px;
+  background: #f8fafc;
+}
+
+.description-grid strong {
   display: block;
   margin-top: 6px;
-  font-size: 18px;
   color: #1f2937;
+  line-height: 1.6;
+}
+
+.notice-rules {
+  background: #fffef9;
+}
+
+.notice-rule-list {
+  display: grid;
+  gap: 12px;
+}
+
+.notice-rule-list article {
+  border-radius: 18px;
+  padding: 14px 16px;
+  background: #f8fafc;
+}
+
+.notice-rule-list h4 {
+  margin: 0 0 8px;
+  color: #1f2937;
+}
+
+.notice-rule-list p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.85;
 }
 
 .duration-grid {
@@ -1585,6 +2026,10 @@ export default { name: 'RentalListView' };
   box-shadow: 0 0 0 1px #dbe3ef inset !important;
 }
 
+:deep(.rental-detail-dialog) {
+  max-width: calc(100vw - 28px);
+}
+
 @media (max-width: 1180px) {
   .hero-board {
     grid-template-columns: 1fr;
@@ -1611,6 +2056,11 @@ export default { name: 'RentalListView' };
     padding-left: 0;
     padding-top: 14px;
   }
+
+  .detail-hero,
+  .owner-note {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 900px) {
@@ -1620,13 +2070,24 @@ export default { name: 'RentalListView' };
 
   .zone-strip,
   .advanced-grid,
-  .detail-top,
-  .detail-resource-grid,
+  .detail-hero,
+  .detail-meta-grid,
+  .skin-group-list,
+  .screenshot-grid,
+  .description-grid,
   .metric-grid,
   .detail-grid,
   .duration-grid,
   .grid-list {
     grid-template-columns: 1fr;
+  }
+
+  .detail-panel {
+    padding: 48px 16px 18px;
+  }
+
+  .detail-summary h2 {
+    font-size: 26px;
   }
 
   .filter-search,
