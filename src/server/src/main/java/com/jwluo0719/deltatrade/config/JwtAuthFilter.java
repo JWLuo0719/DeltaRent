@@ -42,30 +42,46 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         String token = extractToken(request);
-        Claims claims = token == null ? null : JwtUtil.parseToken(token);
-        if (claims == null) {
+        if (token == null) {
             writeUnauthorized(response, "请先登录后再访问");
             return;
         }
 
-        Long userId = JwtUtil.getUserId(token);
-        SysUser user = userId == null ? null : sysUserMapper.findById(userId);
-        String tokenPasswordVersion = JwtUtil.getPasswordVersion(token);
-        String currentPasswordVersion = user == null ? null : JwtUtil.formatPasswordVersion(user.getPasswordUpdatedAt());
-        if (user == null || !safeEquals(tokenPasswordVersion, currentPasswordVersion)) {
+        Claims claims;
+        try {
+            claims = JwtUtil.parseToken(token);
+        } catch (Exception e) {
+            writeUnauthorized(response, "登录状态已失效，请重新登录");
+            return;
+        }
+        if (claims == null) {
             writeUnauthorized(response, "登录状态已失效，请重新登录");
             return;
         }
 
-        String role = claims.get("role", String.class);
-        String username = claims.get("username", String.class);
-        UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(
-                        username,
-                        null,
-                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
-                );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        try {
+            Long userId = Long.parseLong(claims.getSubject());
+            SysUser user = sysUserMapper.findById(userId);
+            String tokenPasswordVersion = claims.get("pwdUpdatedAt", String.class);
+            String currentPasswordVersion = user == null ? null : JwtUtil.formatPasswordVersion(user.getPasswordUpdatedAt());
+            if (user == null || !safeEquals(tokenPasswordVersion, currentPasswordVersion)) {
+                writeUnauthorized(response, "登录状态已失效，请重新登录");
+                return;
+            }
+
+            String role = claims.get("role", String.class);
+            String username = claims.get("username", String.class);
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            username,
+                            null,
+                            Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
+                    );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        } catch (Exception e) {
+            writeUnauthorized(response, "登录状态已失效，请重新登录");
+            return;
+        }
 
         chain.doFilter(request, response);
     }

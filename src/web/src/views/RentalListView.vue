@@ -95,9 +95,6 @@
           </div>
 
           <div class="toolbar-actions">
-            <button class="ghost-btn" type="button" @click="selectedStatus = selectedStatus === 'AVAILABLE' ? '' : 'AVAILABLE'">
-              {{ selectedStatus === 'AVAILABLE' ? '取消秒上号' : '秒上号' }}
-            </button>
             <button class="danger-btn" type="button" @click="clearFilters">重置筛选</button>
             <button class="ghost-btn" type="button" @click="displayMode = displayMode === 'list' ? 'grid' : 'list'">
               切换{{ displayMode === 'list' ? '卡片' : '列表' }}
@@ -237,8 +234,7 @@
                 <strong>租金：{{ formatMoney(product.hourPrice) }}</strong>
               </div>
               <div class="action-block">
-                <button class="confirm-btn" type="button">确认交易时间</button>
-                <button class="rent-btn" type="button" @click.stop="openDrawer(product)">立即租用</button>
+                <button class="rent-btn" type="button" @click.stop="openDrawer(product)">查看详情</button>
               </div>
             </div>
           </article>
@@ -269,7 +265,9 @@
               </div>
               <div class="grid-footer">
                 <strong>{{ formatMoney(product.hourPrice) }}</strong>
-                <button class="rent-btn small" type="button">立即租用</button>
+                <el-tag size="small" :type="product.status === 'AVAILABLE' ? 'success' : 'info'">
+                  {{ product.status === 'AVAILABLE' ? '可租' : '不可租' }}
+                </el-tag>
               </div>
             </div>
           </article>
@@ -431,29 +429,14 @@
               </div>
             </div>
 
-            <div class="duration-grid">
-              <button
-                v-for="duration in durations"
-                :key="duration.hours"
-                class="duration-card"
-                :class="{ active: selectedDuration === duration.hours, disabled: selectedProduct.status !== 'AVAILABLE' }"
-                type="button"
-                @click="selectDuration(duration.hours)"
-              >
-                <strong>{{ duration.hours }}小时</strong>
-                <span>{{ formatMoney(calcPrice(duration.hours)) }}</span>
-              </button>
-            </div>
-
             <div class="detail-actions">
               <div class="price-inline">
                 <span>押金：{{ formatMoney(selectedProduct.deposit) }}</span>
-                <strong>租金：{{ formatMoney(selectedProduct.hourPrice) }}</strong>
+                <strong>租金：{{ formatMoney(selectedProduct.hourPrice) }} / {{ selectedProduct.rentalDays || 7 }}天</strong>
               </div>
               <div class="action-block">
-                <button class="confirm-btn" type="button">确认交易时间</button>
                 <button class="rent-btn" type="button" @click="auth.isLoggedIn ? goToOrder() : goToLogin()">
-                  {{ auth.isLoggedIn ? '立即租用' : '登录后租用' }}
+                  {{ auth.isLoggedIn ? '联系客服租用' : '登录后租用' }}
                 </button>
               </div>
             </div>
@@ -540,18 +523,10 @@ const advancedForm = reactive({
 
 const drawerVisible = ref(false);
 const selectedProduct = ref<RentalProduct | null>(null);
-const selectedDuration = ref<number | null>(null);
 
 const noticeVisible = ref(false);
 const selectedNotice = ref<PortalNotice | null>(null);
 const notices = ref<PortalNotice[]>([]);
-
-const durations = [
-  { hours: 1, discount: 1 },
-  { hours: 6, discount: 0.92 },
-  { hours: 12, discount: 0.86 },
-  { hours: 24, discount: 0.78 }
-];
 
 const bannerSlides = [
   {
@@ -792,30 +767,16 @@ function openNotice(notice: PortalNotice) {
 
 function openDrawer(product: RentalProduct) {
   selectedProduct.value = product;
-  selectedDuration.value = null;
   drawerVisible.value = true;
 }
 
-function selectDuration(hours: number) {
-  if (selectedProduct.value?.status !== 'AVAILABLE') return;
-  selectedDuration.value = selectedDuration.value === hours ? null : hours;
-}
-
-function calcPrice(hours: number) {
-  if (!selectedProduct.value) return 0;
-  const discount = durations.find(item => item.hours === hours)?.discount ?? 1;
-  return Number(selectedProduct.value.hourPrice || 0) * hours * discount;
-}
-
 function goToOrder() {
-  if (!selectedProduct.value || !selectedDuration.value) return;
+  if (!selectedProduct.value) return;
   sessionStorage.setItem('detailProduct', JSON.stringify(selectedProduct.value));
-  sessionStorage.setItem('detailDuration', String(selectedDuration.value));
   router.push({
     path: '/orders/create',
     query: {
-      accountId: String(selectedProduct.value.id),
-      duration: String(selectedDuration.value)
+      accountId: String(selectedProduct.value.id)
     }
   });
   drawerVisible.value = false;
@@ -939,6 +900,7 @@ export default { name: 'RentalListView' };
   min-height: 300px;
   padding: 28px 30px 24px;
   background: linear-gradient(135deg, #fff2bf 0%, #ffd96a 100%);
+  border: none;
 }
 
 .hero-copy h1 {
@@ -1100,21 +1062,21 @@ export default { name: 'RentalListView' };
 .zone-strip {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: 10px;
+  margin-bottom: 14px;
 }
 
 .zone-card {
-  min-height: 96px;
+  min-height: 72px;
   border: 1px solid rgba(226, 232, 240, 0.9);
-  border-radius: 20px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.92);
-  padding: 16px;
+  padding: 12px 14px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   cursor: pointer;
-  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.03);
 }
 
 .zone-card.active {
@@ -1143,8 +1105,8 @@ export default { name: 'RentalListView' };
 }
 
 .toolbar-panel {
-  padding: 18px;
-  margin-bottom: 18px;
+  padding: 14px 18px;
+  margin-bottom: 14px;
 }
 
 .toolbar-top,
@@ -1182,7 +1144,8 @@ export default { name: 'RentalListView' };
 .filter-row.multi {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  margin-top: 14px;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .keyword-item {

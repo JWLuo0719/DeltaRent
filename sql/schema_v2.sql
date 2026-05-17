@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS `rental_order` (
   `user_id` BIGINT NOT NULL COMMENT '下单用户',
   `product_id` BIGINT NOT NULL,
   `unit_price` DECIMAL(10,2) NOT NULL COMMENT '下单时租金快照',
-  `rent_days` INT NOT NULL COMMENT '租赁天数',
+  `rent_hours` INT NOT NULL COMMENT '租赁时长',
   `order_amount` DECIMAL(10,2) NOT NULL DEFAULT 0.00 COMMENT '订单总额',
   `deposit_amount` DECIMAL(10,2) DEFAULT NULL COMMENT '押金快照',
   `contact_info` VARCHAR(100) DEFAULT NULL,
