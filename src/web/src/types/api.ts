@@ -108,7 +108,7 @@ export interface LoginResult {
 
 export interface CreateOrderPayload {
   accountId: number;
-  rentHours: number;
+  rentDays: number;
   contactInfo: string;
   remark: string;
 }
@@ -116,7 +116,7 @@ export interface CreateOrderPayload {
 export interface CreateOrderResult {
   orderNo: string;
   accountId: number;
-  rentHours: number;
+  rentDays: number;
   amount: number;
   status: string;
   estimatedDelivery: string;
@@ -145,7 +145,7 @@ export interface OrderSummary {
   user?: string;
   productId?: number;
   unitPrice?: number;
-  rentHours: number;
+  rentDays: number;
   amount: number;
   status: string;
   contactInfo: string;

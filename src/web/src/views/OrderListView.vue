@@ -36,7 +36,7 @@
         <div class="order-body">
           <div class="order-item">{{ order.item }}</div>
           <div class="order-meta">
-            <span>租赁时长：{{ order.rentHours }} 小时</span>
+            <span>租赁时长：{{ order.rentDays }} 天</span>
             <span>金额：￥{{ formatAmount(order.amount) }}</span>
           </div>
           <div class="order-time">下单时间：{{ order.createdAt }}</div>

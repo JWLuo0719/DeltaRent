@@ -17,7 +17,7 @@
         <template #default="{ row }">{{ row.buyer || row.user || '-' }}</template>
       </el-table-column>
       <el-table-column prop="item" label="账号" />
-      <el-table-column prop="rentHours" label="时长" />
+      <el-table-column prop="rentDays" label="天数" />
       <el-table-column prop="amount" label="金额">
         <template #default="{ row }">¥{{ Number(row.amount || 0).toFixed(2) }}</template>
       </el-table-column>

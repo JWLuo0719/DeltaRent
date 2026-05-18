@@ -194,7 +194,7 @@ class OrderServiceTest {
             detail.put("orderNo", order.getOrderNo());
             detail.put("userId", order.getUserId());
             detail.put("productId", order.getProductId());
-            detail.put("rentHours", order.getRentHours());
+            detail.put("rentDays", order.getRentDays());
             detail.put("amount", order.getOrderAmount());
             detail.put("status", order.getStatus());
             return detail;

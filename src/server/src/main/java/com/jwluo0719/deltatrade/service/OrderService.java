@@ -22,9 +22,9 @@ public class OrderService {
         this.productMapper = productMapper;
     }
 
-    public RentalOrder create(Long userId, Long productId, Integer rentHours, String contactInfo, String deliveryNote) {
-        if (rentHours == null || rentHours < 1) {
-            throw new IllegalArgumentException("租赁时长必须大于 0");
+    public RentalOrder create(Long userId, Long productId, Integer rentDays, String contactInfo, String deliveryNote) {
+        if (rentDays == null || rentDays < 1) {
+            throw new IllegalArgumentException("租赁天数必须大于 0");
         }
 
         RentalProduct product = productMapper.findById(productId);
@@ -38,13 +38,13 @@ public class OrderService {
             throw new IllegalArgumentException("该账号已有进行中的订单，请勿重复提交");
         }
 
-        BigDecimal amount = product.getPrice().multiply(BigDecimal.valueOf(rentHours));
+        BigDecimal amount = product.getPrice().multiply(BigDecimal.valueOf(rentDays));
         RentalOrder order = new RentalOrder();
         order.setOrderNo("DR" + System.currentTimeMillis());
         order.setUserId(userId);
         order.setProductId(productId);
         order.setUnitPrice(product.getPrice());
-        order.setRentHours(rentHours);
+        order.setRentDays(rentDays);
         order.setOrderAmount(amount);
         order.setContactInfo(contactInfo != null ? contactInfo : "");
         order.setDeliveryNote(deliveryNote != null ? deliveryNote : "");

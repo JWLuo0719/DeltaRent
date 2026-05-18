@@ -165,7 +165,7 @@ const resultMessage = ref('');
 
 const form = reactive<CreateOrderPayload>({
   accountId: requestedAccountId,
-  rentHours: 1,
+  rentDays: 1,
   contactInfo: '',
   remark: ''
 });

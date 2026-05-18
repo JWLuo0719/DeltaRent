@@ -28,7 +28,7 @@
           </div>
           <div class="info-row">
             <span class="info-k">租赁时长</span>
-            <span class="info-v">{{ order.rentHours }} 小时</span>
+            <span class="info-v">{{ order.rentDays }} 天</span>
           </div>
           <div class="info-row">
             <span class="info-k">订单金额</span>
