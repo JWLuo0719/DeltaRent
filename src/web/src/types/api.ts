@@ -239,18 +239,6 @@ export interface AdminUser {
   createdAt: string;
 }
 
-export interface AdminRole {
-  roleCode: string;
-  roleName: string;
-  description: string;
-  userCount: number;
-}
-
-export interface RolePayload {
-  roleCode?: string;
-  roleName: string;
-  description: string;
-}
 
 export interface NoticeItem {
   id: number;
