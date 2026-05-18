@@ -27,6 +27,15 @@ a {
   text-decoration: none;
 }
 
+.el-message {
+  transform: translateY(58px);
+  pointer-events: none;
+}
+
+.el-message .el-message__closeBtn {
+  pointer-events: auto;
+}
+
 .page-shell {
   max-width: 1200px;
   margin: 0 auto;
