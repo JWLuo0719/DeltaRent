@@ -1,5 +1,6 @@
 package com.jwluo0719.deltatrade.domain;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -12,9 +13,12 @@ public class AppealRecord {
     private Long orderId;       // 关联订单 ID
     private Long userId;        // 申诉人 ID
     private String content;     // 申诉内容
+    private String reason;      // 售后原因分类
     private String status;      // PENDING=待处理, RESOLVED=已处理, REJECTED=已驳回
     private Long handlerId;
     private String handlerRemark;
+    private BigDecimal refundAmount;    // 退款金额
+    private String compensation;        // 赔偿/补偿说明
     private LocalDateTime handledAt;
     private LocalDateTime updatedAt;
 
@@ -33,6 +37,9 @@ public class AppealRecord {
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
 
+    public String getReason() { return reason; }
+    public void setReason(String reason) { this.reason = reason; }
+
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
 
@@ -41,6 +48,12 @@ public class AppealRecord {
 
     public String getHandlerRemark() { return handlerRemark; }
     public void setHandlerRemark(String handlerRemark) { this.handlerRemark = handlerRemark; }
+
+    public BigDecimal getRefundAmount() { return refundAmount; }
+    public void setRefundAmount(BigDecimal refundAmount) { this.refundAmount = refundAmount; }
+
+    public String getCompensation() { return compensation; }
+    public void setCompensation(String compensation) { this.compensation = compensation; }
 
     public LocalDateTime getHandledAt() { return handledAt; }
     public void setHandledAt(LocalDateTime handledAt) { this.handledAt = handledAt; }

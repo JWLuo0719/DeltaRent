@@ -6,6 +6,7 @@ import com.jwluo0719.deltatrade.domain.AppealRecord;
 import com.jwluo0719.deltatrade.service.AppealService;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -30,7 +31,8 @@ public class AppealController {
             String orderType = String.valueOf(payload.getOrDefault("orderType", "RENTAL"));
             Long orderId = toLong(payload.get("orderId"), 0L);
             String content = String.valueOf(payload.getOrDefault("content", ""));
-            AppealRecord record = appealService.submit(userId, orderType, orderId, content);
+            String reason = String.valueOf(payload.getOrDefault("reason", "OTHER"));
+            AppealRecord record = appealService.submit(userId, orderType, orderId, content, reason);
             return ApiResponse.success("申诉已提交", toView(record));
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
@@ -48,26 +50,24 @@ public class AppealController {
         return ApiResponse.success(result);
     }
 
-    /** 管理员 — 查看全部申诉 */
+    /** 管理员 — 查看全部申诉（带详情） */
     @GetMapping
     public ApiResponse<List<Map<String, Object>>> listAll() {
-        List<Map<String, Object>> result = new ArrayList<>();
-        for (AppealRecord r : appealService.listAll()) {
-            result.add(toView(r));
-        }
-        return ApiResponse.success(result);
+        return ApiResponse.success(appealService.listAllWithDetails());
     }
 
-    /** 管理员 — 处理申诉（通过/驳回） */
+    /** 管理员 — 处理申诉（通过/驳回），含退款金额和赔偿说明 */
     @PutMapping("/{id}/handle")
-    public ApiResponse<?> handle(@PathVariable Long id, @RequestBody Map<String, String> payload,
+    public ApiResponse<?> handle(@PathVariable Long id, @RequestBody Map<String, Object> payload,
                                 @RequestHeader(value = "Authorization", required = false) String auth) {
         if (!isAdmin(auth)) return ApiResponse.fail("无权操作");
         try {
             Long handlerId = extractUserId(auth);
-            String status = payload.getOrDefault("status", "RESOLVED");
-            String handlerRemark = payload.getOrDefault("handlerRemark", "");
-            appealService.handle(id, status, handlerId, handlerRemark);
+            String status = String.valueOf(payload.getOrDefault("status", "RESOLVED"));
+            String handlerRemark = String.valueOf(payload.getOrDefault("handlerRemark", ""));
+            BigDecimal refundAmount = toBigDecimal(payload.get("refundAmount"));
+            String compensation = String.valueOf(payload.getOrDefault("compensation", ""));
+            appealService.handle(id, status, handlerId, handlerRemark, refundAmount, compensation);
             return ApiResponse.success("处理完成", null);
         } catch (IllegalArgumentException e) {
             return ApiResponse.fail(e.getMessage());
@@ -97,6 +97,16 @@ public class AppealController {
         return Long.parseLong(String.valueOf(value));
     }
 
+    private BigDecimal toBigDecimal(Object value) {
+        if (value == null) return null;
+        if (value instanceof Number) return BigDecimal.valueOf(((Number) value).doubleValue());
+        try {
+            return new BigDecimal(String.valueOf(value));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     private Map<String, Object> toView(AppealRecord r) {
         Map<String, Object> item = new LinkedHashMap<>();
         item.put("id", r.getId());
@@ -104,9 +114,12 @@ public class AppealController {
         item.put("orderId", r.getOrderId());
         item.put("userId", r.getUserId());
         item.put("content", r.getContent());
+        item.put("reason", r.getReason());
         item.put("status", r.getStatus());
         item.put("handlerId", r.getHandlerId());
         item.put("handlerRemark", r.getHandlerRemark());
+        item.put("refundAmount", r.getRefundAmount());
+        item.put("compensation", r.getCompensation());
         item.put("handledAt", r.getHandledAt());
         item.put("updatedAt", r.getUpdatedAt());
         return item;

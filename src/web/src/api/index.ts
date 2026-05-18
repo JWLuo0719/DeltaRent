@@ -18,6 +18,8 @@ import type {
   ChangePasswordPayload,
   RentalPublishPayload,
   SubmitAppealPayload,
+  AppealRecord,
+  HandleAppealPayload,
   PageResult,
   AdminUser,
 
@@ -82,6 +84,18 @@ export function cancelOrder(orderNo: string) {
 
 export function submitAppeal(data: SubmitAppealPayload) {
   return http.post<ApiResponse<void>>('/appeals', data);
+}
+
+export function getMyAppeals() {
+  return http.get<ApiResponse<AppealRecord[]>>('/appeals/my');
+}
+
+export function getAppeals() {
+  return http.get<ApiResponse<AppealRecord[]>>('/appeals');
+}
+
+export function handleAppeal(id: number, data: HandleAppealPayload) {
+  return http.put<ApiResponse<void>>(`/appeals/${id}/handle`, data);
 }
 
 export function getDashboardOverview() {

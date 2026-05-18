@@ -221,6 +221,34 @@ export interface SubmitAppealPayload {
   orderType: string;
   orderId: number;
   content: string;
+  reason: string;
+}
+
+export interface AppealRecord {
+  id: number;
+  orderType: string;
+  orderId: number;
+  userId: number;
+  content: string;
+  reason: string;
+  status: 'PENDING' | 'RESOLVED' | 'REJECTED' | string;
+  handlerId: number | null;
+  handlerRemark: string | null;
+  refundAmount: number | null;
+  compensation: string | null;
+  handledAt: string | null;
+  updatedAt: string | null;
+  userName?: string;
+  handlerName?: string;
+  productName?: string;
+  orderAmount?: number;
+}
+
+export interface HandleAppealPayload {
+  status: 'RESOLVED' | 'REJECTED';
+  handlerRemark: string;
+  refundAmount: number | null;
+  compensation: string;
 }
 
 export interface PageResult<T> {

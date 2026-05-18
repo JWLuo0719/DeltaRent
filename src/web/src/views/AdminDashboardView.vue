@@ -48,6 +48,7 @@ import UserManageView from './admin/UserManageView.vue';
 import ProductManageView from './admin/ProductManageView.vue';
 import OrderManageView from './admin/OrderManageView.vue';
 import NoticeManageView from './admin/NoticeManageView.vue';
+import AppealManageView from './admin/AppealManageView.vue';
 
 const auth = useAuthStore();
 const activeMenu = ref('stats');
@@ -59,6 +60,7 @@ const allMenus = [
 
   { key: 'products', label: '账号管理', icon: '🎮', roles: ['ADMIN', 'CS'] },
   { key: 'orders', label: '订单管理', icon: '📋', roles: ['ADMIN', 'CS'] },
+  { key: 'appeals', label: '申诉管理', icon: '🎫', roles: ['ADMIN', 'CS'] },
   { key: 'notices', label: '公告管理', icon: '📢', roles: ['ADMIN'] }
 ];
 
@@ -86,6 +88,7 @@ const viewMap: Record<string, any> = {
 
   products: ProductManageView,
   orders: OrderManageView,
+  appeals: AppealManageView,
   notices: NoticeManageView
 };
 

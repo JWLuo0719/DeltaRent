@@ -62,11 +62,85 @@
         </div>
       </div>
 
+      <!-- 售后申诉结果 -->
+      <div v-if="appeal" class="detail-card appeal-card">
+        <h3 class="section-title appeal-title">
+          <span>售后申诉</span>
+          <el-tag :type="appealStatusType(appeal.status)" size="small">{{ appealStatusText(appeal.status) }}</el-tag>
+        </h3>
+        <div class="appeal-info">
+          <div class="appeal-row">
+            <span class="appeal-k">申诉原因</span>
+            <span class="appeal-v">{{ reasonText(appeal.reason) }}</span>
+          </div>
+          <div class="appeal-row">
+            <span class="appeal-k">问题描述</span>
+            <span class="appeal-v">{{ appeal.content }}</span>
+          </div>
+          <template v-if="appeal.status !== 'PENDING'">
+            <div class="appeal-row">
+              <span class="appeal-k">处理结果</span>
+              <span class="appeal-v" :class="appeal.status === 'RESOLVED' ? 'text-resolved' : 'text-rejected'">
+                {{ appeal.status === 'RESOLVED' ? '已解决' : '已驳回' }}
+              </span>
+            </div>
+            <div class="appeal-row">
+              <span class="appeal-k">处理备注</span>
+              <span class="appeal-v">{{ appeal.handlerRemark || '无' }}</span>
+            </div>
+            <div class="appeal-row">
+              <span class="appeal-k">退款金额</span>
+              <span class="appeal-v refund-amount">
+                {{ appeal.refundAmount ? '¥' + Number(appeal.refundAmount).toFixed(2) : '无退款' }}
+              </span>
+            </div>
+            <div class="appeal-row">
+              <span class="appeal-k">赔偿说明</span>
+              <span class="appeal-v">{{ appeal.compensation || '无' }}</span>
+            </div>
+            <div class="appeal-row">
+              <span class="appeal-k">处理时间</span>
+              <span class="appeal-v">{{ appeal.handledAt || '-' }}</span>
+            </div>
+          </template>
+          <div v-else class="pending-hint">
+            <span>客服正在处理你的申诉，请耐心等待...</span>
+          </div>
+        </div>
+      </div>
+
       <div class="actions">
         <el-button v-if="order.status === 'WAITING_CONFIRM'" type="danger" @click="handleCancel">取消订单</el-button>
-        <el-button v-if="order.status === 'IN_PROGRESS'" type="warning" @click="handleAppeal">申请售后</el-button>
+        <el-button v-if="order.status === 'IN_PROGRESS'" type="warning" @click="appealVisible = true">申请售后</el-button>
         <el-button v-if="order.status === 'COMPLETED'" type="primary" @click="handleRentAgain">再次租赁</el-button>
       </div>
+
+      <!-- 售后申诉弹窗 -->
+      <el-dialog v-model="appealVisible" title="申请售后" width="480px" @close="resetAppealForm">
+        <el-form label-width="80px">
+          <el-form-item label="售后原因" required>
+            <el-select v-model="appealForm.reason" placeholder="请选择售后原因" style="width: 100%">
+              <el-option label="账号不符（段位/KD/皮肤等）" value="ACCOUNT_MISMATCH" />
+              <el-option label="账号无法登录" value="LOGIN_FAILURE" />
+              <el-option label="账号中途被找回/顶号" value="ACCOUNT_RECLAIMED" />
+              <el-option label="服务质量问题" value="SERVICE_QUALITY" />
+              <el-option label="其他" value="OTHER" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="问题描述" required>
+            <el-input
+              v-model="appealForm.content"
+              type="textarea"
+              :rows="4"
+              placeholder="请详细描述遇到的问题..."
+            />
+          </el-form-item>
+        </el-form>
+        <template #footer>
+          <el-button @click="appealVisible = false">取消</el-button>
+          <el-button type="primary" :loading="submittingAppeal" @click="submitAppealForm">提交申诉</el-button>
+        </template>
+      </el-dialog>
     </div>
 
     <div v-else class="empty-state">
@@ -77,16 +151,23 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { cancelOrder, getOrderDetail, submitAppeal } from '@/api';
-import type { OrderDetail } from '@/types/api';
+import { cancelOrder, getOrderDetail, getMyAppeals, submitAppeal } from '@/api';
+import type { AppealRecord, OrderDetail } from '@/types/api';
 
 const route = useRoute();
 const router = useRouter();
 const loading = ref(true);
+const submittingAppeal = ref(false);
 const order = ref<OrderDetail | null>(null);
+const appeal = ref<AppealRecord | null>(null);
+const appealVisible = ref(false);
+const appealForm = reactive({
+  reason: 'OTHER',
+  content: ''
+});
 
 const statusMap: Record<string, string> = {
   WAITING_CONFIRM: '待确认',
@@ -96,8 +177,26 @@ const statusMap: Record<string, string> = {
   AFTER_SALE: '售后中'
 };
 
-function statusText(status: string) {
-  return statusMap[status] || status;
+const appealStatusMap: Record<string, string> = {
+  PENDING: '处理中',
+  RESOLVED: '已解决',
+  REJECTED: '已驳回'
+};
+
+const reasonMap: Record<string, string> = {
+  ACCOUNT_MISMATCH: '账号不符（段位/KD/皮肤等）',
+  LOGIN_FAILURE: '账号无法登录',
+  ACCOUNT_RECLAIMED: '账号中途被找回/顶号',
+  SERVICE_QUALITY: '服务质量问题',
+  OTHER: '其他'
+};
+
+function statusText(status: string) { return statusMap[status] || status; }
+function appealStatusText(s: string) { return appealStatusMap[s] || s; }
+function reasonText(r: string) { return reasonMap[r] || r || '其他'; }
+
+function appealStatusType(s: string) {
+  return s === 'PENDING' ? 'warning' : s === 'RESOLVED' ? 'success' : 'info';
 }
 
 function formatAmount(amount: number) {
@@ -111,6 +210,7 @@ async function loadOrder() {
     const response = await getOrderDetail(orderNo);
     if (response.data.success) {
       order.value = response.data.data;
+      await loadAppealForOrder();
       return;
     }
     ElMessage.error(response.data.message || '订单加载失败');
@@ -118,6 +218,21 @@ async function loadOrder() {
     ElMessage.error(error instanceof Error ? error.message : '订单加载失败');
   } finally {
     loading.value = false;
+  }
+}
+
+async function loadAppealForOrder() {
+  if (!order.value?.id) return;
+  try {
+    const res = await getMyAppeals();
+    if (res.data.success) {
+      const list = res.data.data || [];
+      appeal.value = list.find(
+        a => a.orderType === 'RENTAL' && a.orderId === order.value!.id
+      ) || null;
+    }
+  } catch {
+    appeal.value = null;
   }
 }
 
@@ -136,24 +251,38 @@ function handleCancel() {
     .catch(() => {});
 }
 
-function handleAppeal() {
+function resetAppealForm() {
+  appealForm.reason = 'OTHER';
+  appealForm.content = '';
+}
+
+async function submitAppealForm() {
   if (!order.value?.id) return;
-  ElMessageBox.prompt('请输入申请售后的原因', '申请售后', { type: 'warning' })
-    .then(async ({ value }) => {
-      if (!value) return;
-      const response = await submitAppeal({
-        orderType: 'RENTAL',
-        orderId: order.value!.id,
-        content: value
-      });
-      if (response.data.success) {
-        ElMessage.success('申诉已提交');
-        await loadOrder();
-        return;
-      }
-      ElMessage.error(response.data.message || '申诉提交失败');
-    })
-    .catch(() => {});
+  if (!appealForm.content.trim()) {
+    ElMessage.warning('请填写问题描述');
+    return;
+  }
+  submittingAppeal.value = true;
+  try {
+    const response = await submitAppeal({
+      orderType: 'RENTAL',
+      orderId: order.value!.id,
+      content: appealForm.content,
+      reason: appealForm.reason
+    });
+    if (response.data.success) {
+      ElMessage.success('申诉已提交');
+      appealVisible.value = false;
+      resetAppealForm();
+      await loadAppealForOrder();
+      return;
+    }
+    ElMessage.error(response.data.message || '申诉提交失败');
+  } catch (error) {
+    ElMessage.error(error instanceof Error ? error.message : '申诉提交失败');
+  } finally {
+    submittingAppeal.value = false;
+  }
 }
 
 function handleRentAgain() {
@@ -331,6 +460,63 @@ onMounted(loadOrder);
 .actions {
   display: flex;
   gap: 12px;
+}
+
+.appeal-card {
+  border-left: 4px solid #f59e0b;
+}
+
+.appeal-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.appeal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.appeal-row {
+  display: flex;
+  gap: 16px;
+}
+
+.appeal-k {
+  font-size: 12px;
+  color: #64748b;
+  min-width: 65px;
+  flex-shrink: 0;
+}
+
+.appeal-v {
+  font-size: 14px;
+  color: #1f2937;
+  line-height: 1.5;
+}
+
+.appeal-v.text-resolved {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.appeal-v.text-rejected {
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.appeal-v.refund-amount {
+  color: #f59e0b;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.pending-hint {
+  font-size: 13px;
+  color: #94a3b8;
+  padding: 8px 0;
 }
 
 .empty-state {
