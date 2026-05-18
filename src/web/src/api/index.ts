@@ -20,8 +20,7 @@ import type {
   SubmitAppealPayload,
   PageResult,
   AdminUser,
-  AdminRole,
-  RolePayload,
+
   NoticeItem
 } from '@/types/api';
 
@@ -115,17 +114,6 @@ export function updateAdminUserStatus(id: number, status: number) {
   return http.put<ApiResponse<void>>(`/admin/users/${id}/status`, { status });
 }
 
-export function getAdminRoles() {
-  return http.get<ApiResponse<AdminRole[]>>('/admin/roles');
-}
-
-export function createAdminRole(data: RolePayload) {
-  return http.post<ApiResponse<AdminRole>>('/admin/roles', data);
-}
-
-export function updateAdminRole(roleCode: string, data: RolePayload) {
-  return http.put<ApiResponse<void>>(`/admin/roles/${roleCode}`, data);
-}
 
 export function createRental(data: Partial<RentalProduct>) {
   return http.post<ApiResponse<RentalProduct>>('/rentals', data);
