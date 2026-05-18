@@ -56,7 +56,7 @@
             <div class="product-name">{{ p.name }}</div>
             <div class="product-attrs">
               <div class="attr-row"><span class="attr-k">段位</span><span class="attr-v">{{ p.rankText }}</span></div>
-              <div class="attr-row"><span class="attr-k">库存价值</span><span class="attr-v">{{ p.warehouseValueText }}</span></div>
+              <div class="attr-row"><span class="attr-k">仓库简介</span><span class="attr-v">{{ p.warehouseValueText }}</span></div>
               <div class="attr-row"><span class="attr-k">哈夫币</span><span class="attr-v">{{ formatCoinAmount(p.coinAmount) }}</span></div>
             </div>
             <div class="product-price-row">
@@ -277,7 +277,7 @@ const entries: Entry[] = [
   },
   {
     label: '租赁下单',
-    desc: '选择账号和时长，快速创建订单',
+    desc: '确认账号、押金和租金后提交订单',
     path: '/orders/create',
     requireAuth: true,
     iconPath: '<path d="M8 8h32v32H8z" stroke="currentColor" stroke-width="2" rx="4"/><path d="M20 16v16M12 24h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>'
@@ -333,8 +333,8 @@ function handleEntryClick(entry: Entry) {
 function formatCoinAmount(value: number | string | undefined) {
   const numeric = Number(value || 0);
   if (!numeric) return value || '未录入';
-  if (numeric >= 10000) return `${(numeric / 10000).toFixed(numeric >= 1000000 ? 0 : 1)}万`;
-  return numeric.toLocaleString();
+  if (numeric >= 10000) return `${(numeric / 10000).toFixed(2)}亿`;
+  return `${numeric.toLocaleString()}万`;
 }
 
 // ---- 门户数据 ----
@@ -369,17 +369,17 @@ async function loadHotProducts() {
 
 // ---- FAQ ----
 const faqs: FaqItem[] = [
-  { question: '租金如何计算？', answer: '租金按小时计费，不同账号根据配置和稀有度定价不同。具体价格可在账号列表中查看。' },
-  { question: '租赁时间从什么时候开始？', answer: '从客服确认订单并交付账号开始计时，租赁时长连续计算。' },
-  { question: '账号在使用过程中被找回怎么办？', answer: '请立即联系客服提交售后申诉，我们会核实后为您处理退款或换号。' },
+  { question: '租金如何计算？', answer: '租金由账号比例和号主配置决定，列表展示的是当前账号租金；押金由号主填写，下单前请同时确认租金和押金。' },
+  { question: '下单后如何交付？', answer: '订单提交后客服会联系双方拉群，优先核验账号信息、在线时间和仓库物品使用规则，再协助完成上号。' },
+  { question: '账号信息不一致怎么办？', answer: '请在上号后20分钟内截图留证并联系客服处理，逾期未反馈将默认验号通过。' },
   { question: '如何联系客服？', answer: '点击首页"联系客服"入口，或加入 QQ 群联系管理员，告知订单号可获优先处理。' }
 ];
 
 // ---- 三步上手 ----
 const steps = [
   { title: '浏览账号', desc: '在账号列表中查看各账号配置、等级与实时价格，挑选心仪账号' },
-  { title: '提交下单', desc: '登录后选择账号与租赁时长，填写联系方式，一键创建订单' },
-  { title: '客服交付', desc: '客服在线核验订单，快速完成账号交付，到期自动回收' }
+  { title: '提交下单', desc: '登录后确认账号、租金与押金，提交订单等待客服处理' },
+  { title: '客服交付', desc: '客服拉群核验账号信息和使用规则，确认无误后完成上号' }
 ];
 
 // ---- 粒子动画 ----
