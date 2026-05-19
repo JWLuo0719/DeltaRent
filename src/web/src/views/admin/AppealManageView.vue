@@ -27,6 +27,14 @@
       <el-table-column label="关联账号" min-width="140">
         <template #default="{ row }">{{ row.productName || '-' }}</template>
       </el-table-column>
+      <el-table-column label="订单号" width="150">
+        <template #default="{ row }">{{ row.orderNo || '-' }}</template>
+      </el-table-column>
+      <el-table-column label="订单状态" width="100">
+        <template #default="{ row }">
+          <el-tag size="small" :type="orderStatusType(row.orderStatus)">{{ orderStatusText(row.orderStatus) }}</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="售后原因" width="110">
         <template #default="{ row }">
           <el-tag size="small" :type="reasonType(row.reason)">{{ reasonText(row.reason) }}</el-tag>
@@ -87,6 +95,14 @@
         <div class="detail-row">
           <span class="detail-label">订单金额</span>
           <span class="detail-value price">¥{{ Number(detailRow.orderAmount || 0).toFixed(2) }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">订单号</span>
+          <span class="detail-value">{{ detailRow.orderNo || '-' }}</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">订单状态</span>
+          <el-tag :type="orderStatusType(detailRow.orderStatus)" size="small">{{ orderStatusText(detailRow.orderStatus) }}</el-tag>
         </div>
         <div class="detail-row">
           <span class="detail-label">售后原因</span>
@@ -211,6 +227,14 @@ const statusMap: Record<string, string> = {
   REJECTED: '已驳回'
 };
 
+const orderStatusMap: Record<string, string> = {
+  WAITING_CONFIRM: '待确认',
+  IN_PROGRESS: '进行中',
+  COMPLETED: '已完成',
+  CANCELLED: '已取消',
+  AFTER_SALE: '售后中'
+};
+
 const reasonMap: Record<string, string> = {
   ACCOUNT_MISMATCH: '账号不符',
   LOGIN_FAILURE: '无法登录',
@@ -221,9 +245,18 @@ const reasonMap: Record<string, string> = {
 
 function statusText(s: string) { return statusMap[s] || s; }
 function reasonText(r: string) { return reasonMap[r] || r || '其他'; }
+function orderStatusText(s?: string) { return s ? (orderStatusMap[s] || s) : '-'; }
 
 function statusType(s: string) {
   return s === 'PENDING' ? 'warning' : s === 'RESOLVED' ? 'success' : 'info';
+}
+
+function orderStatusType(s?: string) {
+  if (s === 'WAITING_CONFIRM') return 'warning';
+  if (s === 'IN_PROGRESS') return 'primary';
+  if (s === 'AFTER_SALE') return 'danger';
+  if (s === 'COMPLETED') return 'success';
+  return 'info';
 }
 
 function reasonType(r: string) {

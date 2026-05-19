@@ -34,7 +34,9 @@ public interface AppealRecordMapper {
                    coalesce(u.nickname, u.username) as userName,
                    coalesce(h.nickname, h.username) as handlerName,
                    p.name as productName,
-                   o.order_amount as orderAmount
+                   o.order_no as orderNo,
+                   o.order_amount as orderAmount,
+                   o.status as orderStatus
             from appeal_record a
             left join sys_user u on a.user_id = u.id
             left join sys_user h on a.handler_id = h.id

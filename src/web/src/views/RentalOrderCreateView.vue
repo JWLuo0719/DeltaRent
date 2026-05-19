@@ -44,6 +44,10 @@
               <span class="attr-label">上号方式</span>
               <span class="attr-value">{{ selectedAccount.loginMethod }}</span>
             </div>
+            <div v-if="selectedAccount.rentalDays" class="attr-item">
+              <span class="attr-label">租用天数</span>
+              <span class="attr-value">{{ selectedAccount.rentalDays }}天</span>
+            </div>
             <div v-if="selectedAccount.staminaText || selectedAccount.weightText" class="attr-item">
               <span class="attr-label">体力/负重</span>
               <span class="attr-value">{{ selectedAccount.staminaText }}/{{ selectedAccount.weightText }}</span>
@@ -90,7 +94,29 @@
         <div class="order-summary">
           <div class="summary-row">
             <span>账号租金</span>
-            <span class="summary-value">¥{{ selectedAccount?.hourPrice || 0 }}</span>
+            <span class="summary-value">¥{{ formatPrice(rentalAmount) }}</span>
+          </div>
+          <div class="summary-row">
+            <span>押金</span>
+            <span class="summary-sub-value">¥{{ formatPrice(depositAmount) }}</span>
+          </div>
+          <div class="summary-row">
+            <span>服务费（5%）</span>
+            <span class="summary-sub-value">¥{{ formatPrice(serviceFee) }}</span>
+          </div>
+          <div class="summary-row summary-row-total">
+            <span>应付合计</span>
+            <span class="summary-total-value">¥{{ formatPrice(totalAmount) }}</span>
+          </div>
+        </div>
+
+        <div class="price-guide-card">
+          <div class="guide-title">上架金额仅为账号纯币租金，其余额外物品使用价格如下</div>
+          <div class="guide-grid">
+            <div v-for="item in extraPriceGuide" :key="item.label" class="guide-item">
+              <span>{{ item.label }}</span>
+              <strong>{{ item.price }}</strong>
+            </div>
           </div>
         </div>
 
@@ -155,6 +181,10 @@ function formatCoin(value: number | undefined) {
   return `${amount}万`;
 }
 
+function formatPrice(value: number) {
+  return Number(value || 0).toFixed(2);
+}
+
 const requestedAccountId = parseQueryNumber(route.query.accountId);
 const accountLocked = requestedAccountId > 0;
 
@@ -174,6 +204,20 @@ const selectedAccount = computed(
   () => accounts.value.find(item => item.id === form.accountId) ?? null
 );
 const accountTags = computed(() => splitTags(selectedAccount.value?.tagText));
+const rentalAmount = computed(() => Number(selectedAccount.value?.hourPrice || 0));
+const depositAmount = computed(() => Number(selectedAccount.value?.deposit || 0));
+const serviceFee = computed(() => Number((rentalAmount.value * 0.05).toFixed(2)));
+const totalAmount = computed(() => Number((rentalAmount.value + depositAmount.value + serviceFee.value).toFixed(2)));
+
+const extraPriceGuide = [
+  { label: 'AWM', price: '¥0.8/发' },
+  { label: '6头', price: '¥2/个' },
+  { label: '6甲', price: '¥3/个' },
+  { label: '其他红蛋', price: '¥6/组' },
+  { label: '咖啡豆', price: '¥3/个' },
+  { label: '乌龟包', price: '¥1/个' },
+  { label: '9格体验卡', price: '¥5/天' }
+];
 
 async function loadAccounts() {
   accountsLoading.value = true;
@@ -464,6 +508,7 @@ onMounted(loadAccounts);
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 6px 0;
 }
 
 .summary-row > span:first-child {
@@ -475,6 +520,62 @@ onMounted(loadAccounts);
   font-size: 20px;
   font-weight: 700;
   color: #f05b2c;
+}
+
+.summary-sub-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #c57a00;
+}
+
+.summary-row-total {
+  margin-top: 4px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(226, 213, 168, 0.9);
+}
+
+.summary-total-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: #ef4444;
+}
+
+.price-guide-card {
+  padding: 18px 18px 6px;
+  border-radius: 14px;
+  background: rgba(255, 245, 214, 0.35);
+  border: 1px dashed rgba(255, 196, 32, 0.35);
+}
+
+.guide-title {
+  color: #ef4444;
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.guide-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.guide-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.guide-item span {
+  color: #5a3c00;
+  font-weight: 600;
+}
+
+.guide-item strong {
+  color: #ef4444;
 }
 
 .submit-btn {
@@ -619,5 +720,6 @@ onMounted(loadAccounts);
   .product-cover { min-height: 180px; }
   .cover-placeholder { min-height: 180px; }
   .product-attrs { grid-template-columns: 1fr; }
+  .guide-grid { grid-template-columns: 1fr; }
 }
 </style>

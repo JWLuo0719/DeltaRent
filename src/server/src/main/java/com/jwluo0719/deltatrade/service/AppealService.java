@@ -1,7 +1,9 @@
 package com.jwluo0719.deltatrade.service;
 
 import com.jwluo0719.deltatrade.domain.AppealRecord;
+import com.jwluo0719.deltatrade.domain.RentalOrder;
 import com.jwluo0719.deltatrade.mapper.AppealRecordMapper;
+import com.jwluo0719.deltatrade.mapper.RentalOrderMapper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -16,14 +18,30 @@ import java.util.Map;
 public class AppealService {
 
     private final AppealRecordMapper appealMapper;
+    private final RentalOrderMapper orderMapper;
+    private final OrderService orderService;
 
-    public AppealService(AppealRecordMapper appealMapper) {
+    public AppealService(AppealRecordMapper appealMapper, RentalOrderMapper orderMapper, OrderService orderService) {
         this.appealMapper = appealMapper;
+        this.orderMapper = orderMapper;
+        this.orderService = orderService;
     }
 
     /** 用户 — 提交申诉 */
     public AppealRecord submit(Long userId, String orderType, Long orderId, String content, String reason) {
         if (content == null || content.isBlank()) throw new IllegalArgumentException("申诉内容不能为空");
+        if ("RENTAL".equals(orderType)) {
+            RentalOrder order = orderMapper.findById(orderId);
+            if (order == null) throw new IllegalArgumentException("关联订单不存在");
+            if (!userId.equals(order.getUserId())) throw new IllegalArgumentException("无权申诉该订单");
+            if ("AFTER_SALE".equals(order.getStatus())) throw new IllegalArgumentException("该订单已在售后处理中");
+            if ("CANCELLED".equals(order.getStatus())) throw new IllegalArgumentException("已取消订单不能重复发起售后");
+            if (!"IN_PROGRESS".equals(order.getStatus()) && !"COMPLETED".equals(order.getStatus())) {
+                throw new IllegalArgumentException("当前订单状态不允许发起售后");
+            }
+            orderService.transitionStatus(orderId, "AFTER_SALE");
+        }
+
         AppealRecord record = new AppealRecord();
         record.setUserId(userId);
         record.setOrderType(orderType != null ? orderType : "RENTAL");
@@ -59,5 +77,8 @@ public class AppealService {
         AppealRecord exist = appealMapper.findById(id);
         if (exist == null) throw new IllegalArgumentException("申诉不存在");
         appealMapper.updateStatus(id, status, handlerId, handlerRemark, refundAmount, compensation, LocalDateTime.now());
+        if ("RENTAL".equals(exist.getOrderType())) {
+            orderService.transitionStatus(exist.getOrderId(), "RESOLVED".equals(status) ? "CANCELLED" : "COMPLETED");
+        }
     }
 }

@@ -117,6 +117,9 @@ export interface CreateOrderResult {
   orderNo: string;
   accountId: number;
   rentDays: number;
+  rentalAmount?: number;
+  depositAmount?: number;
+  serviceFee?: number;
   amount: number;
   status: string;
   estimatedDelivery: string;
@@ -145,6 +148,8 @@ export interface OrderSummary {
   user?: string;
   productId?: number;
   unitPrice?: number;
+  depositAmount?: number;
+  serviceFee?: number;
   rentDays: number;
   amount: number;
   status: string;
@@ -228,6 +233,7 @@ export interface AppealRecord {
   id: number;
   orderType: string;
   orderId: number;
+  orderNo?: string;
   userId: number;
   content: string;
   reason: string;
@@ -242,6 +248,7 @@ export interface AppealRecord {
   handlerName?: string;
   productName?: string;
   orderAmount?: number;
+  orderStatus?: string;
 }
 
 export interface HandleAppealPayload {

@@ -14,7 +14,10 @@ import java.util.Map;
 @Mapper
 public interface RentalOrderMapper {
 
-    @Insert("insert into rental_order(order_no, user_id, product_id, unit_price, rent_days, order_amount, contact_info, delivery_note, status) values(#{orderNo}, #{userId}, #{productId}, #{unitPrice}, #{rentDays}, #{orderAmount}, #{contactInfo}, #{deliveryNote}, #{status})")
+    @Insert("""
+            insert into rental_order(order_no, user_id, product_id, unit_price, service_fee, rent_days, order_amount, deposit_amount, contact_info, delivery_note, status)
+            values(#{orderNo}, #{userId}, #{productId}, #{unitPrice}, #{serviceFee}, #{rentDays}, #{orderAmount}, #{depositAmount}, #{contactInfo}, #{deliveryNote}, #{status})
+            """)
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(RentalOrder order);
 
@@ -47,7 +50,7 @@ public interface RentalOrderMapper {
     List<Map<String, Object>> findRecent();
 
     @Select("""
-            select id, order_no, user_id, product_id, unit_price, rent_days, order_amount, contact_info, delivery_note, status, start_time, end_time, created_at, updated_at
+            select id, order_no, user_id, product_id, unit_price, service_fee, rent_days, order_amount, deposit_amount, contact_info, delivery_note, status, start_time, end_time, created_at, updated_at
             from rental_order
             where user_id = #{userId}
             order by id desc
@@ -60,6 +63,8 @@ public interface RentalOrderMapper {
                    o.user_id as userId,
                    o.product_id as productId,
                    o.unit_price as unitPrice,
+                   o.deposit_amount as depositAmount,
+                   o.service_fee as serviceFee,
                    o.rent_days as rentDays,
                    o.order_amount as amount,
                    o.contact_info as contactInfo,
@@ -85,6 +90,8 @@ public interface RentalOrderMapper {
                    o.user_id as userId,
                    o.product_id as productId,
                    o.unit_price as unitPrice,
+                   o.deposit_amount as depositAmount,
+                   o.service_fee as serviceFee,
                    o.rent_days as rentDays,
                    o.order_amount as amount,
                    o.contact_info as contactInfo,
@@ -104,14 +111,14 @@ public interface RentalOrderMapper {
     List<Map<String, Object>> findAllWithDetails();
 
     @Select("""
-            select id, order_no, user_id, product_id, unit_price, rent_days, order_amount, contact_info, delivery_note, status, start_time, end_time, created_at, updated_at
+            select id, order_no, user_id, product_id, unit_price, service_fee, rent_days, order_amount, deposit_amount, contact_info, delivery_note, status, start_time, end_time, created_at, updated_at
             from rental_order
             where order_no = #{orderNo}
             """)
     RentalOrder findByOrderNo(String orderNo);
 
     @Select("""
-            select id, order_no, user_id, product_id, unit_price, rent_days, order_amount, contact_info, delivery_note, status, start_time, end_time, created_at, updated_at
+            select id, order_no, user_id, product_id, unit_price, service_fee, rent_days, order_amount, deposit_amount, contact_info, delivery_note, status, start_time, end_time, created_at, updated_at
             from rental_order
             where id = #{id}
             """)
@@ -123,6 +130,8 @@ public interface RentalOrderMapper {
                    o.user_id as userId,
                    o.product_id as productId,
                    o.unit_price as unitPrice,
+                   o.deposit_amount as depositAmount,
+                   o.service_fee as serviceFee,
                    o.rent_days as rentDays,
                    o.order_amount as amount,
                    o.contact_info as contactInfo,
@@ -142,6 +151,15 @@ public interface RentalOrderMapper {
             """)
     Map<String, Object> findDetailByOrderNo(String orderNo);
 
-    @Update("update rental_order set status = #{status} where id = #{id}")
-    int updateStatus(@Param("id") Long id, @Param("status") String status);
+    @Update("""
+            update rental_order
+            set status = #{status},
+                start_time = #{startTime},
+                end_time = #{endTime}
+            where id = #{id}
+            """)
+    int updateStatus(@Param("id") Long id,
+                     @Param("status") String status,
+                     @Param("startTime") java.time.LocalDateTime startTime,
+                     @Param("endTime") java.time.LocalDateTime endTime);
 }

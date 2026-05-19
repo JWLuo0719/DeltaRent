@@ -7,6 +7,8 @@ import com.jwluo0719.deltatrade.mapper.RentalProductMapper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -23,10 +25,6 @@ public class OrderService {
     }
 
     public RentalOrder create(Long userId, Long productId, Integer rentDays, String contactInfo, String deliveryNote) {
-        if (rentDays == null || rentDays < 1) {
-            throw new IllegalArgumentException("租赁天数必须大于 0");
-        }
-
         RentalProduct product = productMapper.findById(productId);
         if (product == null) {
             throw new IllegalArgumentException("租赁账号不存在");
@@ -38,14 +36,23 @@ public class OrderService {
             throw new IllegalArgumentException("该账号已有进行中的订单，请勿重复提交");
         }
 
-        BigDecimal amount = product.getPrice().multiply(BigDecimal.valueOf(rentDays));
+        int finalRentDays = product.getRentalDays() != null && product.getRentalDays() > 0
+                ? product.getRentalDays()
+                : (rentDays != null && rentDays > 0 ? rentDays : 1);
+        BigDecimal rentAmount = safe(product.getPrice());
+        BigDecimal depositAmount = safe(product.getDeposit());
+        BigDecimal serviceFee = rentAmount.multiply(BigDecimal.valueOf(0.05)).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal totalAmount = rentAmount.add(depositAmount).add(serviceFee).setScale(2, RoundingMode.HALF_UP);
+
         RentalOrder order = new RentalOrder();
         order.setOrderNo("DR" + System.currentTimeMillis());
         order.setUserId(userId);
         order.setProductId(productId);
-        order.setUnitPrice(product.getPrice());
-        order.setRentDays(rentDays);
-        order.setOrderAmount(amount);
+        order.setUnitPrice(rentAmount);
+        order.setDepositAmount(depositAmount);
+        order.setServiceFee(serviceFee);
+        order.setRentDays(finalRentDays);
+        order.setOrderAmount(totalAmount);
         order.setContactInfo(contactInfo != null ? contactInfo : "");
         order.setDeliveryNote(deliveryNote != null ? deliveryNote : "");
         order.setStatus("WAITING_CONFIRM");
@@ -95,12 +102,37 @@ public class OrderService {
     public void transitionStatus(Long orderId, String targetStatus) {
         RentalOrder order = orderMapper.findById(orderId);
         if (order == null) throw new IllegalArgumentException("订单不存在");
+        if (targetStatus == null || targetStatus.isBlank()) {
+            throw new IllegalArgumentException("目标状态不能为空");
+        }
 
         String current = order.getStatus();
         if (!isValidTransition(current, targetStatus)) {
             throw new IllegalArgumentException("不允许从 " + current + " 变更为 " + targetStatus);
         }
-        orderMapper.updateStatus(orderId, targetStatus);
+
+        RentalProduct product = productMapper.findById(order.getProductId());
+        LocalDateTime startTime = order.getStartTime();
+        LocalDateTime endTime = order.getEndTime();
+        LocalDateTime now = LocalDateTime.now();
+
+        if ("IN_PROGRESS".equals(targetStatus) && startTime == null) {
+            startTime = now;
+            endTime = now.plusDays(order.getRentDays() != null ? order.getRentDays() : 0L);
+        }
+        if ("WAITING_CONFIRM".equals(targetStatus)) {
+            startTime = null;
+            endTime = null;
+        }
+
+        orderMapper.updateStatus(orderId, targetStatus, startTime, endTime);
+
+        if (product != null) {
+            String productStatus = mapProductStatus(targetStatus);
+            if (productStatus != null && !productStatus.equals(product.getStatus())) {
+                productMapper.updateStatus(product.getId(), productStatus);
+            }
+        }
     }
 
     public long countAll() {
@@ -116,14 +148,24 @@ public class OrderService {
     }
 
     private boolean isValidTransition(String from, String to) {
-        if ("CANCELLED".equals(to) && !"COMPLETED".equals(from) && !"CANCELLED".equals(from)) {
-            return true;
-        }
         return switch (from) {
             case "WAITING_CONFIRM" -> "IN_PROGRESS".equals(to) || "CANCELLED".equals(to);
-            case "IN_PROGRESS" -> "COMPLETED".equals(to) || "CANCELLED".equals(to);
+            case "IN_PROGRESS" -> "COMPLETED".equals(to) || "CANCELLED".equals(to) || "AFTER_SALE".equals(to);
             case "COMPLETED" -> "AFTER_SALE".equals(to);
+            case "AFTER_SALE" -> "COMPLETED".equals(to) || "CANCELLED".equals(to);
             default -> false;
         };
+    }
+
+    private String mapProductStatus(String orderStatus) {
+        return switch (orderStatus) {
+            case "WAITING_CONFIRM", "CANCELLED" -> "AVAILABLE";
+            case "IN_PROGRESS", "COMPLETED", "AFTER_SALE" -> "RENTED";
+            default -> null;
+        };
+    }
+
+    private BigDecimal safe(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
     }
 }

@@ -27,8 +27,20 @@
             <span class="info-v">{{ order.createdAt }}</span>
           </div>
           <div class="info-row">
-            <span class="info-k">租赁时长</span>
+            <span class="info-k">租用天数</span>
             <span class="info-v">{{ order.rentDays }} 天</span>
+          </div>
+          <div class="info-row">
+            <span class="info-k">账号租金</span>
+            <span class="info-v">￥{{ formatAmount(order.unitPrice || 0) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-k">押金</span>
+            <span class="info-v">￥{{ formatAmount(order.depositAmount || 0) }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-k">服务费</span>
+            <span class="info-v">￥{{ formatAmount(order.serviceFee || 0) }}</span>
           </div>
           <div class="info-row">
             <span class="info-k">订单金额</span>
@@ -112,7 +124,7 @@
       <div class="actions">
         <el-button v-if="order.status === 'WAITING_CONFIRM'" type="danger" @click="handleCancel">取消订单</el-button>
         <el-button v-if="order.status === 'IN_PROGRESS'" type="warning" @click="appealVisible = true">申请售后</el-button>
-        <el-button v-if="order.status === 'COMPLETED'" type="primary" @click="handleRentAgain">再次租赁</el-button>
+        <el-button v-if="order.status === 'COMPLETED' || order.status === 'CANCELLED'" type="primary" @click="handleRentAgain">继续租号</el-button>
       </div>
 
       <!-- 售后申诉弹窗 -->

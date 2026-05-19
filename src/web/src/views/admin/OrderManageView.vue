@@ -18,6 +18,12 @@
       </el-table-column>
       <el-table-column prop="item" label="账号" />
       <el-table-column prop="rentDays" label="天数" />
+      <el-table-column prop="depositAmount" label="押金" width="100">
+        <template #default="{ row }">¥{{ Number(row.depositAmount || 0).toFixed(2) }}</template>
+      </el-table-column>
+      <el-table-column prop="serviceFee" label="服务费" width="100">
+        <template #default="{ row }">¥{{ Number(row.serviceFee || 0).toFixed(2) }}</template>
+      </el-table-column>
       <el-table-column prop="amount" label="金额">
         <template #default="{ row }">¥{{ Number(row.amount || 0).toFixed(2) }}</template>
       </el-table-column>
@@ -88,10 +94,15 @@ function availableActions(status: string) {
     ],
     IN_PROGRESS: [
       { label: '完成订单', status: 'COMPLETED', type: 'success' },
-      { label: '取消订单', status: 'CANCELLED', type: 'danger' }
+      { label: '取消订单', status: 'CANCELLED', type: 'danger' },
+      { label: '转售后', status: 'AFTER_SALE', type: 'warning' }
     ],
     COMPLETED: [
       { label: '转售后', status: 'AFTER_SALE', type: 'warning' }
+    ],
+    AFTER_SALE: [
+      { label: '售后完成', status: 'COMPLETED', type: 'success' },
+      { label: '取消订单', status: 'CANCELLED', type: 'danger' }
     ]
   };
   return map[status] || [];

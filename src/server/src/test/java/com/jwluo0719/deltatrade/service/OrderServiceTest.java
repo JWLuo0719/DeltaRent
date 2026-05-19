@@ -28,8 +28,8 @@ class OrderServiceTest {
     void setUp() {
         orderMapper = new InMemoryRentalOrderMapper();
         productMapper = new InMemoryRentalProductMapper();
-        productMapper.products.add(product(1001L, "High Rank Account A01", "AVAILABLE", "18.00"));
-        productMapper.products.add(product(1002L, "Maintenance Account B02", "MAINTENANCE", "8.00"));
+        productMapper.products.add(product(1001L, "High Rank Account A01", "AVAILABLE", "18.00", "350.00", 7));
+        productMapper.products.add(product(1002L, "Maintenance Account B02", "MAINTENANCE", "8.00", "100.00", 3));
         orderService = new OrderService(orderMapper, productMapper);
     }
 
@@ -39,7 +39,10 @@ class OrderServiceTest {
 
         assertEquals(1L, order.getId());
         assertEquals(new BigDecimal("18.00"), order.getUnitPrice());
-        assertEquals(new BigDecimal("108.00"), order.getOrderAmount());
+        assertEquals(new BigDecimal("350.00"), order.getDepositAmount());
+        assertEquals(new BigDecimal("0.90"), order.getServiceFee());
+        assertEquals(7, order.getRentDays());
+        assertEquals(new BigDecimal("368.90"), order.getOrderAmount());
         assertEquals("WAITING_CONFIRM", order.getStatus());
         assertTrue(order.getOrderNo().startsWith("DR"));
     }
@@ -72,9 +75,11 @@ class OrderServiceTest {
 
         orderService.transitionStatus(order.getId(), "IN_PROGRESS");
         assertEquals("IN_PROGRESS", orderMapper.findById(order.getId()).getStatus());
+        assertEquals("RENTED", productMapper.findById(1001L).getStatus());
 
         orderService.transitionStatus(order.getId(), "COMPLETED");
         assertEquals("COMPLETED", orderMapper.findById(order.getId()).getStatus());
+        assertEquals("RENTED", productMapper.findById(1001L).getStatus());
 
         orderService.transitionStatus(order.getId(), "AFTER_SALE");
         assertEquals("AFTER_SALE", orderMapper.findById(order.getId()).getStatus());
@@ -92,13 +97,15 @@ class OrderServiceTest {
         assertEquals("不允许从 WAITING_CONFIRM 变更为 COMPLETED", ex.getMessage());
     }
 
-    private RentalProduct product(Long id, String name, String status, String price) {
+    private RentalProduct product(Long id, String name, String status, String price, String deposit, int rentalDays) {
         RentalProduct product = new RentalProduct();
         product.setId(id);
         product.setName(name);
         product.setCategory("demo");
         product.setTagText("Full warehouse");
         product.setPrice(new BigDecimal(price));
+        product.setDeposit(new BigDecimal(deposit));
+        product.setRentalDays(rentalDays);
         product.setCoinAmount(1_000_000L);
         product.setWarehouseValueText("High-value warehouse");
         product.setStatus(status);
@@ -178,12 +185,14 @@ class OrderServiceTest {
         }
 
         @Override
-        public int updateStatus(Long id, String status) {
+        public int updateStatus(Long id, String status, LocalDateTime startTime, LocalDateTime endTime) {
             RentalOrder order = findById(id);
             if (order == null) {
                 return 0;
             }
             order.setStatus(status);
+            order.setStartTime(startTime);
+            order.setEndTime(endTime);
             order.setUpdatedAt(LocalDateTime.now());
             return 1;
         }
@@ -194,6 +203,9 @@ class OrderServiceTest {
             detail.put("orderNo", order.getOrderNo());
             detail.put("userId", order.getUserId());
             detail.put("productId", order.getProductId());
+            detail.put("unitPrice", order.getUnitPrice());
+            detail.put("depositAmount", order.getDepositAmount());
+            detail.put("serviceFee", order.getServiceFee());
             detail.put("rentDays", order.getRentDays());
             detail.put("amount", order.getOrderAmount());
             detail.put("status", order.getStatus());
