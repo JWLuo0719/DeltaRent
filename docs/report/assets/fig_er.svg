@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="860" viewBox="0 0 1280 860">
+  <defs>
+    <style>
+      .title { font: 700 28px 'Microsoft YaHei', sans-serif; fill: #1f2937; }
+      .box { fill: #ffffff; stroke: #2563eb; stroke-width: 2.2; rx: 14; ry: 14; }
+      .box-alt { fill: #fff7ed; stroke: #ea580c; stroke-width: 2.2; rx: 14; ry: 14; }
+      .name { font: 700 20px 'Microsoft YaHei', sans-serif; fill: #111827; }
+      .desc { font: 14px 'Microsoft YaHei', sans-serif; fill: #4b5563; }
+      .line { stroke: #64748b; stroke-width: 2.2; fill: none; }
+      .label { font: 13px 'Microsoft YaHei', sans-serif; fill: #334155; }
+      .card { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 1.4; rx: 10; ry: 10; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto">
+      <path d="M0,0 L10,3 L0,6 Z" fill="#64748b"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="48" class="title">DeltaRent 数据库 E-R 图</text>
+
+  <rect x="50" y="90" width="220" height="96" class="box"/>
+  <text x="75" y="128" class="name">sys_user</text>
+  <text x="75" y="155" class="desc">用户基础信息</text>
+  <text x="75" y="176" class="desc">username / phone / role / status</text>
+
+  <rect x="340" y="90" width="190" height="96" class="box"/>
+  <text x="365" y="128" class="name">sys_role</text>
+  <text x="365" y="155" class="desc">角色定义</text>
+  <text x="365" y="176" class="desc">ADMIN / USER / CS</text>
+
+  <rect x="600" y="90" width="220" height="96" class="box-alt"/>
+  <text x="625" y="128" class="name">sys_user_role</text>
+  <text x="625" y="155" class="desc">用户-角色关联表</text>
+  <text x="625" y="176" class="desc">user_id / role_id</text>
+
+  <rect x="50" y="290" width="240" height="116" class="box"/>
+  <text x="75" y="328" class="name">rental_product</text>
+  <text x="75" y="355" class="desc">账号商品信息</text>
+  <text x="75" y="376" class="desc">price / coin_amount / rank / skins</text>
+  <text x="75" y="397" class="desc">owner_id / status</text>
+
+  <rect x="360" y="285" width="250" height="126" class="box"/>
+  <text x="385" y="323" class="name">rental_order</text>
+  <text x="385" y="350" class="desc">租赁订单</text>
+  <text x="385" y="371" class="desc">user_id / product_id / order_no</text>
+  <text x="385" y="392" class="desc">order_amount / status / rent_days</text>
+
+  <rect x="690" y="285" width="220" height="116" class="box"/>
+  <text x="715" y="323" class="name">notice</text>
+  <text x="715" y="350" class="desc">公告信息</text>
+  <text x="715" y="371" class="desc">title / content / author_id</text>
+
+  <rect x="980" y="270" width="240" height="146" class="box"/>
+  <text x="1005" y="308" class="name">appeal_record</text>
+  <text x="1005" y="335" class="desc">售后申诉记录</text>
+  <text x="1005" y="356" class="desc">order_id / user_id / handler_id</text>
+  <text x="1005" y="377" class="desc">reason / status / refund_amount</text>
+  <text x="1005" y="398" class="desc">compensation / handled_at</text>
+
+  <rect x="210" y="525" width="240" height="116" class="box"/>
+  <text x="235" y="563" class="name">sms_verify_code</text>
+  <text x="235" y="590" class="desc">短信验证码</text>
+  <text x="235" y="611" class="desc">phone / code / type / expire_time</text>
+
+  <rect x="565" y="525" width="240" height="116" class="box"/>
+  <text x="590" y="563" class="name">operation_log</text>
+  <text x="590" y="590" class="desc">操作日志</text>
+  <text x="590" y="611" class="desc">operator_id / module / action</text>
+
+  <path d="M270 138 L340 138" class="line" marker-end="url(#arrow)"/>
+  <text x="284" y="126" class="label">多对多</text>
+
+  <path d="M530 138 L600 138" class="line" marker-end="url(#arrow)"/>
+  <text x="545" y="126" class="label">关联</text>
+
+  <path d="M160 186 L160 290" class="line" marker-end="url(#arrow)"/>
+  <text x="171" y="244" class="label">1 对多发布</text>
+
+  <path d="M250 342 L360 342" class="line" marker-end="url(#arrow)"/>
+  <text x="274" y="330" class="label">1 对多生成</text>
+
+  <path d="M485 285 L485 220 L160 220 L160 186" class="line" marker-end="url(#arrow)"/>
+  <text x="308" y="212" class="label">下单用户</text>
+
+  <path d="M610 338 L690 338" class="line" marker-end="url(#arrow)"/>
+  <text x="627" y="326" class="label">状态联动</text>
+
+  <path d="M800 285 L800 186 L270 186" class="line" marker-end="url(#arrow)"/>
+  <text x="707" y="205" class="label">作者</text>
+
+  <path d="M1100 270 L1100 215 L270 215" class="line" marker-end="url(#arrow)"/>
+  <text x="1035" y="233" class="label">申诉用户/处理人</text>
+
+  <path d="M980 343 L610 343" class="line" marker-end="url(#arrow)"/>
+  <text x="780" y="365" class="label">关联订单</text>
+
+  <path d="M330 525 L330 186 L270 186" class="line" marker-end="url(#arrow)"/>
+  <text x="340" y="456" class="label">手机号验证码</text>
+
+  <path d="M685 525 L685 186 L270 186" class="line" marker-end="url(#arrow)"/>
+  <text x="565" y="456" class="label">操作人</text>
+
+  <rect x="900" y="520" width="300" height="150" class="card"/>
+  <text x="925" y="555" class="name" style="font-size:18px;">关系摘要</text>
+  <text x="925" y="585" class="desc">1. 用户与角色通过 sys_user_role 建立多对多关系</text>
+  <text x="925" y="610" class="desc">2. 用户可发布多个账号，也可创建多个租赁订单</text>
+  <text x="925" y="635" class="desc">3. 订单与账号是一对多关系，订单记录价格快照</text>
+  <text x="925" y="660" class="desc">4. 申诉记录关联订单、申诉用户和处理人</text>
+</svg>
