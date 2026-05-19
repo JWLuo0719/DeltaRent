@@ -10,7 +10,9 @@ public class RentalOrder {
     private Long userId;
     private Long productId;
     private BigDecimal unitPrice;
-    private Integer rentHours;
+    private BigDecimal depositAmount;
+    private BigDecimal serviceFee;
+    private Integer rentDays;
     private BigDecimal orderAmount;
     private String contactInfo;
     private String deliveryNote;
@@ -60,12 +62,28 @@ public class RentalOrder {
         this.unitPrice = unitPrice;
     }
 
-    public Integer getRentHours() {
-        return rentHours;
+    public Integer getRentDays() {
+        return rentDays;
     }
 
-    public void setRentHours(Integer rentHours) {
-        this.rentHours = rentHours;
+    public void setRentDays(Integer rentDays) {
+        this.rentDays = rentDays;
+    }
+
+    public BigDecimal getDepositAmount() {
+        return depositAmount;
+    }
+
+    public void setDepositAmount(BigDecimal depositAmount) {
+        this.depositAmount = depositAmount;
+    }
+
+    public BigDecimal getServiceFee() {
+        return serviceFee;
+    }
+
+    public void setServiceFee(BigDecimal serviceFee) {
+        this.serviceFee = serviceFee;
     }
 
     public BigDecimal getOrderAmount() {

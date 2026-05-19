@@ -38,15 +38,18 @@ public class OrderController {
         try {
             Long userId = extractUserId(auth);
             Long productId = toLong(payload.get("accountId"), 0L);
-            Integer rentHours = toInt(payload.get("rentHours"), 1);
+            Integer rentDays = toInt(payload.get("rentDays"), 1);
             String contactInfo = String.valueOf(payload.getOrDefault("contactInfo", ""));
             String deliveryNote = String.valueOf(payload.getOrDefault("remark", ""));
-            RentalOrder order = orderService.create(userId, productId, rentHours, contactInfo, deliveryNote);
+            RentalOrder order = orderService.create(userId, productId, rentDays, contactInfo, deliveryNote);
 
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("orderNo", order.getOrderNo());
             result.put("accountId", order.getProductId());
-            result.put("rentHours", order.getRentHours());
+            result.put("rentDays", order.getRentDays());
+            result.put("rentalAmount", order.getUnitPrice());
+            result.put("depositAmount", order.getDepositAmount());
+            result.put("serviceFee", order.getServiceFee());
             result.put("amount", order.getOrderAmount());
             result.put("status", order.getStatus());
             result.put("estimatedDelivery", "5分钟内由客服确认");
@@ -170,6 +173,12 @@ public class OrderController {
         }
         if ("AFTER_SALE".equals(order.getStatus())) {
             events.add(event(formatDateTime(order.getUpdatedAt()), "售后已开启"));
+        }
+        if (order.getStartTime() != null) {
+            events.add(event(formatDateTime(order.getStartTime()), "账号开始租用"));
+        }
+        if (order.getEndTime() != null && ("COMPLETED".equals(order.getStatus()) || "CANCELLED".equals(order.getStatus()))) {
+            events.add(event(formatDateTime(order.getEndTime()), "订单租期节点已记录"));
         }
         return events;
     }

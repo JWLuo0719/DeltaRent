@@ -3,24 +3,32 @@
 Thumbs.db
 .idea/
 .vscode/
+*.iml
 
 # Logs
 *.log
 logs/
 
+# Environment
+.env
+.env.local
+.env.*.local
+
 # Frontend
 src/web/node_modules/
 src/web/dist/
-src/web/.env.local
-src/web/.env.*.local
 
 # Backend
+src/server/bin/
 src/server/build/
 src/server/out/
-*.class
 
-# Java
+# Java / Gradle
+**/*.class
+**/*.jar
+!gradle/wrapper/gradle-wrapper.jar
 .gradle/
+build/
 target/
 
 # Runtime files

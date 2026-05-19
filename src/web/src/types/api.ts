@@ -108,7 +108,7 @@ export interface LoginResult {
 
 export interface CreateOrderPayload {
   accountId: number;
-  rentHours: number;
+  rentDays: number;
   contactInfo: string;
   remark: string;
 }
@@ -116,7 +116,10 @@ export interface CreateOrderPayload {
 export interface CreateOrderResult {
   orderNo: string;
   accountId: number;
-  rentHours: number;
+  rentDays: number;
+  rentalAmount?: number;
+  depositAmount?: number;
+  serviceFee?: number;
   amount: number;
   status: string;
   estimatedDelivery: string;
@@ -145,7 +148,9 @@ export interface OrderSummary {
   user?: string;
   productId?: number;
   unitPrice?: number;
-  rentHours: number;
+  depositAmount?: number;
+  serviceFee?: number;
+  rentDays: number;
   amount: number;
   status: string;
   contactInfo: string;
@@ -221,6 +226,36 @@ export interface SubmitAppealPayload {
   orderType: string;
   orderId: number;
   content: string;
+  reason: string;
+}
+
+export interface AppealRecord {
+  id: number;
+  orderType: string;
+  orderId: number;
+  orderNo?: string;
+  userId: number;
+  content: string;
+  reason: string;
+  status: 'PENDING' | 'RESOLVED' | 'REJECTED' | string;
+  handlerId: number | null;
+  handlerRemark: string | null;
+  refundAmount: number | null;
+  compensation: string | null;
+  handledAt: string | null;
+  updatedAt: string | null;
+  userName?: string;
+  handlerName?: string;
+  productName?: string;
+  orderAmount?: number;
+  orderStatus?: string;
+}
+
+export interface HandleAppealPayload {
+  status: 'RESOLVED' | 'REJECTED';
+  handlerRemark: string;
+  refundAmount: number | null;
+  compensation: string;
 }
 
 export interface PageResult<T> {
